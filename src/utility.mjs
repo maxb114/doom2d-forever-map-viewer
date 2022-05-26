@@ -13,4 +13,53 @@ function getExtensionFromBuffer (/** @type {Uint8Array} */ buffer) {
   return 'unknown'
 }
 
+async function wadToJSON (/** @type {Uint8Array} */ mapArray, /** @type {String} */ fileName) {
+  const win1251 = new TextDecoder('windows-1251')
+  if (mapArray === undefined || mapArray[6] === undefined || mapArray[7] === undefined || mapArray.length < 8) return {}
+  const longwordArray = new ArrayBuffer(4)
+  const view1 = new Uint32Array(longwordArray)
+  const view2 = new Uint8Array(longwordArray)
+  const /** @type {any} **/ wadObject = {}
+  const recordCount1 = mapArray[6].toString(2).padStart(8, '0')
+  const recordCount2 = mapArray[7].toString(2).padStart(8, '0')
+  if (recordCount1 === undefined || recordCount2 === undefined) return {}
+  const recordCountString = recordCount2 + recordCount1
+  const recordCount = parseInt(recordCountString, 2)
+  let offset = 8
+  let parentSection = ''
+  for (let i = 0; i < recordCount; ++i) {
+    if (view2 === undefined || view1 === undefined) return {}
+    const memName = mapArray.slice(offset, offset + 16)
+    let structName = ''
+    memName.forEach((/** @type {number} */ e) => {
+      if (e === 0) return
+      structName = structName + win1251.decode(Uint8Array.from([e]))
+    })
+    for (let x = 16; x <= 19; ++x) {
+      const val = mapArray[offset + x]
+      if (val === undefined) return {}
+      view2[(x - 16)] = val
+    }
+    const memAddress = view1[0]
+    for (let x = 20; x <= 23; ++x) {
+      const val = mapArray[offset + x]
+      if (val === undefined) return {}
+      view2[(x - 20)] = val
+    }
+    const memLength = view1[0]
+    let index = 'struct'
+    if ((memLength === 0) && (memAddress === 0)) parentSection = structName
+    if (parentSection === structName || parentSection === '') index = 'section'
+    wadObject[index + i.toString()] = {
+      memAddress,
+      memLength,
+      parentSection: (parentSection !== structName ? parentSection : ''),
+      name: structName
+    }
+    offset = offset + 24
+  }
+  wadObject._wadname = fileName
+  return wadObject
+}
+
 export { getExtensionFromBuffer }
