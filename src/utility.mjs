@@ -13,7 +13,7 @@ function getExtensionFromBuffer (/** @type {Uint8Array} */ buffer) {
   return 'unknown'
 }
 
-async function wadToJSON (/** @type {Uint8Array} */ mapArray, /** @type {String} */ fileName) {
+function wadToJSON (/** @type {Uint8Array} */ mapArray) {
   const win1251 = new TextDecoder('windows-1251')
   if (mapArray === undefined || mapArray[6] === undefined || mapArray[7] === undefined || mapArray.length < 8) return {}
   const longwordArray = new ArrayBuffer(4)
@@ -47,19 +47,19 @@ async function wadToJSON (/** @type {Uint8Array} */ mapArray, /** @type {String}
       view2[(x - 20)] = val
     }
     const memLength = view1[0]
-    let index = 'struct'
+    let type = 'struct'
     if ((memLength === 0) && (memAddress === 0)) parentSection = structName
-    if (parentSection === structName || parentSection === '') index = 'section'
-    wadObject[index + i.toString()] = {
+    if (parentSection === structName || parentSection === '') type = 'section'
+    wadObject[type + i.toString()] = {
       memAddress,
       memLength,
+      type,
       parentSection: (parentSection !== structName ? parentSection : ''),
       name: structName
     }
     offset = offset + 24
   }
-  wadObject._wadname = fileName
   return wadObject
 }
 
-export { getExtensionFromBuffer }
+export { getExtensionFromBuffer, wadToJSON }
