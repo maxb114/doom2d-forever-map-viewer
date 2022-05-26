@@ -521,17 +521,19 @@ class DFTextParser {
 class DFParser {
   constructor (/** @type {Uint8Array} */ buffer) {
     this.buffer = buffer
-    /** @type {any} */ this.mapObject = {}
     if (buffer[0] === undefined || buffer[1] === undefined || buffer[2] === undefined || buffer[3] === undefined) {
       return
     }
     const isBinary = (numberToChar(buffer[0]) === 'M' && numberToChar(buffer[1]) === 'A' && numberToChar(buffer[2]) === 'P' && buffer[3] === 1)
     if (isBinary) {
       const parsed = new DFBinaryParser(buffer)
+      this.parsed = parsed
     } else { // text map
       const decoder = new TextDecoder('utf-8')
       const view = decoder.decode(buffer)
       const parsed = new DFTextParser(view)
+      if (parsed.mapObject.map === undefined) parsed.mapObject.map = {} // we don't know what will happen
+      this.parsed = parsed.mapObject.map
     }
   }
 }
