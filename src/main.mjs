@@ -16,7 +16,18 @@ input.onchange = function () {
     const wad = await DfwadFrom(view)
     const maps = wad.maps
     if (maps.length === 0) return true
-    // create menu
+    const selectId = 'map-select'
+    const toDelete = document.getElementById(selectId)
+    if (toDelete !== null) document.body.removeChild(toDelete)
+    const select = document.createElement('select')
+    select.id = selectId
+    document.body.appendChild(select)
+    for (const map of maps) {
+      const option = document.createElement('option')
+      option.value = map.path
+      option.text = map.path
+      select.appendChild(option)
+    }
     return true
   }
   return true
