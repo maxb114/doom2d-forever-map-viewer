@@ -1,4 +1,4 @@
-import { DfwadFrom } from './df-wad.mjs' 
+import { DfwadFrom } from './df-wad.mjs'
 const input = document.createElement('input')
 input.type = 'file'
 
