@@ -38,9 +38,6 @@ class DFTextParser {
     lexer.rule(/./, (/** @type {any} */ ctx) => {
       ctx.accept('char')
     })
-    // const mapArray = content
-    // mapArray = mapArray.replace(/\s\|\s/, '|')
-    // mapArray = mapArray.replace(/\s\+\s/, '+')
     lexer.input(content)
     const tokenArray = lexer.tokens()
     let state = 'look for keyword'
@@ -55,10 +52,9 @@ class DFTextParser {
       if (token.type === 'id' || token.type === 'string' || token.type === 'stringcurly' || token.type === 'double_assignment' || token.type === 'char' || token.type === 'number') {
         if (state === 'search') {
           state = 'evaluate'
-          // evaluatedElement = token
-        } else if (state === 'evaluate') { // TODO: fix parsing (evaluated property var)
-          activeElement[prevToken.value] = (activeElement[prevToken.value] !== undefined ? activeElement[prevToken.value] : '') + token.value
-          // activeElement[evaluatedElement.value] = (activeElement[prevToken.value] !== undefined ? activeElement[prevToken.value] : '') + token.value
+          evaluatedElement = token
+        } else if (state === 'evaluate') {
+          activeElement[evaluatedElement.value] = (activeElement[prevToken.value] !== undefined ? activeElement[prevToken.value] : '') + token.value
         }
       } else if (token.type === 'open_curly_brace') {
         if (prevToken.type === 'id') {
