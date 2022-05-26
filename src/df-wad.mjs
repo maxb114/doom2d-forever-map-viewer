@@ -28,6 +28,26 @@ class DFWad {
     /** @type {Resource[]} */ this.files = []
     /** @type {WadStruct[]} */ this.structs = []
   }
+
+  get maps () {
+    let /** @type {Resource[]} */ mapsArray = []
+    const matchexpr = /^MAP([0-9]*)(\.txt)?$/i
+    for (const file of this.files) {
+      const find = (file.path.match(matchexpr) !== null)
+      if (find) mapsArray.push(file)
+    }
+    mapsArray = mapsArray.sort((a, b) => {
+      const aFind = a.path.match(matchexpr)
+      const bFind = b.path.match(matchexpr)
+      if (aFind === null || bFind === null || aFind[1] === undefined || bFind[1] === undefined) return 0
+      const aIndex = parseInt(aFind[1].toString(), 10) // unpad
+      const bIndex = parseInt(bFind[1].toString(), 10)
+      if (aIndex > bIndex) return 1
+      else if (aIndex < bIndex) return -1
+      else return 0
+    })
+    return mapsArray
+  }
 }
 
 function DfwadFrom (/** @type {Uint8Array} */ buffer) {
