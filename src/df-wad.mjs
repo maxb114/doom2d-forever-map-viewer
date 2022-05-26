@@ -58,6 +58,13 @@ class DFWad {
     }
     return resourcesArray
   }
+
+  findResourceByPath (/** @type {String} */ path) {
+    for (const file of this.files) {
+      if (file.path === path) return file
+    }
+    return null
+  }
 }
 
 function DfwadFrom (/** @type {Uint8Array} */ buffer) {
