@@ -1,6 +1,426 @@
 import { numberToChar } from './utility.mjs'
 import * as tokenizr from './tokenizr.js'
+import { binaryAreaToString, binaryItemOptionsToString, binaryItemTypeToString, binaryMonsterToString, binaryPanelFlagToString, binaryPanelTypeToString } from './df-constants.mjs'
 const Tokenizr = tokenizr.wrapExport()
+
+class DFBinaryParser {
+  readSliceChar (/** @type {Uint8Array} */ buffer, /** @type {number} */ pos, /** @type {number} */ offset) {
+    const nameSlice = buffer.slice(pos, pos + offset)
+    const self = this
+    let val = ''
+    nameSlice.forEach(/** @type {number} */ e => {
+      if (e === 0) return false
+      val = val + self.decoder.decode(Uint8Array.from([e]))
+      return true
+    })
+    return val
+  }
+
+  readSliceLongWord (/** @type {Uint8Array} */ buffer, /** @type {number} */ pos) {
+    const nameSlice = buffer.slice(pos, pos + 4)
+    const longwordArray = new ArrayBuffer(4)
+    const view1 = new Uint32Array(longwordArray)
+    const view2 = new Uint8Array(longwordArray)
+    nameSlice.forEach(/** @type {number} */ e => {
+      view2[nameSlice.indexOf(e)] = e
+    })
+    return view1[0]
+  }
+
+  readSliceWord (/** @type {Uint8Array} */ buffer, /** @type {number} */ pos) {
+    const nameSlice = buffer.slice(pos, pos + 2)
+    const longwordArray = new ArrayBuffer(4)
+    const view1 = new Uint32Array(longwordArray)
+    const view2 = new Uint8Array(longwordArray)
+    nameSlice.forEach(/** @type {number} */ e => {
+      view2[nameSlice.indexOf(e)] = e
+    })
+    return view1[0]
+  }
+
+  readSliceByte (/** @type {Uint8Array} */ buffer, /** @type {number} */ pos) {
+    const nameSlice = buffer.slice(pos, pos + 1)
+    const longwordArray = new ArrayBuffer(4)
+    const view1 = new Uint32Array(longwordArray)
+    const view2 = new Uint8Array(longwordArray)
+    nameSlice.forEach(/** @type {number} */ e => {
+      view2[nameSlice.indexOf(e)] = e
+    })
+    return view1[0]
+  }
+
+  handleTextureBlock (/** @type {Uint8Array} */ buffer) {
+    const size = buffer.length
+    const binsize = 65
+    const blocks = size / binsize
+    const isWhole = Number.isInteger(blocks)
+    const /** @type {any} */ textures = {}
+    if (isWhole === false) return null
+    for (let i = 0; i < blocks; ++i) {
+      const pos = i * binsize
+      const binblock = buffer.slice(pos, pos + binsize)
+      let offset = 0
+      const texture = this.readSliceChar(binblock, offset, offset + 64)
+      offset += 64
+      const animated = this.readSliceByte(binblock, offset)
+      const obj = {
+        path: texture,
+        animated: animated === 1,
+        _hint: 'texture',
+        _token: { value: '' }
+      }
+      obj._token.value = 'texture' + i.toString(10)
+      textures['texture' + i.toString(10)] = obj
+    }
+    return textures
+  }
+
+  handlePanelBlock (/** @type {Uint8Array} */ buffer) {
+    const size = buffer.length
+    const binsize = 18
+    const blocks = size / binsize
+    const isWhole = Number.isInteger(blocks)
+    if (!isWhole) return null
+    const /** @type {any} */ panels = {}
+    for (let i = 0; i < blocks; ++i) {
+      const pos = i * binsize
+      const binblock = buffer.slice(pos, pos + binsize)
+      let offset = 0
+      const x = this.readSliceLongWord(binblock, offset)
+      offset += 4
+      const y = this.readSliceLongWord(binblock, offset)
+      offset += 4
+      const width = this.readSliceWord(binblock, offset)
+      offset += 2
+      const height = this.readSliceWord(binblock, offset)
+      offset += 2
+      const texture = this.readSliceWord(binblock, offset)
+      offset += 2
+      const type = this.readSliceWord(binblock, offset)
+      offset += 2
+      const alpha = this.readSliceByte(binblock, offset)
+      offset += 1
+      const flags = this.readSliceByte(binblock, offset)
+      offset += 1
+      const obj = {
+        position: x?.toString(10) + ',' + y?.toString(10),
+        size: width?.toString(10) + ',' + height?.toString(10),
+        texture: 'texture' + texture?.toString(10),
+        alpha: (alpha === 0 ? undefined : alpha),
+        type: binaryPanelTypeToString(type),
+        flags: binaryPanelFlagToString(flags),
+        _hint: 'panel',
+        _token: { value: '' }
+      }
+      obj._token.value = 'panel' + i.toString(10)
+      panels['panel' + i.toString(10)] = obj
+    }
+    return panels
+  }
+
+  handleItemBlock (/** @type {Uint8Array} */ buffer) {
+    const size = buffer.length
+    const binsize = 10
+    const blocks = size / binsize
+    const isWhole = Number.isInteger(blocks)
+    if (!isWhole) return null
+    const /** @type {any} */ items = {}
+    for (let i = 0; i < blocks; ++i) {
+      const pos = i * binsize
+      const binblock = buffer.slice(pos, pos + binsize)
+      let offset = 0
+      const x = this.readSliceLongWord(binblock, offset)
+      offset += 4
+      const y = this.readSliceLongWord(binblock, offset)
+      offset += 4
+      const type = this.readSliceByte(binblock, offset)
+      offset += 1
+      const options = this.readSliceByte(binblock, offset)
+      offset += 1
+      const convertoptions = binaryItemOptionsToString(options)
+      const obj = {
+        position: x?.toString(10) + ',' + y?.toString(10),
+        type: binaryItemTypeToString(type),
+        options: convertoptions,
+        _hint: 'item',
+        _token: { value: '' }
+      }
+      obj._token.value = 'item' + i.toString(10)
+      items['item' + i.toString(10)] = obj
+    }
+    return items
+  }
+
+  handleAreaBlock (/** @type {Uint8Array} */ buffer) {
+    const size = buffer.length
+    const binsize = 10
+    const blocks = size / binsize
+    const isWhole = Number.isInteger(blocks)
+    if (!isWhole) return null
+    const /** @type {any} */ areas = {}
+    for (let i = 0; i < blocks; ++i) {
+      const pos = i * binsize
+      const binblock = buffer.slice(pos, pos + binsize)
+      let offset = 0
+      const x = this.readSliceLongWord(binblock, offset)
+      offset += 4
+      const y = this.readSliceLongWord(binblock, offset)
+      offset += 4
+      const type = this.readSliceByte(binblock, offset)
+      offset += 1
+      const direction = this.readSliceByte(binblock, offset)
+      offset += 1
+      const obj = {
+        position: x?.toString(10) + ',' + y?.toString(10),
+        type: binaryAreaToString(type),
+        direction: (direction === 1 ? 'DIR_RIGHT' : 'DIR_LEFT'),
+        _hint: 'area',
+        _token: { value: '' }
+      }
+      obj._token.value = 'area' + i.toString(10)
+      areas['area' + i.toString(10)] = obj
+    }
+    return areas
+  }
+
+  handleMonsterBlock (/** @type {Uint8Array} */ buffer) {
+    const size = buffer.length
+    const binsize = 10
+    const blocks = size / binsize
+    const isWhole = Number.isInteger(blocks)
+    if (!isWhole) return null
+    const /** @type {any} */ monsters = {}
+    for (let i = 0; i < blocks; ++i) {
+      const pos = i * binsize
+      const binblock = buffer.slice(pos, pos + binsize)
+      let offset = 0
+      const x = this.readSliceLongWord(binblock, offset)
+      offset += 4
+      const y = this.readSliceLongWord(binblock, offset)
+      offset += 4
+      const type = this.readSliceByte(binblock, offset)
+      offset += 1
+      const direction = this.readSliceByte(binblock, offset)
+      offset += 1
+      const obj = {
+        position: x?.toString(10) + ',' + y?.toString(10),
+        type: binaryMonsterToString(type),
+        direction: (direction === 1 ? 'DIR_RIGHT' : 'DIR_LEFT'),
+        _hint: 'monster',
+        _token: { value: '' }
+      }
+      obj._token.value = 'monster' + i.toString(10)
+      monsters['monster' + i.toString(10)] = obj
+    }
+    return monsters
+  }
+
+  handleTriggerBlock (/** @type {Uint8Array} */ buffer) {
+    const size = buffer.length
+    const binsize = 148
+    const blocks = size / binsize
+    const isWhole = Number.isInteger(blocks)
+    if (!isWhole) return null
+    const /** @type {any} */ triggers = {}
+    for (let i = 0; i < blocks; ++i) {
+      const pos = i * binsize
+      const binblock = buffer.slice(pos, pos + binsize)
+      let offset = 0
+      const x = this.readSliceLongWord(binblock, offset)
+      offset += 4
+      const y = this.readSliceLongWord(binblock, offset)
+      offset += 4
+      const width = this.readSliceWord(binblock, offset)
+      offset += 2
+      const height = this.readSliceWord(binblock, offset)
+      offset += 2
+      const enabled = this.readSliceByte(binblock, offset)
+      offset += 1
+      const texturepanel = this.readSliceLongWord(binblock, offset)
+      offset += 4
+      const type = this.readSliceByte(binblock, offset)
+      offset += 1
+      const activatetype = this.readSliceByte(binblock, offset)
+      offset += 1
+      const keys = this.readSliceByte(binblock, offset)
+      offset += 1
+      const direction = this.readSliceByte(binblock, offset)
+      offset += 1
+      const triggerData = binblock.slice(offset, 128) // TODO: handle triggerdata
+      offset += 128
+      const obj = {
+        pos: x?.toString(10) + ',' + y?.toString(10),
+        size: width?.toString(10) + ',' + height?.toString(10),
+        enabled: enabled === 1,
+        texturepanel: 'panel' + texturepanel?.toString(10),
+        type,
+        activatetype,
+        keys,
+        direction,
+        triggerData,
+        _hint: 'trigger',
+        _token: { value: '' }
+      }
+      obj._token.value = 'trigger' + i.toString(10)
+      triggers['trigger' + i.toString(10)] = obj
+    }
+    return triggers
+  }
+
+  constructor (/** @type {Uint8Array} */ buffer) {
+    this.decoder = new TextDecoder('windows-1251')
+    let offset = 0
+    // const signature = this.readSliceChar(buffer, offset, 3)
+    offset += 3
+    // const version = this.readSliceByte(buffer, offset)
+    offset += 1
+    // const type = this.readSliceByte(buffer, offset)
+    offset += 1
+    // const reserved = this.readSliceLongWord(buffer, offset)
+    offset += 4
+    // const blocksize = this.readSliceLongWord(buffer, offset)
+    offset += 4
+    const name = this.readSliceChar(buffer, offset, 32)
+    offset += 32
+    const author = this.readSliceChar(buffer, offset, 32)
+    offset += 32
+    const description = this.readSliceChar(buffer, offset, 256)
+    offset += 256
+    const music = this.readSliceChar(buffer, offset, 64)
+    offset += 64
+    const sky = this.readSliceChar(buffer, offset, 64)
+    offset += 64
+    const width = this.readSliceWord(buffer, offset)
+    offset += 2
+    const height = this.readSliceWord(buffer, offset)
+    offset += 2
+    let state = 'looking for texture'
+    // offset = 0
+    const /** @type {any} */ mapObj = {}
+    for (; offset < buffer.length; offset++) {
+      const index = offset
+      const value = buffer[index]
+      if (value === undefined) continue
+      if (state === 'looking for texture') {
+        if (value === 1) { // texture, size 65
+          offset += 1
+          // const reserved = this.readSliceLongWord(buffer, offset)
+          offset += 4
+          const blocksize = this.readSliceLongWord(buffer, offset)
+          offset += 4
+          if (blocksize === undefined) return
+          const textureBlock = buffer.slice(offset, offset + blocksize)
+          const textures = this.handleTextureBlock(textureBlock)
+          for (const i in textures) {
+            const element = textures[i]
+            if (element === undefined) continue
+            mapObj[i] = element
+          }
+          offset += blocksize - 1
+          state = 'looking for panel'
+        }
+      } else if (state === 'looking for panel') {
+        if (value === 2) { // panel, size 18
+          offset += 1
+          // const reserved = this.readSliceLongWord(buffer, offset)
+          offset += 4
+          const blocksize = this.readSliceLongWord(buffer, offset)
+          offset += 4
+          if (blocksize === undefined) return
+          const panelBlock = buffer.slice(offset, offset + blocksize)
+          const panels = this.handlePanelBlock(panelBlock)
+          for (const i in panels) {
+            const element = panels[i]
+            if (element === undefined) continue
+            mapObj[i] = element
+          }
+          offset += blocksize - 1
+          state = 'looking for item'
+        }
+      } else if (state === 'looking for item') {
+        if (value === 3) {
+          offset += 1
+          // const reserved = this.readSliceLongWord(buffer, offset)
+          offset += 4
+          const blocksize = this.readSliceLongWord(buffer, offset)
+          offset += 4
+          if (blocksize === undefined) return
+          const itemBlock = buffer.slice(offset, offset + blocksize)
+          const items = this.handleItemBlock(itemBlock)
+          for (const i in items) {
+            const element = items[i]
+            if (element === undefined) continue
+            mapObj[i] = element
+          }
+          offset += blocksize - 1
+          state = 'looking for monster'
+        }
+      } else if (state === 'looking for monster') {
+        if (value === 5) { // why not 4?
+          offset += 1
+          // const reserved = this.readSliceLongWord(buffer, offset)
+          offset += 4
+          const blocksize = this.readSliceLongWord(buffer, offset)
+          offset += 4
+          if (blocksize === undefined) return
+          const monsterBlock = buffer.slice(offset, offset + blocksize)
+          const monsters = this.handleMonsterBlock(monsterBlock)
+          for (const i in monsters) {
+            const element = monsters[i]
+            if (element === undefined) continue
+            mapObj[i] = element
+          }
+          offset += blocksize - 1
+          state = 'looking for area'
+        }
+      } else if (state === 'looking for area') {
+        if (value === 4) {
+          offset += 1
+          // const reserved = this.readSliceLongWord(buffer, offset)
+          offset += 4
+          const blocksize = this.readSliceLongWord(buffer, offset)
+          offset += 4
+          if (blocksize === undefined) return
+          const areaBlock = buffer.slice(offset, offset + blocksize)
+          const areas = this.handleAreaBlock(areaBlock)
+          for (const i in areas) {
+            const element = areas[i]
+            if (element === undefined) continue
+            mapObj[i] = element
+          }
+          offset += blocksize - 1
+          state = 'looking for trigger'
+        }
+      } else if (state === 'looking for trigger') {
+        if (value === 6) {
+          offset += 1
+          // const reserved = this.readSliceLongWord(buffer, offset)
+          offset += 4
+          const blocksize = this.readSliceLongWord(buffer, offset)
+          offset += 4
+          if (blocksize === undefined) return
+          const triggerBlock = buffer.slice(offset, offset + blocksize)
+          const triggers = this.handleTriggerBlock(triggerBlock)
+          for (const i in triggers) {
+            const element = triggers[i]
+            if (element === undefined) continue
+            mapObj[i] = element
+          }
+          offset += blocksize - 1
+          state = 'looking for trigger'
+          break
+        }
+      }
+    }
+    mapObj.name = name
+    mapObj.author = author
+    mapObj.description = description
+    mapObj.music = music
+    mapObj.sky = sky
+    mapObj.size = width?.toString(10) + ',' + height?.toString(10)
+    return mapObj
+  }
+}
 
 class DFTextParser {
   constructor (/** @type {string} */ content) {
@@ -107,7 +527,7 @@ class DFParser {
     }
     const isBinary = (numberToChar(buffer[0]) === 'M' && numberToChar(buffer[1]) === 'A' && numberToChar(buffer[2]) === 'P' && buffer[3] === 1)
     if (isBinary) {
-      //
+      const parsed = new DFBinaryParser(buffer)
     } else { // text map
       const decoder = new TextDecoder('utf-8')
       const view = decoder.decode(buffer)
