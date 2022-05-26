@@ -62,4 +62,4 @@ function wadToJSON (/** @type {Uint8Array} */ mapArray) {
   return wadObject
 }
 
-export { getExtensionFromBuffer, wadToJSON }
+export { getExtensionFromBuffer, wadToJSON, numberToChar }
