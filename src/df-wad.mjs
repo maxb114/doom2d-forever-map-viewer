@@ -48,6 +48,16 @@ class DFWad {
     })
     return mapsArray
   }
+
+  get resources () {
+    const /** @type {Resource[]} */ resourcesArray = []
+    const matchexpr = /^MAP([0-9]*)(\.txt)?$/i
+    for (const file of this.files) {
+      const find = (file.path.match(matchexpr) !== null)
+      if (!find) resourcesArray.push(file)
+    }
+    return resourcesArray
+  }
 }
 
 function DfwadFrom (/** @type {Uint8Array} */ buffer) {
