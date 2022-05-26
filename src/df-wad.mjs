@@ -37,11 +37,13 @@ class DFWad {
       for (const i in this.structs) {
         const struct = this.structs[i]
         if (struct === undefined) continue
-        if (struct.type === '' || struct.type === 'parent') continue
+        if (struct.type === '') continue
         const structBuffer = buffer.slice(struct.memAddress, struct.memAddress + struct.memLength)
         const decompressed = inflate(structBuffer)
         if (decompressed === undefined || typeof decompressed === 'string') continue
-        const resource = new Resource(decompressed, struct.parentSection + '/' + struct.name)
+        const parent = struct.parentSection
+        const resname = struct.name
+        const resource = new Resource(decompressed, (parent === '' ? '' : parent + '/') + resname) // if empty, don't add slash
         this.files.push(resource)
       }
     } else if (type === 'dfzip') {
