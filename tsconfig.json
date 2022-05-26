@@ -1,0 +1,35 @@
+{
+    "compilerOptions": {
+      // Type Checking
+      "allowUnreachableCode": false,
+      "allowUnusedLabels": false,
+      "exactOptionalPropertyTypes": true,
+      "noFallthroughCasesInSwitch": true,
+      "noImplicitOverride": true,
+      "noImplicitReturns": true,
+      "noPropertyAccessFromIndexSignature": true,
+      "noUncheckedIndexedAccess": true,
+      "noUnusedLocals": true,
+      "noUnusedParameters": true,
+      "strict": true,
+      // Modules
+      "module": "ESNext",
+      // Emit
+      "inlineSourceMap": true,
+      "inlineSources": true,
+      "noEmit": false,
+      "noEmitOnError": true,
+      "outDir": "build/tsc",
+      // JavaScript Support
+      "allowJs": true,
+      "checkJs": true,
+      // Interop Constraints
+      "forceConsistentCasingInFileNames": true,
+      "isolatedModules": true,
+      // Language and Environment
+      "target": "ESNext"
+    },
+    "include": [
+      "src/**/*",
+    ]
+  }
