@@ -5,6 +5,10 @@
     "version": "0.1.0-prototype.1",
     "devDependencies": {
         "standard": "^17.0.0",
-        "typescript": "^4.7.2"
+        "typescript": "^4.8.0-dev.20220526"
+    },
+    "dependencies": {
+        "@types/node": "^17.0.35",
+        "jszip": "^3.10.0"
     }
 }
