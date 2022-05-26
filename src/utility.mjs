@@ -62,4 +62,9 @@ function wadToJSON (/** @type {Uint8Array} */ mapArray) {
   return wadObject
 }
 
-export { getExtensionFromBuffer, wadToJSON, numberToChar }
+function binaryIsBitSet (/** @type {number} */ n, /** @type {number} */ k) {
+  if ((n & (1 << (k - 1))) > 0) return true
+  else return false
+}
+
+export { getExtensionFromBuffer, wadToJSON, numberToChar, binaryIsBitSet }
