@@ -76,8 +76,10 @@ function DfwadFrom (/** @type {Uint8Array} */ buffer) {
           })
           promises.push(loadPromise)
         }
-        Promise.allSettled(promises).then(() => {
+        Promise.all(promises).then(() => {
           resolve(Dfwad)
+        }).catch(() => {
+          reject(Error('Failed to load file in ZIP!'))
         })
       }).catch(() => {
         reject(Error('Failed to load ZIP!'))
