@@ -54,7 +54,7 @@ class DFTextParser {
           state = 'evaluate'
           evaluatedElement = token
         } else if (state === 'evaluate') {
-          activeElement[evaluatedElement.value] = (activeElement[prevToken.value] !== undefined ? activeElement[prevToken.value] : '') + token.value
+          activeElement[evaluatedElement.value] = (activeElement[evaluatedElement.value] !== undefined ? activeElement[evaluatedElement.value] : '') + token.value
         }
       } else if (token.type === 'open_curly_brace') {
         if (prevToken.type === 'id') {
