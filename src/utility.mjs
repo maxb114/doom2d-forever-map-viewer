@@ -47,9 +47,9 @@ function wadToJSON (/** @type {Uint8Array} */ mapArray) {
       view2[(x - 20)] = val
     }
     const memLength = view1[0]
-    let type = 'parent'
+    let type = 'resource'
     if ((memLength === 0) && (memAddress === 0)) parentSection = structName
-    if (parentSection === structName || parentSection === '') type = 'section'
+    if (parentSection === structName || parentSection === '') type = 'parent'
     wadObject[type + i.toString()] = {
       memAddress,
       memLength,
