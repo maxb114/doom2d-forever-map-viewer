@@ -1,6 +1,3 @@
-// import { specialItemToJSON, convertSpecialItem, convertGameItems } from './df-constants.mjs'
-import { hasBitFlag } from './utility.mjs'
-
 class DFPlatformOptions {
   /**
    * @param {number} [moveSpeedX]
