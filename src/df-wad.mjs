@@ -71,26 +71,26 @@ function DfwadFrom (/** @type {Uint8Array} */ buffer) {
   const Dfwad = new DFWad(buffer)
   const type = getExtensionFromBuffer(buffer)
   if (type === 'dfwad') {
-    const wadObject = wadToJSON(buffer)
-    for (const i in wadObject) {
-      const obj = wadObject[i]
-      if (obj === undefined) continue
-      const structObject = new WadStruct(obj)
-      Dfwad.structs.push(structObject)
-    }
-    for (const i in Dfwad.structs) {
-      const struct = Dfwad.structs[i]
-      if (struct === undefined) continue
-      if (struct.type === '') continue
-      const structBuffer = buffer.slice(struct.memAddress, struct.memAddress + struct.memLength)
-      const decompressed = inflate(structBuffer)
-      if (decompressed === undefined || typeof decompressed === 'string') continue
-      const parent = struct.parentSection
-      const resname = struct.name
-      const resource = new Resource(decompressed, (parent === '' ? '' : parent + '/') + resname) // if empty, don't add slash
-      Dfwad.files.push(resource)
-    }
     const /** @type {Promise<DFWad>} */ promise = new Promise((resolve) => {
+      const wadObject = wadToJSON(buffer)
+      for (const i in wadObject) {
+        const obj = wadObject[i]
+        if (obj === undefined) continue
+        const structObject = new WadStruct(obj)
+        Dfwad.structs.push(structObject)
+      }
+      for (const i in Dfwad.structs) {
+        const struct = Dfwad.structs[i]
+        if (struct === undefined) continue
+        if (struct.type === '') continue
+        const structBuffer = buffer.slice(struct.memAddress, struct.memAddress + struct.memLength)
+        const decompressed = inflate(structBuffer)
+        if (decompressed === undefined || typeof decompressed === 'string') continue
+        const parent = struct.parentSection
+        const resname = struct.name
+        const resource = new Resource(decompressed, (parent === '' ? '' : parent + '/') + resname) // if empty, don't add slash
+        Dfwad.files.push(resource)
+      }
       resolve(Dfwad)
     })
     return promise
