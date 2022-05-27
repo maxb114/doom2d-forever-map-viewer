@@ -1,54 +1,9 @@
-import { numberToChar } from './utility.mjs'
+import { numberToChar, readSliceByte, readSliceChar, readSliceLongWord, readSliceWord } from './utility.mjs'
 import * as tokenizr from './tokenizr.js'
 import { binaryAreaToString, binaryItemOptionsToString, binaryItemTypeToString, binaryMonsterToString, binaryPanelFlagToString, binaryPanelTypeToString } from './df-constants.mjs'
 const Tokenizr = tokenizr.wrapExport()
 
 class DFBinaryParser {
-  readSliceChar (/** @type {Uint8Array} */ buffer, /** @type {number} */ pos, /** @type {number} */ offset) {
-    const nameSlice = buffer.slice(pos, pos + offset)
-    const self = this
-    let val = ''
-    nameSlice.forEach(/** @type {number} */ e => {
-      if (e === 0) return false
-      val = val + self.decoder.decode(Uint8Array.from([e]))
-      return true
-    })
-    return val
-  }
-
-  readSliceLongWord (/** @type {Uint8Array} */ buffer, /** @type {number} */ pos) {
-    const nameSlice = buffer.slice(pos, pos + 4)
-    const longwordArray = new ArrayBuffer(4)
-    const view1 = new Uint32Array(longwordArray)
-    const view2 = new Uint8Array(longwordArray)
-    nameSlice.forEach(/** @type {number} */ e => {
-      view2[nameSlice.indexOf(e)] = e
-    })
-    return view1[0]
-  }
-
-  readSliceWord (/** @type {Uint8Array} */ buffer, /** @type {number} */ pos) {
-    const nameSlice = buffer.slice(pos, pos + 2)
-    const longwordArray = new ArrayBuffer(4)
-    const view1 = new Uint32Array(longwordArray)
-    const view2 = new Uint8Array(longwordArray)
-    nameSlice.forEach(/** @type {number} */ e => {
-      view2[nameSlice.indexOf(e)] = e
-    })
-    return view1[0]
-  }
-
-  readSliceByte (/** @type {Uint8Array} */ buffer, /** @type {number} */ pos) {
-    const nameSlice = buffer.slice(pos, pos + 1)
-    const longwordArray = new ArrayBuffer(4)
-    const view1 = new Uint32Array(longwordArray)
-    const view2 = new Uint8Array(longwordArray)
-    nameSlice.forEach(/** @type {number} */ e => {
-      view2[nameSlice.indexOf(e)] = e
-    })
-    return view1[0]
-  }
-
   handleTextureBlock (/** @type {Uint8Array} */ buffer) {
     const size = buffer.length
     const binsize = 65
@@ -60,9 +15,9 @@ class DFBinaryParser {
       const pos = i * binsize
       const binblock = buffer.slice(pos, pos + binsize)
       let offset = 0
-      const texture = this.readSliceChar(binblock, offset, offset + 64)
+      const texture = readSliceChar(binblock, offset, offset + 64)
       offset += 64
-      const animated = this.readSliceByte(binblock, offset)
+      const animated = readSliceByte(binblock, offset)
       const obj = {
         path: texture,
         animated: animated === 1,
@@ -86,21 +41,21 @@ class DFBinaryParser {
       const pos = i * binsize
       const binblock = buffer.slice(pos, pos + binsize)
       let offset = 0
-      const x = this.readSliceLongWord(binblock, offset)
+      const x = readSliceLongWord(binblock, offset)
       offset += 4
-      const y = this.readSliceLongWord(binblock, offset)
+      const y = readSliceLongWord(binblock, offset)
       offset += 4
-      const width = this.readSliceWord(binblock, offset)
+      const width = readSliceWord(binblock, offset)
       offset += 2
-      const height = this.readSliceWord(binblock, offset)
+      const height = readSliceWord(binblock, offset)
       offset += 2
-      const texture = this.readSliceWord(binblock, offset)
+      const texture = readSliceWord(binblock, offset)
       offset += 2
-      const type = this.readSliceWord(binblock, offset)
+      const type = readSliceWord(binblock, offset)
       offset += 2
-      const alpha = this.readSliceByte(binblock, offset)
+      const alpha = readSliceByte(binblock, offset)
       offset += 1
-      const flags = this.readSliceByte(binblock, offset)
+      const flags = readSliceByte(binblock, offset)
       offset += 1
       const obj = {
         position: x?.toString(10) + ',' + y?.toString(10),
@@ -129,13 +84,13 @@ class DFBinaryParser {
       const pos = i * binsize
       const binblock = buffer.slice(pos, pos + binsize)
       let offset = 0
-      const x = this.readSliceLongWord(binblock, offset)
+      const x = readSliceLongWord(binblock, offset)
       offset += 4
-      const y = this.readSliceLongWord(binblock, offset)
+      const y = readSliceLongWord(binblock, offset)
       offset += 4
-      const type = this.readSliceByte(binblock, offset)
+      const type = readSliceByte(binblock, offset)
       offset += 1
-      const options = this.readSliceByte(binblock, offset)
+      const options = readSliceByte(binblock, offset)
       offset += 1
       const convertoptions = binaryItemOptionsToString(options)
       const obj = {
@@ -162,13 +117,13 @@ class DFBinaryParser {
       const pos = i * binsize
       const binblock = buffer.slice(pos, pos + binsize)
       let offset = 0
-      const x = this.readSliceLongWord(binblock, offset)
+      const x = readSliceLongWord(binblock, offset)
       offset += 4
-      const y = this.readSliceLongWord(binblock, offset)
+      const y = readSliceLongWord(binblock, offset)
       offset += 4
-      const type = this.readSliceByte(binblock, offset)
+      const type = readSliceByte(binblock, offset)
       offset += 1
-      const direction = this.readSliceByte(binblock, offset)
+      const direction = readSliceByte(binblock, offset)
       offset += 1
       const obj = {
         position: x?.toString(10) + ',' + y?.toString(10),
@@ -194,13 +149,13 @@ class DFBinaryParser {
       const pos = i * binsize
       const binblock = buffer.slice(pos, pos + binsize)
       let offset = 0
-      const x = this.readSliceLongWord(binblock, offset)
+      const x = readSliceLongWord(binblock, offset)
       offset += 4
-      const y = this.readSliceLongWord(binblock, offset)
+      const y = readSliceLongWord(binblock, offset)
       offset += 4
-      const type = this.readSliceByte(binblock, offset)
+      const type = readSliceByte(binblock, offset)
       offset += 1
-      const direction = this.readSliceByte(binblock, offset)
+      const direction = readSliceByte(binblock, offset)
       offset += 1
       const obj = {
         position: x?.toString(10) + ',' + y?.toString(10),
@@ -226,25 +181,25 @@ class DFBinaryParser {
       const pos = i * binsize
       const binblock = buffer.slice(pos, pos + binsize)
       let offset = 0
-      const x = this.readSliceLongWord(binblock, offset)
+      const x = readSliceLongWord(binblock, offset)
       offset += 4
-      const y = this.readSliceLongWord(binblock, offset)
+      const y = readSliceLongWord(binblock, offset)
       offset += 4
-      const width = this.readSliceWord(binblock, offset)
+      const width = readSliceWord(binblock, offset)
       offset += 2
-      const height = this.readSliceWord(binblock, offset)
+      const height = readSliceWord(binblock, offset)
       offset += 2
-      const enabled = this.readSliceByte(binblock, offset)
+      const enabled = readSliceByte(binblock, offset)
       offset += 1
-      const texturepanel = this.readSliceLongWord(binblock, offset)
+      const texturepanel = readSliceLongWord(binblock, offset)
       offset += 4
-      const type = this.readSliceByte(binblock, offset)
+      const type = readSliceByte(binblock, offset)
       offset += 1
-      const activatetype = this.readSliceByte(binblock, offset)
+      const activatetype = readSliceByte(binblock, offset)
       offset += 1
-      const keys = this.readSliceByte(binblock, offset)
+      const keys = readSliceByte(binblock, offset)
       offset += 1
-      const direction = this.readSliceByte(binblock, offset)
+      const direction = readSliceByte(binblock, offset)
       offset += 1
       const triggerData = binblock.slice(offset, 128) // TODO: handle triggerdata
       offset += 128
@@ -268,31 +223,30 @@ class DFBinaryParser {
   }
 
   constructor (/** @type {Uint8Array} */ buffer) {
-    this.decoder = new TextDecoder('windows-1251')
     let offset = 0
-    // const signature = this.readSliceChar(buffer, offset, 3)
+    // const signature = readSliceChar(buffer, offset, 3)
     offset += 3
-    // const version = this.readSliceByte(buffer, offset)
+    // const version = readSliceByte(buffer, offset)
     offset += 1
-    // const type = this.readSliceByte(buffer, offset)
+    // const type = readSliceByte(buffer, offset)
     offset += 1
-    // const reserved = this.readSliceLongWord(buffer, offset)
+    // const reserved = readSliceLongWord(buffer, offset)
     offset += 4
-    // const blocksize = this.readSliceLongWord(buffer, offset)
+    // const blocksize = readSliceLongWord(buffer, offset)
     offset += 4
-    const name = this.readSliceChar(buffer, offset, 32)
+    const name = readSliceChar(buffer, offset, 32)
     offset += 32
-    const author = this.readSliceChar(buffer, offset, 32)
+    const author = readSliceChar(buffer, offset, 32)
     offset += 32
-    const description = this.readSliceChar(buffer, offset, 256)
+    const description = readSliceChar(buffer, offset, 256)
     offset += 256
-    const music = this.readSliceChar(buffer, offset, 64)
+    const music = readSliceChar(buffer, offset, 64)
     offset += 64
-    const sky = this.readSliceChar(buffer, offset, 64)
+    const sky = readSliceChar(buffer, offset, 64)
     offset += 64
-    const width = this.readSliceWord(buffer, offset)
+    const width = readSliceWord(buffer, offset)
     offset += 2
-    const height = this.readSliceWord(buffer, offset)
+    const height = readSliceWord(buffer, offset)
     offset += 2
     let state = 'looking for texture'
     // offset = 0
@@ -304,9 +258,9 @@ class DFBinaryParser {
       if (state === 'looking for texture') {
         if (value === 1) { // texture, size 65
           offset += 1
-          // const reserved = this.readSliceLongWord(buffer, offset)
+          // const reserved = readSliceLongWord(buffer, offset)
           offset += 4
-          const blocksize = this.readSliceLongWord(buffer, offset)
+          const blocksize = readSliceLongWord(buffer, offset)
           offset += 4
           if (blocksize === undefined) return
           const textureBlock = buffer.slice(offset, offset + blocksize)
@@ -322,9 +276,9 @@ class DFBinaryParser {
       } else if (state === 'looking for panel') {
         if (value === 2) { // panel, size 18
           offset += 1
-          // const reserved = this.readSliceLongWord(buffer, offset)
+          // const reserved = readSliceLongWord(buffer, offset)
           offset += 4
-          const blocksize = this.readSliceLongWord(buffer, offset)
+          const blocksize = readSliceLongWord(buffer, offset)
           offset += 4
           if (blocksize === undefined) return
           const panelBlock = buffer.slice(offset, offset + blocksize)
@@ -340,9 +294,9 @@ class DFBinaryParser {
       } else if (state === 'looking for item') {
         if (value === 3) {
           offset += 1
-          // const reserved = this.readSliceLongWord(buffer, offset)
+          // const reserved = readSliceLongWord(buffer, offset)
           offset += 4
-          const blocksize = this.readSliceLongWord(buffer, offset)
+          const blocksize = readSliceLongWord(buffer, offset)
           offset += 4
           if (blocksize === undefined) return
           const itemBlock = buffer.slice(offset, offset + blocksize)
@@ -358,9 +312,9 @@ class DFBinaryParser {
       } else if (state === 'looking for monster') {
         if (value === 5) { // why not 4?
           offset += 1
-          // const reserved = this.readSliceLongWord(buffer, offset)
+          // const reserved = readSliceLongWord(buffer, offset)
           offset += 4
-          const blocksize = this.readSliceLongWord(buffer, offset)
+          const blocksize = readSliceLongWord(buffer, offset)
           offset += 4
           if (blocksize === undefined) return
           const monsterBlock = buffer.slice(offset, offset + blocksize)
@@ -376,9 +330,9 @@ class DFBinaryParser {
       } else if (state === 'looking for area') {
         if (value === 4) {
           offset += 1
-          // const reserved = this.readSliceLongWord(buffer, offset)
+          // const reserved = readSliceLongWord(buffer, offset)
           offset += 4
-          const blocksize = this.readSliceLongWord(buffer, offset)
+          const blocksize = readSliceLongWord(buffer, offset)
           offset += 4
           if (blocksize === undefined) return
           const areaBlock = buffer.slice(offset, offset + blocksize)
@@ -394,9 +348,9 @@ class DFBinaryParser {
       } else if (state === 'looking for trigger') {
         if (value === 6) {
           offset += 1
-          // const reserved = this.readSliceLongWord(buffer, offset)
+          // const reserved = readSliceLongWord(buffer, offset)
           offset += 4
-          const blocksize = this.readSliceLongWord(buffer, offset)
+          const blocksize = readSliceLongWord(buffer, offset)
           offset += 4
           if (blocksize === undefined) return
           const triggerBlock = buffer.slice(offset, offset + blocksize)

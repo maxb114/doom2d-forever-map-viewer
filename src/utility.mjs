@@ -89,4 +89,50 @@ const parse2Ints = (/** @type {string | undefined} */ e) => {
   return [a, b]
 }
 
-export { getExtensionFromBuffer, wadToJSON, numberToChar, binaryIsBitSet, parse2Ints }
+const decoder = new TextDecoder('windows-1251')
+
+function readSliceChar (/** @type {Uint8Array} */ buffer, /** @type {number} */ pos, /** @type {number} */ offset) {
+  const nameSlice = buffer.slice(pos, pos + offset)
+  let val = ''
+  nameSlice.forEach(/** @type {number} */ e => {
+    if (e === 0) return false
+    val = val + decoder.decode(Uint8Array.from([e]))
+    return true
+  })
+  return val
+}
+
+function readSliceLongWord (/** @type {Uint8Array} */ buffer, /** @type {number} */ pos) {
+  const nameSlice = buffer.slice(pos, pos + 4)
+  const longwordArray = new ArrayBuffer(4)
+  const view1 = new Uint32Array(longwordArray)
+  const view2 = new Uint8Array(longwordArray)
+  nameSlice.forEach(/** @type {number} */ e => {
+    view2[nameSlice.indexOf(e)] = e
+  })
+  return view1[0]
+}
+
+function readSliceWord (/** @type {Uint8Array} */ buffer, /** @type {number} */ pos) {
+  const nameSlice = buffer.slice(pos, pos + 2)
+  const longwordArray = new ArrayBuffer(4)
+  const view1 = new Uint32Array(longwordArray)
+  const view2 = new Uint8Array(longwordArray)
+  nameSlice.forEach(/** @type {number} */ e => {
+    view2[nameSlice.indexOf(e)] = e
+  })
+  return view1[0]
+}
+
+function readSliceByte (/** @type {Uint8Array} */ buffer, /** @type {number} */ pos) {
+  const nameSlice = buffer.slice(pos, pos + 1)
+  const longwordArray = new ArrayBuffer(4)
+  const view1 = new Uint32Array(longwordArray)
+  const view2 = new Uint8Array(longwordArray)
+  nameSlice.forEach(/** @type {number} */ e => {
+    view2[nameSlice.indexOf(e)] = e
+  })
+  return view1[0]
+}
+
+export { getExtensionFromBuffer, wadToJSON, numberToChar, binaryIsBitSet, parse2Ints, readSliceByte, readSliceChar, readSliceLongWord, readSliceWord }
