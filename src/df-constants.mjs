@@ -1346,7 +1346,7 @@ const binaryPanelFlagToString = (/** @type {number | undefined} */ type) => {
   if (binaryIsBitSet(type, 1)) flags.push('PANEL_FLAG_HIDE')
   if (binaryIsBitSet(type, 2)) flags.push('PANEL_FLAG_HIDE')
   if (binaryIsBitSet(type, 4)) flags.push('PANEL_FLAG_WATERTEXTURES')
-  return flags.join(' | ')
+  return flags.join('|')
 }
 
 const binaryItemTypeToString = (/** @type {number | undefined} */ type) => {
