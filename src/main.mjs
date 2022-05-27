@@ -1,10 +1,10 @@
 import { DfwadFrom } from './df-wad.mjs'
-import { DFParser } from './df-parser.mjs'
+import { DFAnimTextureParser, DFParser } from './df-parser.mjs'
 import { DFMap } from './df-map.mjs'
 import { DatabaseFrom } from './db.mjs'
 import { DFRenderOptions } from './render.mjs'
 import { getExtensionFromBuffer } from './utility.mjs'
-import { convertImage } from './image.mjs'
+import { convertImage, cropImage } from './image.mjs'
 const input = document.createElement('input')
 input.type = 'file'
 let /** @type {Database | null} */ db = null
@@ -67,7 +67,32 @@ input.onchange = function () {
         if (type === 'unknown') continue // probably music
 
         if (type === 'dfwad' || type === 'dfzip') { // animated
-          // to do
+          const promise = new Promise((resolve, reject) => {
+            const view = new Uint8Array(file.buffer)
+            DfwadFrom(view).then((wad) => {
+              const animPath = 'TEXT/ANIM'
+              const animDescription = wad.findResourceByPath(animPath)
+              if (animDescription === null) reject(Error('File is a WAD, but not an animated texture!'))
+              const decoder = new TextDecoder('utf-8')
+              const view = decoder.decode(animDescription?.buffer)
+              const parser = new DFAnimTextureParser(view)
+              const path = 'TEXTURES' + '/' + parser.parsed.resource
+              const width = parser.parsed.frameWidth
+              const height = parser.parsed.frameHeight
+              const textureResource = wad.findResourceByPath(path)
+              if (textureResource === null) reject(Error('File is a WAD, but not an animated texture!'))
+              const buffer = textureResource.buffer
+              const type = getExtensionFromBuffer(buffer)
+              if (type === 'unknown' || type === 'dfpack' || type === 'dfwad' || type === 'dfzip') reject(Error('File is a WAD, but not an animated texture!'))
+              convertImage(buffer, type, 'png').then((arrayBuffer) => {
+                const view = new Uint8Array(arrayBuffer)
+                cropImage(view, 'png', width, height).then((finalBuffer) => {
+                  db.saveByPath(finalBuffer, file.path).then(() => resolve(true)).catch((error) => reject(error))
+                }).catch((error) => reject(error))
+              }).catch((error) => reject(error))
+            }).catch((error) => reject(error))
+          })
+          promises.push(promise)
         } else if (type === 'bmp' || type === 'gif' || type === 'jpg' || type === 'png' || type === 'psd' || type === 'tga') { // just an image
           const promise = new Promise((resolve, reject) => {
             convertImage(file.buffer, type, 'png').then((buffer) => {
