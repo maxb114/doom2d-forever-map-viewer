@@ -116,23 +116,41 @@ class DFRender {
 
   async renderPanels (/** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasRenderingContext2D} */ context) {
     const water = ['_water_0', '_water_1', '_water_2']
-    const color = ['#0000FF', '#00FF00', '#FF0000']
+    const color = ['blue', 'green', 'red']
+    const order = [
+      ['PANEL_BACK'],
+      ['PANEL_WALL', 'PANEL_STEP', 'PANEL_OPENDOOR', 'PANEL_CLOSEDOOR'],
+      ['PANEL_WATER', 'PANEL_ACID1', 'PANEL_ACID2', 'PANEL_FORE']
+    ]
+    const /** @type {DFPanel[][]} */ ordered = [
+      [],
+      [],
+      []
+    ]
     for (const panel of (this.map?.panels ?? [])) {
-      const options = panel.getRenderOptions()
-      if (options.invisible === true) continue
-      const path = this.map?.getTexturePath(panel.texture)
-      if (!path) continue
-      if (water.includes(path)) {
-        options.water = true
-        options.fillColor = color[water.indexOf(path)] ?? '#0000FF'
-        options.alpha = 0.85
-        options.operation = 'darken'
+      if (order[0]?.includes(panel.type)) ordered[0]?.push(panel)
+      else if (order[1]?.includes(panel.type)) ordered[1]?.push(panel)
+      else if (order[2]?.includes(panel.type)) ordered[2]?.push(panel)
+    }
+    for (let i = 0; i <= 2; ++i) {
+      const panels = ordered[i]
+      if (panels === undefined) continue
+      for (const panel of panels) {
+        const options = panel.getRenderOptions()
+        if (options.invisible === true) continue
+        const path = this.map?.getTexturePath(panel.texture)
+        if (!path) continue
+        if (water.includes(path)) {
+          options.water = true
+          options.fillColor = color[water.indexOf(path)] ?? '#0000FF'
+          options.operation = 'darken'
+        }
+        let loadPath = path.replaceAll('\\', '/')
+        if (loadPath.charAt(0) === ':') loadPath = this.map?.fileName + loadPath // add map name for internal resources
+        loadPath = loadPath.toLowerCase() // lower case for now
+        const image = this.getImage(loadPath)
+        this.drawPattern(image, canvas, context, options)
       }
-      let loadPath = path.replaceAll('\\', '/')
-      if (loadPath.charAt(0) === ':') loadPath = this.map?.fileName + loadPath // add map name for internal resources
-      loadPath = loadPath.toLowerCase() // lower case for now
-      const image = this.getImage(loadPath)
-      this.drawPattern(image, canvas, context, options)
     }
   }
 
