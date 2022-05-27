@@ -1,6 +1,6 @@
 import { specialItemToJSON, convertSpecialItem, convertGameItems } from './df-constants.mjs'
 class DFItem {
-  constructor (/** @type {number} **/ x, /** @type {number} **/ y, /** @type {string} **/ type, /** @type {string} **/ options) {
+  constructor (/** @type {number} **/ x, /** @type {number} **/ y, /** @type {string} **/ type, options = ['ITEM_OPTION_NONE']) {
     this.pos = { x: 0, y: 0 }
     this.type = ''
     this.options = ''
