@@ -71,7 +71,7 @@ class DFRender {
         const loadPromise = new Promise((resolve, reject) => {
           let loadPath = path.replaceAll('\\', '/')
           loadPath = loadPath.toLowerCase() // lower case for now
-          console.log(loadPath)
+          if (loadPath.charAt(0) === ':') loadPath = this.map.fileName + loadPath // add map name for internal resources
         })
         promises.push(loadPromise)
       }
