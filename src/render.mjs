@@ -255,12 +255,65 @@ class DFRender {
     return promise
   }
 
+  preloadSky () {
+    const promise = new Promise((resolve, reject) => {
+      const defaultSky = 'Standart.wad:D2DSKY\\RSKY1'
+      let sky = this.map?.sky
+      if (sky === '') sky = defaultSky
+      const self = this
+      const path = sky
+      const loadPromise = new Promise((resolve, reject) => {
+        let loadPath = path.replaceAll('\\', '/')
+        if (loadPath.charAt(0) === ':') loadPath = this.map.fileName + loadPath // add map name for internal resources
+        loadPath = loadPath.toLowerCase() // lower case for now
+        this.db?.loadByPath(loadPath).then((buffer) => {
+          const view = new Uint8Array(buffer)
+          const blob = new window.Blob([view], { type: 'image/png' })
+          const url = window.URL.createObjectURL(blob)
+          const image = new window.Image()
+          image.src = url
+          image.onload = function () {
+            self.saveImage(image, loadPath)
+            resolve(true)
+          }
+          image.onerror = function () {
+            reject(Error('Error creating image!'))
+          }
+        }).catch((error) => reject(error))
+      })
+      Promise.allSettled([loadPromise]).then(() => resolve(true)).catch((error) => reject(error))
+    })
+    return promise
+  }
+
   preload () {
     const panels = this.preloadPanels()
     const items = this.preloadItems()
     const monsters = this.preloadMonsters()
     const areas = this.preloadAreas()
-    return Promise.allSettled([panels, items, monsters, areas])
+    const sky = this.preloadSky()
+    return Promise.allSettled([panels, items, monsters, areas, sky])
+  }
+
+  async renderSky (/** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasRenderingContext2D} */ context) {
+    const defaultSky = 'Standart.wad:D2DSKY\\RSKY1'
+    let sky = this.map?.sky
+    if (sky === '') sky = defaultSky
+    const path = sky
+    let loadPath = path.replaceAll('\\', '/')
+    if (loadPath.charAt(0) === ':') loadPath = this.map?.fileName + loadPath // add map name for internal resources
+    loadPath = loadPath.toLowerCase() // lower case for now
+    const image = this.getImage(loadPath)
+    const panel = new DFPanel(0, 0, this.map?.size.x, this.map?.size.y)
+    const options = panel.getRenderOptions()
+    options.fillColor = 'black'
+    options.water = true
+    options.alpha = -1
+    this.drawPattern(image, canvas, context, options)
+    options.water = false
+    options.alpha = -1
+    options.drawImage = true
+    this.drawPattern(image, canvas, context, options)
   }
 
   async renderPanels (/** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasRenderingContext2D} */ context, background = false) {
@@ -363,6 +416,7 @@ class DFRender {
     if (context === null) return canvas
     canvas.width = width ?? 0
     canvas.height = height ?? 0
+    await this.renderSky(canvas, context)
     await this.renderPanels(canvas, context, true)
     await this.renderItems(canvas, context)
     await this.renderMonsters(canvas, context)
