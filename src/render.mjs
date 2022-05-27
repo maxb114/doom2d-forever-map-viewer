@@ -1,6 +1,7 @@
 import { Database } from './db.mjs'
 import { DFMap } from './df-map.mjs'
 import { DFPanel } from './df-panel.mjs'
+import { cropImage } from './image.mjs'
 
 class DFRenderOption {
   constructor (/** @type {String} */ id, /** @type {String} */ full) {
@@ -109,12 +110,74 @@ class DFRender {
     return promise
   }
 
-  preload () {
-    const panels = this.preloadPanels()
-    return Promise.allSettled([panels])
+  preloadItems () {
+    const promise = new Promise((resolve, reject) => {
+      const items = this.map?.items ?? []
+      if (items === undefined) resolve(false)
+      const /** @type {Promise<any>[]} */ promises = []
+      const /** @type {String[]} */ loaded = []
+      const self = this
+      for (const item of items) {
+        const path = item.getResourcePath()
+        if (path === null) continue
+        const found = loaded.includes(path)
+        if (found) continue
+        loaded.push(path)
+        const loadPromise = new Promise((resolve, reject) => {
+          let loadPath = path.replaceAll('\\', '/')
+          if (loadPath.charAt(0) === ':') loadPath = this.map.fileName + loadPath // add map name for internal resources
+          loadPath = loadPath.toLowerCase() // lower case for now
+          this.db?.loadByPath(loadPath).then((buffer) => {
+            const view = new Uint8Array(buffer)
+            if (item.frameObject !== undefined) { // crop if animated... that's our fate.
+              const width = item.frameObject?.width
+              const height = item.frameObject?.height
+              cropImage(view, 'png', width, height).then((buffer) => {
+                const view = new Uint8Array(buffer)
+                const blob = new window.Blob([view], { type: 'image/png' })
+                const url = window.URL.createObjectURL(blob)
+                const image = new window.Image()
+                image.src = url
+                image.onload = function () {
+                  self.saveImage(image, loadPath)
+                  resolve(true)
+                }
+                image.onerror = function () {
+                  reject(Error('Error creating image!'))
+                }
+              })
+            } else {
+              const blob = new window.Blob([view], { type: 'image/png' })
+              const url = window.URL.createObjectURL(blob)
+              const image = new window.Image()
+              image.src = url
+              image.onload = function () {
+                self.saveImage(image, loadPath)
+                resolve(true)
+              }
+              image.onerror = function () {
+                reject(Error('Error creating image!'))
+              }
+            }
+          }).catch((error) => reject(error))
+        })
+        promises.push(loadPromise)
+      }
+      Promise.allSettled(promises).then(() => {
+        console.log(this)
+        resolve(true)
+      }).catch((error) => reject(error))
+    })
+    return promise
   }
 
-  async renderPanels (/** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasRenderingContext2D} */ context) {
+  preload () {
+    const panels = this.preloadPanels()
+    const items = this.preloadItems()
+    return Promise.allSettled([panels, items])
+  }
+
+  async renderPanels (/** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasRenderingContext2D} */ context, background = false) {
     const water = ['_water_0', '_water_1', '_water_2']
     const color = ['blue', 'green', 'red']
     const order = [
@@ -128,9 +191,9 @@ class DFRender {
       []
     ]
     for (const panel of (this.map?.panels ?? [])) {
-      if (order[0]?.includes(panel.type)) ordered[0]?.push(panel)
-      else if (order[1]?.includes(panel.type)) ordered[1]?.push(panel)
-      else if (order[2]?.includes(panel.type)) ordered[2]?.push(panel)
+      if (background && order[0]?.includes(panel.type)) ordered[0]?.push(panel)
+      else if (!background && order[1]?.includes(panel.type)) ordered[1]?.push(panel)
+      else if (!background && order[2]?.includes(panel.type)) ordered[2]?.push(panel)
     }
     for (let i = 0; i <= 2; ++i) {
       const panels = ordered[i]
@@ -154,6 +217,23 @@ class DFRender {
     }
   }
 
+  async renderItems (/** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasRenderingContext2D} */ context) {
+    const items = this.map?.items ?? []
+    for (const item of items) {
+      const path = item.getResourcePath()
+      if (path === null) continue
+      let loadPath = path.replaceAll('\\', '/')
+      if (loadPath.charAt(0) === ':') loadPath = this.map.fileName + loadPath // add map name for internal resources
+      loadPath = loadPath.toLowerCase() // lower case for now
+      const image = this.getImage(loadPath)
+      const options = item.getRenderOptions()
+      options.width = image.width
+      options.height = image.height
+      options.drawImage = true
+      this.drawPattern(image, canvas, context, options)
+    }
+  }
+
   async render () {
     const width = this.map?.size.x
     const height = this.map?.size.y
@@ -163,7 +243,9 @@ class DFRender {
     if (context === null) return canvas
     canvas.width = width ?? 0
     canvas.height = height ?? 0
-    await this.renderPanels(canvas, context)
+    await this.renderPanels(canvas, context, true)
+    await this.renderItems(canvas, context)
+    await this.renderPanels(canvas, context, false)
     return canvas
   }
 
