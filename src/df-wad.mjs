@@ -60,6 +60,7 @@ class DFWad {
   }
 
   findResourceByPath (/** @type {String} */ path) {
+    path = path.toLowerCase() // ignore case for now
     for (const file of this.files) {
       if (file.path === path) return file
     }
