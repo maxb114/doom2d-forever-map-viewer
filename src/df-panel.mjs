@@ -68,7 +68,9 @@ class DFPanel {
       operation: '',
       fillColor: '',
       drawImage: false,
-      flop: false
+      flop: false,
+      invisible: false, // skip through these
+      water: false // don't skip through these
     }
     options.x = this.renderX
     options.y = this.renderY
@@ -79,6 +81,14 @@ class DFPanel {
     if (this.flags.includes('PANEL_FLAG_BLENDING')) {
       options.blending = true
     }
+    if (this.flags.includes('PANEL_FLAG_HIDE')) {
+      options.invisible = true
+    }
+    if (this.flags.includes('PANEL_FLAG_WATERTEXTURES')) {
+      // something
+    }
+    const skip = ['PANEL_NONE', 'PANEL_LIFTUP', 'PANEL_LIFTDOWN', 'PANEL_BLOCKMON', 'PANEL_LIFTLEFT', 'PANEL_LIFTRIGHT']
+    if (skip.includes(this.type)) options.invisible = true
     return options
   }
 
