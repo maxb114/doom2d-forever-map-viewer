@@ -10,6 +10,19 @@ function getExtensionFromBuffer (/** @type {Uint8Array} */ buffer) {
   else if (numberToChar(buffer[0]) === 'S' && numberToChar(buffer[1]) === 'P' && numberToChar(buffer[2]) === 'A' && numberToChar(buffer[3]) === 'K') return 'dfpack'
   else if (numberToChar(buffer[0]) === 'D' && numberToChar(buffer[1]) === 'F' && numberToChar(buffer[2]) === 'W' && numberToChar(buffer[3]) === 'A' &&
     numberToChar(buffer[4]) === 'D' && buffer[5] === 1) return 'dfwad'
+  else if (buffer[0] === 137 && buffer[1] === 80 && buffer[2] === 78 &&
+    buffer[3] === 71 && buffer[4] === 13 && buffer[5] === 10 &&
+    buffer[6] === 26 && buffer[7] === 10) return 'png'
+  else if (buffer[0] === 71 && buffer[1] === 73 && buffer[2] === 70 && buffer[3] === 56 &&
+    buffer[4] === 55 && buffer[5] === 97) return 'gif'
+  else if (buffer[0] === 71 && buffer[1] === 73 && buffer[2] === 70 && buffer[3] === 56 &&
+    buffer[4] === 57 && buffer[5] === 97) return 'gif'
+  else if (buffer[0] === 56 && buffer[1] === 66 && buffer[2] === 80 && buffer[3] === 83) return 'psd'
+  else if (buffer[0] === 66 && buffer[1] === 77) return 'bmp'
+  else if (buffer[0] === 255 && buffer[1] === 216 && buffer[2] === 255 && buffer[3] === 219) return 'jpg'
+  else if (buffer[0] === 255 && buffer[1] === 216 && buffer[2] === 255 && buffer[3] === 244) return 'jpg'
+  else if (buffer[0] === 255 && buffer[1] === 216 && buffer[2] === 255 && buffer[3] === 238) return 'jpg'
+  else if (buffer[0] === 255 && buffer[1] === 216 && buffer[2] === 255 && buffer[3] === 225) return 'jpg'
   return 'unknown'
 }
 
