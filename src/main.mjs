@@ -2,7 +2,7 @@ import { DfwadFrom } from './df-wad.mjs'
 import { DFAnimTextureParser, DFParser } from './df-parser.mjs'
 import { DFMap } from './df-map.mjs'
 import { DatabaseFrom } from './db.mjs'
-import { DFRenderOptions } from './render.mjs'
+import { DFRender, DFRenderOptions } from './render.mjs'
 import { getExtensionFromBuffer } from './utility.mjs'
 import { convertImage, cropImage } from './image.mjs'
 const input = document.createElement('input')
@@ -35,34 +35,12 @@ input.onchange = function () {
     const view = new Uint8Array(content)
     const wad = await DfwadFrom(view)
     const maps = wad.maps
-    if (maps.length === 0) return true
-    const select = document.createElement('select')
-    select.id = selectId
-    document.body.appendChild(select)
-    for (const map of maps) {
-      const option = document.createElement('option')
-      option.value = map.path
-      option.text = map.path
-      select.appendChild(option)
-    }
-    const button = document.createElement('button')
-    button.innerHTML = 'Load map'
-    button.id = 'load-button'
-    button.onclick = function () {
-      const value = select.value
-      const resource = wad.findResourceByPath(value)
-      if (resource === null) return false
-      const parsed = new DFParser(resource.buffer)
-      const map = new DFMap(parsed.parsed, file.name)
-      return true
-    }
-    document.body.appendChild(button)
     const cacheButton = document.createElement('button')
     cacheButton.innerHTML = 'Save resources'
     cacheButton.id = 'cache-button'
     cacheButton.onclick = async function () {
       const /** @type {Promise<any>[]} */ promises = []
-      const mapName = file.name
+      const mapName = file.name.toLowerCase() // lower case for now
       for (const file of wad.resources) {
         const type = getExtensionFromBuffer(file.buffer)
         if (type === 'unknown') continue // probably music
@@ -107,6 +85,28 @@ input.onchange = function () {
       return true
     }
     document.body.appendChild(cacheButton)
+    if (maps.length === 0) return true
+    const select = document.createElement('select')
+    select.id = selectId
+    document.body.appendChild(select)
+    for (const map of maps) {
+      const option = document.createElement('option')
+      option.value = map.path
+      option.text = map.path
+      select.appendChild(option)
+    }
+    const button = document.createElement('button')
+    button.innerHTML = 'Load map'
+    button.id = 'load-button'
+    button.onclick = async function () {
+      const value = select.value
+      const resource = wad.findResourceByPath(value)
+      if (resource === null) return false
+      const parsed = new DFParser(resource.buffer)
+      const map = new DFMap(parsed.parsed, file.name)
+      return true
+    }
+    document.body.appendChild(button)
     return true
   }
   return true
