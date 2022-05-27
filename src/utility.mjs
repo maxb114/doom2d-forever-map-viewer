@@ -67,4 +67,12 @@ function binaryIsBitSet (/** @type {number} */ n, /** @type {number} */ k) {
   else return false
 }
 
-export { getExtensionFromBuffer, wadToJSON, numberToChar, binaryIsBitSet }
+const parse2Ints = (/** @type {string} */ e) => {
+  const split = e.split(',', 2)
+  if (split[0] === undefined || split[1] === undefined) return null
+  const a = parseInt(split[0], 10)
+  const b = parseInt(split[1], 10)
+  return [a, b]
+}
+
+export { getExtensionFromBuffer, wadToJSON, numberToChar, binaryIsBitSet, parse2Ints }
