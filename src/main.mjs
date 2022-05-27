@@ -1,9 +1,15 @@
 import { DfwadFrom } from './df-wad.mjs'
 import { DFParser } from './df-parser.mjs'
 import { DFMap } from './df-map.mjs'
+import { DatabaseFrom } from './db.mjs'
 const input = document.createElement('input')
 input.type = 'file'
-
+let /** @type {Database | null} */ db = null
+try {
+  db = await DatabaseFrom()
+} catch (error) {
+  console.log(error)
+}
 input.onchange = function () {
   if (input === null || input.files === null) return false
   const file = input.files[0]
@@ -50,4 +56,13 @@ input.onchange = function () {
   return true
 }
 
-document.body.appendChild(input)
+async function init () {
+  if (window.indexedDB === null || db === null) {
+    console.log('Your browser lacks the required features.')
+    return false
+  }
+  document.body.appendChild(input)
+  return true
+}
+
+init()
