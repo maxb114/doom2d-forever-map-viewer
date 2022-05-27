@@ -36,7 +36,7 @@ class DFPlatformOptions {
 }
 
 class DFPanel {
-  constructor (x = 0, y = 0, width = 0, height = 0, texture = '', type = '',
+  constructor (x = 0, y = 0, width = 0, height = 0, texture = '', type = ['PANEL_NONE'],
     alpha = -1, flags = ['PANEL_FLAG_NONE'], platformOptions = new DFPlatformOptions()) {
     this.pos = { x: 0, y: 0 }
     this.size = { width: 0, height: 0 }
@@ -85,10 +85,14 @@ class DFPanel {
       options.invisible = true
     }
     if (this.flags.includes('PANEL_FLAG_WATERTEXTURES')) {
-      // something
+      // options.invisible = true
     }
     const skip = ['PANEL_NONE', 'PANEL_LIFTUP', 'PANEL_LIFTDOWN', 'PANEL_BLOCKMON', 'PANEL_LIFTLEFT', 'PANEL_LIFTRIGHT']
-    if (skip.includes(this.type)) options.invisible = true
+    for (const i of skip) {
+      if (this.type.includes(i)) {
+        options.invisible = true
+      }
+    }
     return options
   }
 

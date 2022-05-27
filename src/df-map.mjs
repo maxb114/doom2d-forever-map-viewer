@@ -52,7 +52,8 @@ class DFMap {
           const width = dimensions[0]
           const height = dimensions[1]
           const texture = element.texture
-          const type = element.type
+          let type = element.type ?? 'PANEL_NONE'
+          type = type.replace(/\s+/g, '').split('|')
           const alpha = (element.alpha === undefined ? -1 : element.alpha) // if unset, then -1
           let flags = element.flags ?? 'PANEL_FLAG_NONE'
           flags = flags.replace(/\s+/g, '').split('|')

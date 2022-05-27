@@ -330,9 +330,9 @@ class DFRender {
       []
     ]
     for (const panel of (this.map?.panels ?? [])) {
-      if (background && order[0]?.includes(panel.type)) ordered[0]?.push(panel)
-      else if (!background && order[1]?.includes(panel.type)) ordered[1]?.push(panel)
-      else if (!background && order[2]?.includes(panel.type)) ordered[2]?.push(panel)
+      if (background && order[0]?.includes(panel.type[0] ?? 'PANEL_FLAG_NONE')) ordered[0]?.push(panel)
+      else if (!background && order[1]?.includes(panel.type[0] ?? 'PANEL_FLAG_NONE')) ordered[1]?.push(panel)
+      else if (!background && order[2]?.includes(panel.type[0] ?? 'PANEL_FLAG_NONE')) ordered[2]?.push(panel)
     }
     for (let i = 0; i <= 2; ++i) {
       const panels = ordered[i]
