@@ -486,7 +486,7 @@ class DFParser {
       const decoder = new TextDecoder('utf-8')
       const view = decoder.decode(buffer)
       const parsed = new DFTextParser(view)
-      if (parsed.mapObject.map === undefined) parsed.mapObject.map = {} // we don't know what will happen
+      if (parsed.mapObject.map === undefined) parsed.mapObject.map = {} // we don't know what may happen
       this.parsed = parsed.mapObject.map
     }
   }
