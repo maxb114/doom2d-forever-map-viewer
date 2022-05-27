@@ -1,3 +1,6 @@
+import { DFMap } from './df-map.mjs'
+import { DFPanel } from './df-panel.mjs'
+
 class DFRenderOption {
   constructor (/** @type {String} */ id, /** @type {String} */ full) {
     this.id = id
@@ -44,9 +47,42 @@ class DFRenderOptions {
 }
 
 class DFRender {
-  constructor (/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ options) {
+  constructor (/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ options, /** @type {Database} */ db) {
     this.canvas = document.createElement('canvas')
     if (this.canvas === null) return
+    this.map = map
+    this.options = options
+    this.db = db
+  }
+
+  preloadPanels () {
+    const promise = new Promise((resolve, reject) => {
+      const panels = this.map?.panels
+      if (panels === undefined) resolve(false)
+      const /** @type {Promise<any>[]} */ promises = []
+      const /** @type {String[]} */ loaded = []
+      for (const panel of panels) {
+        const textureId = panel.texture
+        const path = this.map?.getTexturePath(textureId)
+        if (!path) continue
+        const found = loaded.includes(path)
+        if (found) continue
+        loaded.push(path)
+        const loadPromise = new Promise((resolve, reject) => {
+          let loadPath = path.replaceAll('\\', '/')
+          loadPath = loadPath.toLowerCase() // lower case for now
+          console.log(loadPath)
+        })
+        promises.push(loadPromise)
+      }
+      Promise.allSettled(promises).then(() => resolve(true)).catch((error) => reject(error))
+    })
+    return promise
+  }
+
+  preload () {
+    const panels = this.preloadPanels()
+    return Promise.allSettled([panels])
   }
 }
 
