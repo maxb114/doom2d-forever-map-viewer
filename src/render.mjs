@@ -216,11 +216,54 @@ class DFRender {
     return promise
   }
 
+  preloadAreas () {
+    const promise = new Promise((resolve, reject) => {
+      const areas = this.map?.areas ?? []
+      if (areas === undefined) resolve(false)
+      const /** @type {Promise<any>[]} */ promises = []
+      const /** @type {String[]} */ loaded = []
+      const self = this
+      for (const area of areas) {
+        const path = area.getResourcePath()
+        if (path === null) continue
+        const found = loaded.includes(path)
+        if (found) continue
+        loaded.push(path)
+        const loadPromise = new Promise((resolve, reject) => {
+          let loadPath = path.replaceAll('\\', '/')
+          if (loadPath.charAt(0) === ':') loadPath = this.map.fileName + loadPath // add map name for internal resources
+          loadPath = loadPath.toLowerCase() // lower case for now
+          this.db?.loadByPath(loadPath).then((buffer) => {
+            const view = new Uint8Array(buffer)
+            const blob = new window.Blob([view], { type: 'image/png' })
+            const url = window.URL.createObjectURL(blob)
+            const image = new window.Image()
+            image.src = url
+            image.onload = function () {
+              self.saveImage(image, loadPath)
+              resolve(true)
+            }
+            image.onerror = function () {
+              reject(Error('Error creating image!'))
+            }
+          }).catch((error) => reject(error))
+        })
+        promises.push(loadPromise)
+      }
+      Promise.allSettled(promises).then(() => {
+        console.log(this)
+        resolve(true)
+      }).catch((error) => reject(error))
+    })
+    return promise
+  }
+
   preload () {
     const panels = this.preloadPanels()
     const items = this.preloadItems()
     const monsters = this.preloadMonsters()
-    return Promise.allSettled([panels, items, monsters])
+    const areas = this.preloadAreas()
+    return Promise.allSettled([panels, items, monsters, areas])
   }
 
   async renderPanels (/** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasRenderingContext2D} */ context, background = false) {
@@ -297,6 +340,23 @@ class DFRender {
     }
   }
 
+  async renderAreas (/** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasRenderingContext2D} */ context) {
+    const areas = this.map?.areas ?? []
+    for (const area of areas) {
+      const path = area.getResourcePath()
+      if (path === null) continue
+      let loadPath = path.replaceAll('\\', '/')
+      if (loadPath.charAt(0) === ':') loadPath = this.map.fileName + loadPath // add map name for internal resources
+      loadPath = loadPath.toLowerCase() // lower case for now
+      const image = this.getImage(loadPath)
+      const options = area.getRenderOptions()
+      options.width = image.width
+      options.height = image.height
+      options.drawImage = true
+      this.drawPattern(image, canvas, context, options)
+    }
+  }
+
   async render () {
     const width = this.map?.size.x
     const height = this.map?.size.y
@@ -309,6 +369,7 @@ class DFRender {
     await this.renderPanels(canvas, context, true)
     await this.renderItems(canvas, context)
     await this.renderMonsters(canvas, context)
+    await this.renderAreas(canvas, context)
     await this.renderPanels(canvas, context, false)
     return canvas
   }
