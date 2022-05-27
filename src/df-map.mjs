@@ -6,7 +6,7 @@ import { DFTexture } from './df-texture.mjs'
 import { parse2Ints } from './utility.mjs'
 
 class DFMap {
-  constructor (/** @type {any} */ parsed) {
+  constructor (/** @type {any} */ parsed, /** @type {string} */ fileName) {
     /** @type {DFTexture[]} */ this.textures = []
     /** @type {DFPanel[]} */ this.panels = []
     /** @type {DFMonster[]} */ this.monsters = []
@@ -18,8 +18,7 @@ class DFMap {
     this.music = ''
     this.sky = ''
     this.size = { x: 0, y: 0 }
-    // let sizex = ''
-    // let sizey = ''
+    this.fileName = fileName
     for (const i in parsed) {
       const element = parsed[i]
       if (element === undefined) continue
