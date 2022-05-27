@@ -97,6 +97,13 @@ class DFMap {
       }
     }
   }
+
+  getTexturePath = (/** @type {String} */ arg) => {
+    for (const texture of this.textures) {
+      if (texture.id === arg) return texture.path
+    }
+    return null
+  }
 }
 
 export { DFMap }
