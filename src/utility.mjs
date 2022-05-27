@@ -67,7 +67,8 @@ function binaryIsBitSet (/** @type {number} */ n, /** @type {number} */ k) {
   else return false
 }
 
-const parse2Ints = (/** @type {string} */ e) => {
+const parse2Ints = (/** @type {string | undefined} */ e) => {
+  if (e === undefined) return null
   const split = e.split(',', 2)
   if (split[0] === undefined || split[1] === undefined) return null
   const a = parseInt(split[0], 10)
