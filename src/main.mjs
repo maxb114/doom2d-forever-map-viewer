@@ -104,6 +104,11 @@ input.onchange = function () {
       if (resource === null) return false
       const parsed = new DFParser(resource.buffer)
       const map = new DFMap(parsed.parsed, file.name)
+      const options = new DFRenderOptions()
+      const render = new DFRender(map, options, db)
+      await render.preload()
+      const canvas = await render.render()
+      document.body.appendChild(canvas)
       return true
     }
     document.body.appendChild(button)

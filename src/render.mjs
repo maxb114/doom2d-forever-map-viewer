@@ -113,6 +113,88 @@ class DFRender {
     const panels = this.preloadPanels()
     return Promise.allSettled([panels])
   }
+
+  async renderPanels (/** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasRenderingContext2D} */ context) {
+    const water = ['_water_0', '_water_1', '_water_2']
+    const color = ['#0000FF', '#00FF00', '#FF0000']
+    for (const panel of (this.map?.panels ?? [])) {
+      const options = panel.getRenderOptions()
+      if (options.invisible === true) continue
+      const path = this.map?.getTexturePath(panel.texture)
+      if (!path) continue
+      if (water.includes(path)) {
+        options.water = true
+        options.fillColor = color[water.indexOf(path)] ?? '#0000FF'
+        options.alpha = 0.85
+        options.operation = 'darken'
+        // debugger
+      }
+      let loadPath = path.replaceAll('\\', '/')
+      if (loadPath.charAt(0) === ':') loadPath = this.map?.fileName + loadPath // add map name for internal resources
+      loadPath = loadPath.toLowerCase() // lower case for now
+      const image = this.getImage(loadPath)
+      this.drawPattern(image, canvas, context, options)
+      // debugger
+    }
+  }
+
+  async render () {
+    const width = this.map?.size.x
+    const height = this.map?.size.y
+    const canvas = document.createElement('canvas')
+    if (canvas === null) return canvas
+    const context = canvas.getContext('2d')
+    if (context === null) return canvas
+    canvas.width = width ?? 0
+    canvas.height = height ?? 0
+    await this.renderPanels(canvas, context)
+    return canvas
+  }
+
+  drawPattern (/** @type {null | HTMLImageElement} */ image, /** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasRenderingContext2D} */ context, /** @type {any} */ options) {
+    if (options === undefined || typeof options !== 'object') return false
+    else if (options.x === undefined || options.y === undefined || options.width === undefined || options.height === undefined) return false
+    context.save()
+    context.beginPath()
+    if (options.alpha !== -1) {
+      context.globalAlpha = options.alpha
+    } else {
+      context.globalAlpha = 1
+    }
+    if (options.blending === true) {
+      context.globalCompositeOperation = 'lighter'
+    }
+    if (options.operation !== '' && typeof options.operation === 'string') {
+      context.globalCompositeOperation = options.operation
+    }
+    context.imageSmoothingEnabled = false
+    if (options.water === true) {
+      if (options.fillColor === '') return false
+      context.fillStyle = options.fillColor
+    } else {
+      const mode = 'repeat'
+      const pattern = context.createPattern(image ?? new window.Image(), mode)
+      if (pattern === null || pattern === undefined) return false
+      pattern.setTransform(new window.DOMMatrix([1, 0, 0, 1, options.x, options.y]))
+      context.fillStyle = pattern
+    }
+    if (options.flop !== undefined && options.flop === true) {
+      context.translate(options.x + options.width, options.y)
+      context.scale(-1, 1)
+      options.x = 0
+      options.y = 0
+    }
+    if (options.stroke !== undefined) context.strokeStyle = options.stroke
+    if (options.drawImage !== undefined && options.drawImage === true) {
+      context.drawImage(image ?? new window.Image(), options.x, options.y, options.width, options.height)
+    } else {
+      context.rect(options.x, options.y, options.width, options.height)
+    }
+    context.fill()
+    context.stroke()
+    context.restore()
+    return true
+  }
 }
 
 export { DFRender, DFRenderOptions }
