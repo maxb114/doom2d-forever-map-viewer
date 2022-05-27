@@ -164,7 +164,6 @@ class DFRender {
         promises.push(loadPromise)
       }
       Promise.allSettled(promises).then(() => {
-        console.log(this)
         resolve(true)
       }).catch((error) => reject(error))
     })
@@ -209,7 +208,6 @@ class DFRender {
         promises.push(loadPromise)
       }
       Promise.allSettled(promises).then(() => {
-        console.log(this)
         resolve(true)
       }).catch((error) => reject(error))
     })
@@ -251,7 +249,6 @@ class DFRender {
         promises.push(loadPromise)
       }
       Promise.allSettled(promises).then(() => {
-        console.log(this)
         resolve(true)
       }).catch((error) => reject(error))
     })
