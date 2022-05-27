@@ -127,14 +127,12 @@ class DFRender {
         options.fillColor = color[water.indexOf(path)] ?? '#0000FF'
         options.alpha = 0.85
         options.operation = 'darken'
-        // debugger
       }
       let loadPath = path.replaceAll('\\', '/')
       if (loadPath.charAt(0) === ':') loadPath = this.map?.fileName + loadPath // add map name for internal resources
       loadPath = loadPath.toLowerCase() // lower case for now
       const image = this.getImage(loadPath)
       this.drawPattern(image, canvas, context, options)
-      // debugger
     }
   }
 
