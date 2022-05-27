@@ -53,7 +53,7 @@ input.onchange = function () {
       const resource = wad.findResourceByPath(value)
       if (resource === null) return false
       const parsed = new DFParser(resource.buffer)
-      const map = new DFMap(parsed.parsed)
+      const map = new DFMap(parsed.parsed, file.name)
       return true
     }
     document.body.appendChild(button)
@@ -62,6 +62,7 @@ input.onchange = function () {
     cacheButton.id = 'cache-button'
     cacheButton.onclick = async function () {
       const /** @type {Promise<any>[]} */ promises = []
+      const mapName = file.name
       for (const file of wad.resources) {
         const type = getExtensionFromBuffer(file.buffer)
         if (type === 'unknown') continue // probably music
@@ -87,7 +88,7 @@ input.onchange = function () {
               convertImage(buffer, type, 'png').then((arrayBuffer) => {
                 const view = new Uint8Array(arrayBuffer)
                 cropImage(view, 'png', width, height).then((finalBuffer) => {
-                  db.saveByPath(finalBuffer, file.path).then(() => resolve(true)).catch((error) => reject(error))
+                  db.saveByPath(finalBuffer, mapName + ':' + file.path).then(() => resolve(true)).catch((error) => reject(error))
                 }).catch((error) => reject(error))
               }).catch((error) => reject(error))
             }).catch((error) => reject(error))
@@ -96,7 +97,7 @@ input.onchange = function () {
         } else if (type === 'bmp' || type === 'gif' || type === 'jpg' || type === 'png' || type === 'psd' || type === 'tga') { // just an image
           const promise = new Promise((resolve, reject) => {
             convertImage(file.buffer, type, 'png').then((buffer) => {
-              db.saveByPath(buffer, file.path).then(() => resolve(true)).catch((error) => reject(error))
+              db.saveByPath(buffer, mapName + ':' + file.path).then(() => resolve(true)).catch((error) => reject(error))
             }).catch((error) => reject(error))
           })
           promises.push(promise)
