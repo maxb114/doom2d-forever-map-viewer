@@ -171,10 +171,56 @@ class DFRender {
     return promise
   }
 
+  preloadMonsters () {
+    const promise = new Promise((resolve, reject) => {
+      const monsters = this.map?.monsters ?? []
+      if (monsters === undefined) resolve(false)
+      const /** @type {Promise<any>[]} */ promises = []
+      const /** @type {String[]} */ loaded = []
+      const self = this
+      for (const monster of monsters) {
+        const path = monster.getResourcePath()
+        if (path === null) continue
+        const found = loaded.includes(path)
+        if (found) continue
+        loaded.push(path)
+        const loadPromise = new Promise((resolve, reject) => {
+          let loadPath = path.replaceAll('\\', '/')
+          if (loadPath.charAt(0) === ':') loadPath = this.map.fileName + loadPath // add map name for internal resources
+          loadPath = loadPath.toLowerCase() // lower case for now
+          this.db?.loadByPath(loadPath).then((buffer) => {
+            const view = new Uint8Array(buffer)
+            cropImage(view, 'png', monster.monsterFrameObject.width, monster.monsterFrameObject.height).then((buffer) => { // we have to do it...
+              const view = new Uint8Array(buffer)
+              const blob = new window.Blob([view], { type: 'image/png' })
+              const url = window.URL.createObjectURL(blob)
+              const image = new window.Image()
+              image.src = url
+              image.onload = function () {
+                self.saveImage(image, loadPath)
+                resolve(true)
+              }
+              image.onerror = function () {
+                reject(Error('Error creating image!'))
+              }
+            })
+          }).catch((error) => reject(error))
+        })
+        promises.push(loadPromise)
+      }
+      Promise.allSettled(promises).then(() => {
+        console.log(this)
+        resolve(true)
+      }).catch((error) => reject(error))
+    })
+    return promise
+  }
+
   preload () {
     const panels = this.preloadPanels()
     const items = this.preloadItems()
-    return Promise.allSettled([panels, items])
+    const monsters = this.preloadMonsters()
+    return Promise.allSettled([panels, items, monsters])
   }
 
   async renderPanels (/** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasRenderingContext2D} */ context, background = false) {
@@ -234,6 +280,23 @@ class DFRender {
     }
   }
 
+  async renderMonsters (/** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasRenderingContext2D} */ context) {
+    const monsters = this.map?.monsters ?? []
+    for (const item of monsters) {
+      const path = item.getResourcePath()
+      if (path === null) continue
+      let loadPath = path.replaceAll('\\', '/')
+      if (loadPath.charAt(0) === ':') loadPath = this.map.fileName + loadPath // add map name for internal resources
+      loadPath = loadPath.toLowerCase() // lower case for now
+      const image = this.getImage(loadPath)
+      const options = item.getRenderOptions()
+      options.width = image.width
+      options.height = image.height
+      options.drawImage = true
+      this.drawPattern(image, canvas, context, options)
+    }
+  }
+
   async render () {
     const width = this.map?.size.x
     const height = this.map?.size.y
@@ -245,6 +308,7 @@ class DFRender {
     canvas.height = height ?? 0
     await this.renderPanels(canvas, context, true)
     await this.renderItems(canvas, context)
+    await this.renderMonsters(canvas, context)
     await this.renderPanels(canvas, context, false)
     return canvas
   }
