@@ -2,6 +2,9 @@ import { DfwadFrom } from './df-wad.mjs'
 import { DFParser } from './df-parser.mjs'
 import { DFMap } from './df-map.mjs'
 import { DatabaseFrom } from './db.mjs'
+import { DFRenderOptions } from './render.mjs'
+import { getExtensionFromBuffer } from './utility.mjs'
+import { convertImage } from './image.mjs'
 const input = document.createElement('input')
 input.type = 'file'
 let /** @type {Database | null} */ db = null
@@ -19,10 +22,13 @@ input.onchange = function () {
   reader.onload = async function (event) {
     const selectId = 'map-select'
     const buttonId = 'load-button'
+    const cacheButtonId = 'cache-button'
     const deleteSelect = document.getElementById(selectId)
     if (deleteSelect !== null) document.body.removeChild(deleteSelect)
     const deleteButton = document.getElementById(buttonId)
     if (deleteButton !== null) document.body.removeChild(deleteButton)
+    const deleteCacheButton = document.getElementById(cacheButtonId)
+    if (deleteCacheButton !== null) document.body.removeChild(deleteCacheButton)
     if (event.target === null) return false
     const content = event.target.result
     if (content === null || typeof content === 'string') return false
@@ -51,6 +57,30 @@ input.onchange = function () {
       return true
     }
     document.body.appendChild(button)
+    const cacheButton = document.createElement('button')
+    cacheButton.innerHTML = 'Save resources'
+    cacheButton.id = 'cache-button'
+    cacheButton.onclick = async function () {
+      const /** @type {Promise<any>[]} */ promises = []
+      for (const file of wad.resources) {
+        const type = getExtensionFromBuffer(file.buffer)
+        if (type === 'unknown') continue // probably music
+
+        if (type === 'dfwad' || type === 'dfzip') { // animated
+          // to do
+        } else if (type === 'bmp' || type === 'gif' || type === 'jpg' || type === 'png' || type === 'psd' || type === 'tga') { // just an image
+          const promise = new Promise((resolve, reject) => {
+            convertImage(file.buffer, type, 'png').then((buffer) => {
+              db.saveByPath(buffer, file.path).then(() => resolve(true)).catch((error) => reject(error))
+            }).catch((error) => reject(error))
+          })
+          promises.push(promise)
+        }
+      }
+      await Promise.allSettled(promises)
+      return true
+    }
+    document.body.appendChild(cacheButton)
     return true
   }
   return true
