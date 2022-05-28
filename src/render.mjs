@@ -418,7 +418,14 @@ class DFRender {
         if (options.invisible === true) continue
         const path = this.map?.getTexturePath(panel.texture)
         if (!path) continue
-        if (water.includes(path)) {
+        const isWater = water.includes(path)
+        if (!this.options?.getFlag('renderforeground') && panel.type.includes('PANEL_FORE') && !isWater) continue
+        else if (!this.options?.getFlag('renderwalls') && (!panel.type.includes('PANEL_FORE') && !panel.type.includes('PANEL_BACK')) && !isWater) continue
+        else if (!this.options?.getFlag('renderbackground') && panel.type.includes('PANEL_BACK') && !isWater) continue
+        else if (!this.options?.getFlag('renderliquids') && isWater) continue
+        else if (!this.options?.getFlag('renderopendoors') && panel.type.includes('PANEL_OPENDOOR')) continue
+        else if (this.options?.getFlag('renderopendoors') && panel.type.includes('PANEL_CLOSEDOOR')) continue // < should be looked into closer
+        if (isWater) {
           options.water = true
           options.fillColor = color[water.indexOf(path)] ?? '#0000FF'
           options.operation = 'darken'
