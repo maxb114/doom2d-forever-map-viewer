@@ -1343,7 +1343,7 @@ const binaryItemOptionsToString = (/** @type {number | undefined} */ options) =>
 const binaryPanelFlagToString = (/** @type {number | undefined} */ type) => {
   const flags = []
   if (type === 0 || type === undefined) return 'PANEL_FLAG_NONE'
-  if (binaryIsBitSet(type, 1)) flags.push('PANEL_FLAG_HIDE')
+  if (binaryIsBitSet(type, 1)) flags.push('PANEL_FLAG_BLENDING')
   if (binaryIsBitSet(type, 2)) flags.push('PANEL_FLAG_HIDE')
   if (binaryIsBitSet(type, 4)) flags.push('PANEL_FLAG_WATERTEXTURES')
   return flags.join('|')
