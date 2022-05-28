@@ -85,7 +85,7 @@ class DFRender {
         const loadPromise = new Promise((resolve, reject) => {
           let loadPath = path.replaceAll('\\', '/')
           if (loadPath.charAt(0) === ':') {
-            loadPath = loadPath.replace('/', '') // remove first slash
+            if (loadPath.charAt(1) === '/') loadPath = loadPath.replace('/', '') // remove first slash
             loadPath = (this.map?.fileName ?? '') + loadPath // add map name for internal resources
           }
           loadPath = loadPath.toLowerCase() // lower case for now
@@ -129,7 +129,7 @@ class DFRender {
         const loadPromise = new Promise((resolve, reject) => {
           let loadPath = path.replaceAll('\\', '/')
           if (loadPath.charAt(0) === ':') {
-            loadPath = loadPath.replace('/', '') // remove first slash
+            if (loadPath.charAt(1) === '/') loadPath = loadPath.replace('/', '') // remove first slash
             loadPath = this.map?.fileName + loadPath // add map name for internal resources
           }
           loadPath = loadPath.toLowerCase() // lower case for now
@@ -192,7 +192,7 @@ class DFRender {
         const loadPromise = new Promise((resolve, reject) => {
           let loadPath = path.replaceAll('\\', '/')
           if (loadPath.charAt(0) === ':') {
-            loadPath = loadPath.replace('/', '') // remove first slash
+            if (loadPath.charAt(1) === '/') loadPath = loadPath.replace('/', '') // remove first slash
             loadPath = this.map?.fileName + loadPath // add map name for internal resources
           }
           loadPath = loadPath.toLowerCase() // lower case for now
@@ -239,7 +239,7 @@ class DFRender {
         const loadPromise = new Promise((resolve, reject) => {
           let loadPath = path.replaceAll('\\', '/')
           if (loadPath.charAt(0) === ':') {
-            loadPath = loadPath.replace('/', '') // remove first slash
+            if (loadPath.charAt(1) === '/') loadPath = loadPath.replace('/', '') // remove first slash
             loadPath = this.map?.fileName + loadPath // add map name for internal resources
           }
           loadPath = loadPath.toLowerCase() // lower case for now
@@ -277,7 +277,7 @@ class DFRender {
       const loadPromise = new Promise((resolve, reject) => {
         let loadPath = path.replaceAll('\\', '/')
         if (loadPath.charAt(0) === ':') {
-          loadPath = loadPath.replace('/', '') // remove first slash
+          if (loadPath.charAt(1) === '/') loadPath = loadPath.replace('/', '') // remove first slash
           loadPath = this.map?.fileName + loadPath // add map name for internal resources
         }
         loadPath = loadPath.toLowerCase() // lower case for now
@@ -317,7 +317,7 @@ class DFRender {
     const path = sky
     let loadPath = path.replaceAll('\\', '/')
     if (loadPath.charAt(0) === ':') {
-      loadPath = loadPath.replace('/', '') // remove first slash
+      if (loadPath.charAt(1) === '/') loadPath = loadPath.replace('/', '') // remove first slash
       loadPath = this.map?.fileName + loadPath // add map name for internal resources
     }
     loadPath = loadPath.toLowerCase() // lower case for now
@@ -367,7 +367,7 @@ class DFRender {
         }
         let loadPath = path.replaceAll('\\', '/')
         if (loadPath.charAt(0) === ':') {
-          loadPath = loadPath.replace('/', '') // remove first slash
+          if (loadPath.charAt(1) === '/') loadPath = loadPath.replace('/', '') // remove first slash
           loadPath = this.map?.fileName + loadPath // add map name for internal resources
         }
         loadPath = loadPath.toLowerCase() // lower case for now
@@ -384,7 +384,7 @@ class DFRender {
       if (path === null) continue
       let loadPath = path.replaceAll('\\', '/')
       if (loadPath.charAt(0) === ':') {
-        loadPath = loadPath.replace('/', '') // remove first slash
+        if (loadPath.charAt(1) === '/') loadPath = loadPath.replace('/', '') // remove first slash
         loadPath = this.map?.fileName + loadPath // add map name for internal resources
       }
       loadPath = loadPath.toLowerCase() // lower case for now
@@ -404,7 +404,7 @@ class DFRender {
       if (path === null) continue
       let loadPath = path.replaceAll('\\', '/')
       if (loadPath.charAt(0) === ':') {
-        loadPath = loadPath.replace('/', '') // remove first slash
+        if (loadPath.charAt(1) === '/') loadPath = loadPath.replace('/', '') // remove first slash
         loadPath = this.map?.fileName + loadPath // add map name for internal resources
       }
       loadPath = loadPath.toLowerCase() // lower case for now
@@ -424,7 +424,7 @@ class DFRender {
       if (path === null) continue
       let loadPath = path.replaceAll('\\', '/')
       if (loadPath.charAt(0) === ':') {
-        loadPath = loadPath.replace('/', '') // remove first slash
+        if (loadPath.charAt(1) === '/') loadPath = loadPath.replace('/', '') // remove first slash
         loadPath = this.map?.fileName + loadPath // add map name for internal resources
       }
       loadPath = loadPath.toLowerCase() // lower case for now
