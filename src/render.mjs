@@ -11,7 +11,20 @@ class DFRenderOption {
 }
 
 const options = [
-  new DFRenderOption('renderflags', 'Render flags')
+  new DFRenderOption('renderdmplayers', 'Show DM spawn areas'),
+  new DFRenderOption('rendertdmplayers', 'Show TDM spawn areas'),
+  new DFRenderOption('rendercoopplayers', 'Show COOP spawn areas'),
+  new DFRenderOption('renderflags', 'Show flags'),
+  new DFRenderOption('renderdmitems', 'Show DM items'),
+  new DFRenderOption('renderitems', 'Show non-DM items'),
+  new DFRenderOption('rendermonsters', 'Show monsters'),
+  new DFRenderOption('renderforeground', 'Show foreground'),
+  new DFRenderOption('renderwalls', 'Show walls'),
+  new DFRenderOption('renderbackground', 'Show background'),
+  new DFRenderOption('rendersky', 'Show sky'),
+  new DFRenderOption('renderliquids', 'Show liquids'),
+  new DFRenderOption('renderopendoors', 'Open doors')
+
 ]
 
 class DFRenderOptions {
@@ -65,6 +78,7 @@ class DFRender {
   getImage (/** @type {String} */ path) {
     const /** @type {HTMLImageElement} */ img = this.images[path]
     if (img === undefined) return new window.Image() // or just null, should be looked into further
+    if (img.width === 0 || img.height === 0) debugger
     return img
   }
 
@@ -78,7 +92,7 @@ class DFRender {
       for (const panel of panels) {
         const textureId = panel.texture
         const path = this.map?.getTexturePath(textureId)
-        if (!path) continue
+        if (!path || path === '_water_0' || path === '_water_1' || path === '_water_2') continue
         const found = loaded.includes(path)
         if (found) continue
         loaded.push(path)
@@ -89,6 +103,11 @@ class DFRender {
             loadPath = (this.map?.fileName ?? '') + loadPath // add map name for internal resources
           }
           loadPath = loadPath.toLowerCase() // lower case for now
+          const test = this.getImage(loadPath)
+          if (test.width !== 0 && test.height !== 0) {
+            resolve(true)
+            return true
+          }
           this.db?.loadByPath(loadPath).then((buffer) => {
             const view = new Uint8Array(buffer)
             const blob = new window.Blob([view], { type: 'image/png' })
@@ -133,6 +152,11 @@ class DFRender {
             loadPath = this.map?.fileName + loadPath // add map name for internal resources
           }
           loadPath = loadPath.toLowerCase() // lower case for now
+          const test = this.getImage(loadPath)
+          if (test.width !== 0 && test.height !== 0) {
+            resolve(true)
+            return true
+          }
           this.db?.loadByPath(loadPath).then((buffer) => {
             const view = new Uint8Array(buffer)
             if (item.frameObject !== undefined) { // crop if animated... that's our fate.
@@ -196,6 +220,11 @@ class DFRender {
             loadPath = this.map?.fileName + loadPath // add map name for internal resources
           }
           loadPath = loadPath.toLowerCase() // lower case for now
+          const test = this.getImage(loadPath)
+          if (test.width !== 0 && test.height !== 0) {
+            resolve(true)
+            return true
+          }
           this.db?.loadByPath(loadPath).then((buffer) => {
             const view = new Uint8Array(buffer)
             cropImage(view, 'png', monster.monsterFrameObject.width, monster.monsterFrameObject.height).then((buffer) => { // we have to do it...
@@ -243,6 +272,11 @@ class DFRender {
             loadPath = this.map?.fileName + loadPath // add map name for internal resources
           }
           loadPath = loadPath.toLowerCase() // lower case for now
+          const test = this.getImage(loadPath)
+          if (test.width !== 0 && test.height !== 0) {
+            resolve(true)
+            return true
+          }
           this.db?.loadByPath(loadPath).then((buffer) => {
             const view = new Uint8Array(buffer)
             if (area.type === 'AREA_BLUEFLAG' || area.type === 'AREA_REDFLAG' || area.type === 'AREA_DOMFLAG') { // we have to crop flags...
@@ -300,6 +334,11 @@ class DFRender {
           loadPath = this.map?.fileName + loadPath // add map name for internal resources
         }
         loadPath = loadPath.toLowerCase() // lower case for now
+        const test = this.getImage(loadPath)
+        if (test.width !== 0 && test.height !== 0) {
+          resolve(true)
+          return true
+        }
         this.db?.loadByPath(loadPath).then((buffer) => {
           const view = new Uint8Array(buffer)
           const blob = new window.Blob([view], { type: 'image/png' })
@@ -465,10 +504,10 @@ class DFRender {
     if (context === null) return canvas
     canvas.width = width ?? 0
     canvas.height = height ?? 0
-    await this.renderSky(canvas, context)
+    if (this.options?.getFlag('rendersky')) await this.renderSky(canvas, context)
     await this.renderPanels(canvas, context, true)
     await this.renderItems(canvas, context)
-    await this.renderMonsters(canvas, context)
+    if (this.options?.getFlag('rendermonsters')) await this.renderMonsters(canvas, context)
     await this.renderAreas(canvas, context)
     await this.renderPanels(canvas, context, false)
     return canvas
