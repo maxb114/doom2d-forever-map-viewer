@@ -396,8 +396,8 @@ class DFRender {
     const water = ['_water_0', '_water_1', '_water_2']
     const color = ['blue', 'green', 'red']
     const order = [
-      ['PANEL_BACK'],
-      ['PANEL_WALL', 'PANEL_STEP', 'PANEL_OPENDOOR', 'PANEL_CLOSEDOOR'],
+      ['PANEL_BACK', 'PANEL_STEP'],
+      ['PANEL_WALL', 'PANEL_OPENDOOR', 'PANEL_CLOSEDOOR'],
       ['PANEL_WATER', 'PANEL_ACID1', 'PANEL_ACID2', 'PANEL_FORE']
     ]
     const /** @type {DFPanel[][]} */ ordered = [
@@ -520,8 +520,8 @@ class DFRender {
     if (this.options?.getFlag('rendersky')) await this.renderSky(canvas, context)
     await this.renderPanels(canvas, context, -1)
     await this.renderItems(canvas, context)
-    await this.renderPanels(canvas, context, 0)
     if (this.options?.getFlag('rendermonsters')) await this.renderMonsters(canvas, context)
+    await this.renderPanels(canvas, context, 0)
     await this.renderAreas(canvas, context)
     await this.renderPanels(canvas, context, 1)
     return canvas
