@@ -47,49 +47,9 @@ input.onchange = function () {
     cacheButton.innerHTML = 'Save resources'
     cacheButton.id = 'cache-button'
     cacheButton.onclick = async function () {
-      const /** @type {Promise<any>[]} */ promises = []
       const mapName = file.name.toLowerCase() // lower case for now
-      for (const file of wad.resources) {
-        const type = getExtensionFromBuffer(file.buffer)
-        if (type === 'unknown') continue // probably music
-        if (type === 'dfwad' || type === 'dfzip') { // animated
-          const promise = new Promise((resolve, reject) => {
-            const view = file.buffer
-            DfwadFrom(view).then((dfwad) => {
-              const animPath = 'TEXT/ANIM'
-              const animDescription = dfwad.findResourceByPath(animPath)
-              if (animDescription === null) reject(Error('File is a WAD, but not an animated texture!'))
-              const decoder = new TextDecoder('utf-8')
-              const view = decoder.decode(animDescription?.buffer)
-              const parser = new DFAnimTextureParser(view)
-              const path = 'TEXTURES' + '/' + parser.parsed.resource
-              const width = parser.parsed.frameWidth
-              const height = parser.parsed.frameHeight
-              const textureResource = dfwad.findResourceByPath(path)
-              if (textureResource === null) reject(Error('File is a WAD, but not an animated texture!'))
-              const buffer = textureResource.buffer
-              const type = getExtensionFromBuffer(buffer)
-              if (type === 'unknown' || type === 'dfpack' || type === 'dfwad' || type === 'dfzip') reject(Error('File is a WAD, but not an animated texture!'))
-              convertImage(buffer, type, 'png').then((arrayBuffer) => {
-                const view = new Uint8Array(arrayBuffer)
-                cropImage(view, 'png', width, height).then((finalBuffer) => {
-                  db.saveByPath(finalBuffer, mapName + ':' + file.path).then(() => resolve(true)).catch((error) => reject(error))
-                }).catch((error) => reject(error))
-              }).catch((error) => reject(error))
-            }).catch((error) => reject(error))
-          })
-          promises.push(promise)
-        } else if (type === 'bmp' || type === 'gif' || type === 'jpg' || type === 'png' || type === 'psd' || type === 'tga') { // just an image
-          const promise = new Promise((resolve, reject) => {
-            convertImage(file.buffer, type, 'png').then((buffer) => {
-              db.saveByPath(buffer, mapName + ':' + file.path).then(() => resolve(true)).catch((error) => reject(error))
-            }).catch((error) => reject(error))
-          })
-          promises.push(promise)
-        }
-      }
+      const promises = preloadWad(wad, mapName)
       await Promise.allSettled(promises)
-      debugger
       return true
     }
     div.appendChild(cacheButton)
@@ -119,7 +79,6 @@ input.onchange = function () {
       if (resource === null) return false
       const parsed = new DFParser(resource.buffer)
       const map = new DFMap(parsed.parsed, file.name)
-      debugger
       const options = new DFRenderOptions()
       const render = new DFRender(map, options, db)
       const flagsDiv = document.createElement('div')
@@ -163,13 +122,64 @@ async function draw (/** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasR
   return true
 }
 
+function preloadWad (/** @type {DFWad} */ wad, /** @type {String} */ mapName) {
+  const promises = []
+  for (const file of wad.resources) {
+    const type = getExtensionFromBuffer(file.buffer)
+    if (type === 'unknown') continue // probably music
+    if (type === 'dfwad' || type === 'dfzip') { // animated
+      const promise = preloadAnimated(file, mapName)
+      promises.push(promise)
+    } else if (type === 'bmp' || type === 'gif' || type === 'jpg' || type === 'png' || type === 'psd' || type === 'tga') { // just an image
+      const promise = new Promise((resolve, reject) => {
+        convertImage(file.buffer, type, 'png').then((buffer) => {
+          db.saveByPath(buffer, mapName + ':' + file.path).then(() => resolve(true)).catch((error) => reject(error))
+        }).catch((error) => reject(error))
+      })
+      promises.push(promise)
+    }
+  }
+  return promises
+}
+
+function preloadAnimated (/** @type {Resource} */ file, /** @type {String} */ mapName) {
+  const promise = new Promise((resolve, reject) => {
+    const view = file.buffer
+    DfwadFrom(view).then((dfwad) => {
+      const animPath = 'TEXT/ANIM'
+      const animDescription = dfwad.findResourceByPath(animPath)
+      if (animDescription === null) reject(Error('File is a WAD, but not an animated texture!'))
+      const decoder = new TextDecoder('utf-8')
+      const view = decoder.decode(animDescription?.buffer)
+      const parser = new DFAnimTextureParser(view)
+      const path = 'TEXTURES' + '/' + parser.parsed.resource
+      const width = parser.parsed.frameWidth
+      const height = parser.parsed.frameHeight
+      const textureResource = dfwad.findResourceByPath(path)
+      if (textureResource === null) reject(Error('File is a WAD, but not an animated texture!'))
+      const buffer = textureResource.buffer
+      const type = getExtensionFromBuffer(buffer)
+      if (type === 'unknown' || type === 'dfpack' || type === 'dfwad' || type === 'dfzip') reject(Error('File is a WAD, but not an animated texture!'))
+      convertImage(buffer, type, 'png').then((arrayBuffer) => {
+        const view = new Uint8Array(arrayBuffer)
+        cropImage(view, 'png', width, height).then((finalBuffer) => {
+          db.saveByPath(finalBuffer, mapName + ':' + file.path).then(() => resolve(true)).catch((error) => reject(error))
+        }).catch((error) => reject(error))
+      }).catch((error) => reject(error))
+    }).catch((error) => reject(error))
+  })
+  return promise
+}
+
+const resources = ['game.wad', 'standart.wad', 'shrshade.wad', 'editor.wad']
+
 async function checkEssentialResources() {
   try {
     const all = await db.getAll()
-    const game = all.some(element => element.includes('game.wad'))
-    const standart = all.some(element => element.includes('standart.wad'))
-    const shrshade = all.some(element => element.includes('shrshade.wad'))
-    const editor = all.some(element => element.includes('editor.wad'))
+    for (const resource of resources) {
+      if (!all.some(element => element.includes(resource))) return false
+    }
+    return true
   } catch (e) {
     return false
   }
@@ -180,10 +190,38 @@ async function init () {
     window.alert('Your browser lacks the required features.')
     return false
   }
-  const check = await checkEssentialResources()
-  div.appendChild(input)
-  document.body.appendChild(div)
-  document.body.appendChild(canvas)
+  const check = await checkEssentialResources() || true
+  if (check) {
+    div.appendChild(input)
+    document.body.appendChild(div)
+    document.body.appendChild(canvas)
+  } else {
+    const text = document.createTextNode('Doom 2D: Forever resources have not been found!')
+    // show preload resources
+    const br = document.createElement('br')
+    const button = document.createElement('button')
+    button.innerHTML = 'Download game resources from doom2d.org'
+    button.id = 'download-button'
+    button.onclick = async () => {
+      // const baseLink = 'https://doom2d.org/doom2d_forever/mapview/'
+      const baseLink = './assets/'
+      for (const resource of resources) {
+        const link = baseLink + resource
+        try {
+          const response = await fetch(link)
+          const buffer = await response.arrayBuffer()
+          console.log(response)
+        } catch (error) {
+          window.alert(error)
+          return false
+        }
+      }
+      return true
+    }
+    document.body.appendChild(text)
+    document.body.appendChild(br)
+    document.body.appendChild(button)
+  }
   return true
 }
 
