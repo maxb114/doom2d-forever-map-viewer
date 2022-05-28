@@ -25,12 +25,15 @@ input.onchange = function () {
     const selectId = 'map-select'
     const buttonId = 'load-button'
     const cacheButtonId = 'cache-button'
+    const flagsDivId = 'flags'
     const deleteSelect = document.getElementById(selectId)
     if (deleteSelect !== null) div.removeChild(deleteSelect)
     const deleteButton = document.getElementById(buttonId)
     if (deleteButton !== null) div.removeChild(deleteButton)
     const deleteCacheButton = document.getElementById(cacheButtonId)
     if (deleteCacheButton !== null) div.removeChild(deleteCacheButton)
+    const deleteFlagsDiv = document.getElementById(flagsDivId)
+    if (deleteFlagsDiv !== null) div.removeChild(deleteFlagsDiv)
     if (event.target === null) return false
     const content = event.target.result
     if (content === null || typeof content === 'string') return false
@@ -99,25 +102,50 @@ input.onchange = function () {
     const button = document.createElement('button')
     button.innerHTML = 'Load map'
     button.id = 'load-button'
-    button.onclick = () => (draw(select, wad, file))
+    button.onclick = () => {
+      const value = select.value
+      const resource = wad.findResourceByPath(value)
+      if (resource === null) return false
+      const parsed = new DFParser(resource.buffer)
+      const map = new DFMap(parsed.parsed, file.name)
+      const options = new DFRenderOptions()
+      const render = new DFRender(map, options, db)
+      const flagsDiv = document.createElement('div')
+      flagsDiv.id = flagsDivId
+      const allOptions = render.options?.all || []
+      for (const renderOption of allOptions) {
+        const object = renderOption[0]
+        const set = renderOption[1]
+        const input = document.createElement('input')
+        input.type = 'checkbox'
+        input.name = object.id
+        input.id = object.id
+        input.value = ''
+        input.checked = set
+        const label = document.createElement('label')
+        label.htmlFor = input.id
+        label.appendChild(document.createTextNode(object.full))
+        input.onchange = () => {
+          console.log(input)
+          render.options?.setFlag(input.id, input.checked)
+        }
+        flagsDiv.appendChild(input)
+        flagsDiv.appendChild(label)
+      }
+      div.appendChild(flagsDiv)
+      const context = canvas.getContext('2d')
+      if (context === null) return false
+      draw(canvas, context, map, render)
+    }
     div.appendChild(button)
     return true
   }
   return true
 }
 
-async function draw (/** @type {HTMLSelectElement} */ select, /** @type {DFWad} */ wad, /** @type {File} */ file) {
-  const value = select.value
-  const resource = wad.findResourceByPath(value)
-  if (resource === null) return false
-  const parsed = new DFParser(resource.buffer)
-  const map = new DFMap(parsed.parsed, file.name)
-  const options = new DFRenderOptions()
-  const render = new DFRender(map, options, db)
+async function draw (/** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasRenderingContext2D} */ context, /** @type {DFMap} */ map, /** @type {DFRender} */ render) {
   await render.preload()
   const mapCanvas = await render.render()
-  const context = canvas.getContext('2d')
-  if (context == null) return false
   canvas.width = map.size.x
   canvas.height = map.size.y
   context.drawImage(mapCanvas, 0, 0)
