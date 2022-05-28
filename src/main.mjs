@@ -163,11 +163,24 @@ async function draw (/** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasR
   return true
 }
 
+async function checkEssentialResources() {
+  try {
+    const all = await db.getAll()
+    const game = all.some(element => element.includes('game.wad'))
+    const standart = all.some(element => element.includes('standart.wad'))
+    const shrshade = all.some(element => element.includes('shrshade.wad'))
+    const editor = all.some(element => element.includes('editor.wad'))
+  } catch (e) {
+    return false
+  }
+}
+
 async function init () {
   if (window.indexedDB === null || db === null || canvas === null || input === null || div === null) {
     window.alert('Your browser lacks the required features.')
     return false
   }
+  const check = await checkEssentialResources()
   div.appendChild(input)
   document.body.appendChild(div)
   document.body.appendChild(canvas)
