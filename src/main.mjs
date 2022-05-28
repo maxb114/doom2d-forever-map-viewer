@@ -33,7 +33,10 @@ input.onchange = function () {
     const deleteCacheButton = document.getElementById(cacheButtonId)
     if (deleteCacheButton !== null) div.removeChild(deleteCacheButton)
     const deleteFlagsDiv = document.getElementById(flagsDivId)
-    if (deleteFlagsDiv !== null) div.removeChild(deleteFlagsDiv)
+    if (deleteFlagsDiv !== null) {
+      deleteFlagsDiv.innerHTML = ''
+      div.removeChild(deleteFlagsDiv)
+    }
     if (event.target === null) return false
     const content = event.target.result
     if (content === null || typeof content === 'string') return false
@@ -103,6 +106,11 @@ input.onchange = function () {
     button.innerHTML = 'Load map'
     button.id = 'load-button'
     button.onclick = () => {
+      const deleteFlagsDiv = document.getElementById(flagsDivId)
+      if (deleteFlagsDiv !== null) {
+        deleteFlagsDiv.innerHTML = ''
+        div.removeChild(deleteFlagsDiv)
+      }
       const context = canvas.getContext('2d')
       if (context === null) return false
       const value = select.value
