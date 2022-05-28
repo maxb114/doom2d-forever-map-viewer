@@ -84,7 +84,10 @@ class DFRender {
         loaded.push(path)
         const loadPromise = new Promise((resolve, reject) => {
           let loadPath = path.replaceAll('\\', '/')
-          if (loadPath.charAt(0) === ':') loadPath = (this.map?.fileName ?? '') + loadPath // add map name for internal resources
+          if (loadPath.charAt(0) === ':') {
+            loadPath = loadPath.replace('/', '') // remove first slash
+            loadPath = (this.map?.fileName ?? '') + loadPath // add map name for internal resources
+          }
           loadPath = loadPath.toLowerCase() // lower case for now
           this.db?.loadByPath(loadPath).then((buffer) => {
             const view = new Uint8Array(buffer)
@@ -125,7 +128,10 @@ class DFRender {
         loaded.push(path)
         const loadPromise = new Promise((resolve, reject) => {
           let loadPath = path.replaceAll('\\', '/')
-          if (loadPath.charAt(0) === ':') loadPath = (this.map?.fileName ?? '') + loadPath // add map name for internal resources
+          if (loadPath.charAt(0) === ':') {
+            loadPath = loadPath.replace('/', '') // remove first slash
+            loadPath = this.map?.fileName + loadPath // add map name for internal resources
+          }
           loadPath = loadPath.toLowerCase() // lower case for now
           this.db?.loadByPath(loadPath).then((buffer) => {
             const view = new Uint8Array(buffer)
@@ -185,7 +191,10 @@ class DFRender {
         loaded.push(path)
         const loadPromise = new Promise((resolve, reject) => {
           let loadPath = path.replaceAll('\\', '/')
-          if (loadPath.charAt(0) === ':') loadPath = (this.map?.fileName ?? '') + loadPath // add map name for internal resources
+          if (loadPath.charAt(0) === ':') {
+            loadPath = loadPath.replace('/', '') // remove first slash
+            loadPath = this.map?.fileName + loadPath // add map name for internal resources
+          }
           loadPath = loadPath.toLowerCase() // lower case for now
           this.db?.loadByPath(loadPath).then((buffer) => {
             const view = new Uint8Array(buffer)
@@ -229,7 +238,10 @@ class DFRender {
         loaded.push(path)
         const loadPromise = new Promise((resolve, reject) => {
           let loadPath = path.replaceAll('\\', '/')
-          if (loadPath.charAt(0) === ':') loadPath = (this.map?.fileName ?? '') + loadPath // add map name for internal resources
+          if (loadPath.charAt(0) === ':') {
+            loadPath = loadPath.replace('/', '') // remove first slash
+            loadPath = this.map?.fileName + loadPath // add map name for internal resources
+          }
           loadPath = loadPath.toLowerCase() // lower case for now
           this.db?.loadByPath(loadPath).then((buffer) => {
             const view = new Uint8Array(buffer)
@@ -264,7 +276,10 @@ class DFRender {
       const path = sky
       const loadPromise = new Promise((resolve, reject) => {
         let loadPath = path.replaceAll('\\', '/')
-        if (loadPath.charAt(0) === ':') loadPath = (this.map?.fileName ?? '') + loadPath // add map name for internal resources
+        if (loadPath.charAt(0) === ':') {
+          loadPath = loadPath.replace('/', '') // remove first slash
+          loadPath = this.map?.fileName + loadPath // add map name for internal resources
+        }
         loadPath = loadPath.toLowerCase() // lower case for now
         this.db?.loadByPath(loadPath).then((buffer) => {
           const view = new Uint8Array(buffer)
@@ -301,7 +316,10 @@ class DFRender {
     if (sky === '') sky = defaultSky
     const path = sky
     let loadPath = path.replaceAll('\\', '/')
-    if (loadPath.charAt(0) === ':') loadPath = this.map?.fileName + loadPath // add map name for internal resources
+    if (loadPath.charAt(0) === ':') {
+      loadPath = loadPath.replace('/', '') // remove first slash
+      loadPath = this.map?.fileName + loadPath // add map name for internal resources
+    }
     loadPath = loadPath.toLowerCase() // lower case for now
     const image = this.getImage(loadPath)
     const panel = new DFPanel(0, 0, this.map?.size.x, this.map?.size.y)
@@ -348,7 +366,10 @@ class DFRender {
           options.operation = 'darken'
         }
         let loadPath = path.replaceAll('\\', '/')
-        if (loadPath.charAt(0) === ':') loadPath = this.map?.fileName + loadPath // add map name for internal resources
+        if (loadPath.charAt(0) === ':') {
+          loadPath = loadPath.replace('/', '') // remove first slash
+          loadPath = this.map?.fileName + loadPath // add map name for internal resources
+        }
         loadPath = loadPath.toLowerCase() // lower case for now
         const image = this.getImage(loadPath)
         this.drawPattern(image, canvas, context, options)
@@ -362,7 +383,10 @@ class DFRender {
       const path = item.getResourcePath()
       if (path === null) continue
       let loadPath = path.replaceAll('\\', '/')
-      if (loadPath.charAt(0) === ':') loadPath = (this.map?.fileName ?? '') + loadPath // add map name for internal resources
+      if (loadPath.charAt(0) === ':') {
+        loadPath = loadPath.replace('/', '') // remove first slash
+        loadPath = this.map?.fileName + loadPath // add map name for internal resources
+      }
       loadPath = loadPath.toLowerCase() // lower case for now
       const image = this.getImage(loadPath)
       const options = item.getRenderOptions()
@@ -379,7 +403,10 @@ class DFRender {
       const path = item.getResourcePath()
       if (path === null) continue
       let loadPath = path.replaceAll('\\', '/')
-      if (loadPath.charAt(0) === ':') loadPath = (this.map?.fileName ?? '') + loadPath // add map name for internal resources
+      if (loadPath.charAt(0) === ':') {
+        loadPath = loadPath.replace('/', '') // remove first slash
+        loadPath = this.map?.fileName + loadPath // add map name for internal resources
+      }
       loadPath = loadPath.toLowerCase() // lower case for now
       const image = this.getImage(loadPath)
       const options = item.getRenderOptions()
@@ -396,7 +423,10 @@ class DFRender {
       const path = area.getResourcePath()
       if (path === null) continue
       let loadPath = path.replaceAll('\\', '/')
-      if (loadPath.charAt(0) === ':') loadPath = (this.map?.fileName ?? '') + loadPath // add map name for internal resources
+      if (loadPath.charAt(0) === ':') {
+        loadPath = loadPath.replace('/', '') // remove first slash
+        loadPath = this.map?.fileName + loadPath // add map name for internal resources
+      }
       loadPath = loadPath.toLowerCase() // lower case for now
       const image = this.getImage(loadPath)
       const options = area.getRenderOptions()
