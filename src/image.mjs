@@ -1,7 +1,7 @@
 import * as Magick from './magickApi.js'
 function convertImage (/** @type {Uint8Array} */ buffer, /** @type {string} */ sourceExtension, /** @type {string} */ targetExtension) {
   const /** @type {Promise<ArrayBuffer>} */ promise = new Promise((resolve, reject) => {
-    if (sourceExtension === targetExtension) resolve(buffer)
+    if (sourceExtension === targetExtension) resolve(buffer.buffer)
     const source = 'src' + '.' + sourceExtension
     const target = 'out' + '.' + targetExtension
     const image = { name: source, content: buffer }
