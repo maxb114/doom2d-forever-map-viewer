@@ -78,7 +78,6 @@ class DFRender {
   getImage (/** @type {String} */ path) {
     const /** @type {HTMLImageElement} */ img = this.images[path]
     if (img === undefined) return new window.Image() // or just null, should be looked into further
-    if (img.width === 0 || img.height === 0) debugger
     return img
   }
 
