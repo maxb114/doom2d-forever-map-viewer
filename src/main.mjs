@@ -126,7 +126,6 @@ input.onchange = function () {
         label.htmlFor = input.id
         label.appendChild(document.createTextNode(object.full))
         input.onchange = () => {
-          console.log(input)
           render.options?.setFlag(input.id, input.checked)
         }
         flagsDiv.appendChild(input)
@@ -136,6 +135,7 @@ input.onchange = function () {
       const context = canvas.getContext('2d')
       if (context === null) return false
       draw(canvas, context, map, render)
+      return true
     }
     div.appendChild(button)
     return true
