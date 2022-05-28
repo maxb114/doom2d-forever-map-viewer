@@ -89,6 +89,7 @@ input.onchange = function () {
         }
       }
       await Promise.allSettled(promises)
+      debugger
       return true
     }
     div.appendChild(cacheButton)
@@ -118,6 +119,7 @@ input.onchange = function () {
       if (resource === null) return false
       const parsed = new DFParser(resource.buffer)
       const map = new DFMap(parsed.parsed, file.name)
+      debugger
       const options = new DFRenderOptions()
       const render = new DFRender(map, options, db)
       const flagsDiv = document.createElement('div')
