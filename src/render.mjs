@@ -392,7 +392,7 @@ class DFRender {
     this.drawPattern(image, canvas, context, options)
   }
 
-  async renderPanels (/** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasRenderingContext2D} */ context, background = false) {
+  async renderPanels (/** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasRenderingContext2D} */ context, level = 0) {
     const water = ['_water_0', '_water_1', '_water_2']
     const color = ['blue', 'green', 'red']
     const order = [
@@ -406,9 +406,9 @@ class DFRender {
       []
     ]
     for (const panel of (this.map?.panels ?? [])) {
-      if (background && order[0]?.includes(panel.type[0] ?? 'PANEL_NONE')) ordered[0]?.push(panel)
-      else if (!background && order[1]?.includes(panel.type[0] ?? 'PANEL_NONE')) ordered[1]?.push(panel)
-      else if (!background && order[2]?.includes(panel.type[0] ?? 'PANEL_NONE')) ordered[2]?.push(panel)
+      if (level === -1 && order[0]?.includes(panel.type[0] ?? 'PANEL_NONE')) ordered[0]?.push(panel)
+      else if (level === 0 && order[1]?.includes(panel.type[0] ?? 'PANEL_NONE')) ordered[1]?.push(panel)
+      else if (level === 1 && order[2]?.includes(panel.type[0] ?? 'PANEL_NONE')) ordered[2]?.push(panel)
     }
     for (let i = 0; i <= 2; ++i) {
       const panels = ordered[i]
@@ -518,11 +518,12 @@ class DFRender {
     canvas.width = width ?? 0
     canvas.height = height ?? 0
     if (this.options?.getFlag('rendersky')) await this.renderSky(canvas, context)
-    await this.renderPanels(canvas, context, true)
+    await this.renderPanels(canvas, context, -1)
     await this.renderItems(canvas, context)
+    await this.renderPanels(canvas, context, 0)
     if (this.options?.getFlag('rendermonsters')) await this.renderMonsters(canvas, context)
     await this.renderAreas(canvas, context)
-    await this.renderPanels(canvas, context, false)
+    await this.renderPanels(canvas, context, 1)
     return canvas
   }
 
