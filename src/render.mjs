@@ -478,6 +478,10 @@ class DFRender {
   async renderAreas (/** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasRenderingContext2D} */ context) {
     const areas = this.map?.areas ?? []
     for (const area of areas) {
+      if (!this.options?.getFlag('renderdmplayers') && (area.type === 'AREA_DMPOINT')) continue
+      else if (!this.options?.getFlag('rendertdmplayers') && (area.type === 'AREA_REDTEAMPOINT' || area.type === 'AREA_BLUETEAMPOINT')) continue
+      else if (!this.options?.getFlag('rendercoopplayers') && (area.type === 'AREA_PLAYERPOINT1' || area.type === 'AREA_PLAYERPOINT2')) continue
+      else if (!this.options?.getFlag('renderflags') && (area.type === 'AREA_BLUEFLAG' || area.type === 'AREA_REDFLAG' || area.type === 'AREA_DOMFLAG')) continue
       const path = area.getResourcePath()
       if (path === null) continue
       let loadPath = path.replaceAll('\\', '/')
