@@ -103,6 +103,8 @@ input.onchange = function () {
     button.innerHTML = 'Load map'
     button.id = 'load-button'
     button.onclick = () => {
+      const context = canvas.getContext('2d')
+      if (context === null) return false
       const value = select.value
       const resource = wad.findResourceByPath(value)
       if (resource === null) return false
@@ -127,13 +129,12 @@ input.onchange = function () {
         label.appendChild(document.createTextNode(object.full))
         input.onchange = () => {
           render.options?.setFlag(input.id, input.checked)
+          draw(canvas, context, map, render)
         }
         flagsDiv.appendChild(input)
         flagsDiv.appendChild(label)
       }
       div.appendChild(flagsDiv)
-      const context = canvas.getContext('2d')
-      if (context === null) return false
       draw(canvas, context, map, render)
       return true
     }
