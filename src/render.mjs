@@ -439,6 +439,8 @@ class DFRender {
       context.globalCompositeOperation = 'lighter'
     } else if (options.operation !== '' && typeof options.operation === 'string') {
       context.globalCompositeOperation = options.operation
+    } else {
+      context.globalCompositeOperation = 'source-over'
     }
     context.imageSmoothingEnabled = false
     if (options.water === true) {
