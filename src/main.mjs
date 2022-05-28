@@ -5,6 +5,8 @@ import { DatabaseFrom } from './db.mjs'
 import { DFRender, DFRenderOptions } from './render.mjs'
 import { getExtensionFromBuffer } from './utility.mjs'
 import { convertImage, cropImage } from './image.mjs'
+const div = document.createElement('div')
+const canvas = document.createElement('canvas')
 const input = document.createElement('input')
 input.type = 'file'
 let /** @type {Database | null} */ db = null
@@ -24,11 +26,11 @@ input.onchange = function () {
     const buttonId = 'load-button'
     const cacheButtonId = 'cache-button'
     const deleteSelect = document.getElementById(selectId)
-    if (deleteSelect !== null) document.body.removeChild(deleteSelect)
+    if (deleteSelect !== null) div.removeChild(deleteSelect)
     const deleteButton = document.getElementById(buttonId)
-    if (deleteButton !== null) document.body.removeChild(deleteButton)
+    if (deleteButton !== null) div.removeChild(deleteButton)
     const deleteCacheButton = document.getElementById(cacheButtonId)
-    if (deleteCacheButton !== null) document.body.removeChild(deleteCacheButton)
+    if (deleteCacheButton !== null) div.removeChild(deleteCacheButton)
     if (event.target === null) return false
     const content = event.target.result
     if (content === null || typeof content === 'string') return false
@@ -83,11 +85,11 @@ input.onchange = function () {
       await Promise.allSettled(promises)
       return true
     }
-    document.body.appendChild(cacheButton)
+    div.appendChild(cacheButton)
     if (maps.length === 0) return true
     const select = document.createElement('select')
     select.id = selectId
-    document.body.appendChild(select)
+    div.appendChild(select)
     for (const map of maps) {
       const option = document.createElement('option')
       option.value = map.path
@@ -106,22 +108,28 @@ input.onchange = function () {
       const options = new DFRenderOptions()
       const render = new DFRender(map, options, db)
       await render.preload()
-      const canvas = await render.render()
-      document.body.appendChild(canvas)
+      const mapCanvas = await render.render()
+      const context = canvas.getContext('2d')
+      if (context == null) return false
+      canvas.width = map.size.x
+      canvas.height = map.size.y
+      context.drawImage(mapCanvas, 0, 0)
       return true
     }
-    document.body.appendChild(button)
+    div.appendChild(button)
     return true
   }
   return true
 }
 
 async function init () {
-  if (window.indexedDB === null || db === null) {
-    console.log('Your browser lacks the required features.')
+  if (window.indexedDB === null || db === null || canvas === null || input === null || div === null) {
+    window.alert('Your browser lacks the required features.')
     return false
   }
-  document.body.appendChild(input)
+  div.appendChild(input)
+  document.body.appendChild(div)
+  document.body.appendChild(canvas)
   return true
 }
 
