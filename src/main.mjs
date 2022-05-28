@@ -44,13 +44,12 @@ input.onchange = function () {
       for (const file of wad.resources) {
         const type = getExtensionFromBuffer(file.buffer)
         if (type === 'unknown') continue // probably music
-
         if (type === 'dfwad' || type === 'dfzip') { // animated
           const promise = new Promise((resolve, reject) => {
-            const view = new Uint8Array(file.buffer)
-            DfwadFrom(view).then((wad) => {
+            const view = file.buffer
+            DfwadFrom(view).then((dfwad) => {
               const animPath = 'TEXT/ANIM'
-              const animDescription = wad.findResourceByPath(animPath)
+              const animDescription = dfwad.findResourceByPath(animPath)
               if (animDescription === null) reject(Error('File is a WAD, but not an animated texture!'))
               const decoder = new TextDecoder('utf-8')
               const view = decoder.decode(animDescription?.buffer)
@@ -58,7 +57,7 @@ input.onchange = function () {
               const path = 'TEXTURES' + '/' + parser.parsed.resource
               const width = parser.parsed.frameWidth
               const height = parser.parsed.frameHeight
-              const textureResource = wad.findResourceByPath(path)
+              const textureResource = dfwad.findResourceByPath(path)
               if (textureResource === null) reject(Error('File is a WAD, but not an animated texture!'))
               const buffer = textureResource.buffer
               const type = getExtensionFromBuffer(buffer)

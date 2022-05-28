@@ -52,10 +52,10 @@ class DFMap {
           const width = dimensions[0]
           const height = dimensions[1]
           const texture = element.texture
-          let type = element.type ?? 'PANEL_NONE'
+          let type = (element.type === undefined || element.type === '' ? 'PANEL_NONE' : element.type)
           type = type.replace(/\s+/g, '').split('|')
           const alpha = (element.alpha === undefined ? -1 : element.alpha) // if unset, then -1
-          let flags = element.flags ?? 'PANEL_FLAG_NONE'
+          let flags = (element.flags === undefined || element.flags === '' ? 'PANEL_FLAG_NONE' : element.flags)
           flags = flags.replace(/\s+/g, '').split('|')
           const panel = new DFPanel(x, y, width, height, texture, type, alpha, flags)
           panel.id = element._token.value
