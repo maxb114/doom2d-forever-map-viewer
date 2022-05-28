@@ -46,6 +46,19 @@ class Database {
     })
     return promise
   }
+
+  getAll () {
+    const promise = new Promise((resolve, reject) => {
+      const name = 'store'
+      const transaction = this.db.transaction(name, 'readwrite')
+      const objectStore = transaction.objectStore(name)
+      const request = objectStore.getAllKeys()
+      request.onsuccess = () => resolve(request.result)
+
+      request.onerror = () => reject(Error('Transaction error!'))
+    })
+    return promise
+  }
 }
 
 function /** @type {Promise<IDBDatabase>} */ openDB () {
