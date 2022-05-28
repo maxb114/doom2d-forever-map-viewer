@@ -20,7 +20,8 @@ function getExtensionFromBuffer (/** @type {Uint8Array} */ buffer) {
   else if (buffer[0] === 56 && buffer[1] === 66 && buffer[2] === 80 && buffer[3] === 83) return 'psd'
   else if (buffer[0] === 66 && buffer[1] === 77) return 'bmp'
   else if (buffer[0] === 255 && buffer[1] === 216 && buffer[2] === 255 && buffer[3] === 219) return 'jpg'
-  else if (buffer[0] === 255 && buffer[1] === 216 && buffer[2] === 255 && buffer[3] === 244) return 'jpg'
+  else if (buffer[0] === 255 && buffer[1] === 216 && buffer[2] === 255 && buffer[3] === 244) return 'jpg' // perhaps erroneous?
+  else if (buffer[0] === 255 && buffer[1] === 216 && buffer[2] === 255 && buffer[3] === 224) return 'jpg'
   else if (buffer[0] === 255 && buffer[1] === 216 && buffer[2] === 255 && buffer[3] === 238) return 'jpg'
   else if (buffer[0] === 255 && buffer[1] === 216 && buffer[2] === 255 && buffer[3] === 225) return 'jpg'
   else if (readSliceByte(buffer, buffer.length - 1) === 0 && readSliceByte(buffer, buffer.length - 2) === 46 && readSliceChar(buffer, buffer.length - 18, 16) === 'TRUEVISION-XFILE') return 'tga'
