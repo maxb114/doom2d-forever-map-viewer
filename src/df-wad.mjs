@@ -1,7 +1,6 @@
 import { getExtensionFromBuffer, wadToJSON } from './utility.mjs'
 import { inflate } from './pako.esm.mjs'
 import './jszip.js'
-const Jszip = new JSZip()
 class WadStruct {
   constructor (/** @type {any} */ structObject) {
     if (structObject !== undefined) {
@@ -96,6 +95,7 @@ function DfwadFrom (/** @type {Uint8Array} */ buffer) {
     })
     return promise
   } else if (type === 'dfzip') {
+    const Jszip = new JSZip()
     const /** @type {Promise<DFWad>} */ promise = new Promise((resolve, reject) => {
       const /** @type {Promise<Resource>[]} */ promises = []
       Jszip.loadAsync(buffer).then((zip) => {
