@@ -438,6 +438,8 @@ class DFRender {
   async renderItems (/** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasRenderingContext2D} */ context) {
     const items = this.map?.items ?? []
     for (const item of items) {
+      if (!this.options?.getFlag('renderdmitems') && item.options.includes('ITEM_OPTION_ONLYDM')) continue
+      else if (!this.options?.getFlag('renderitems') && !item.options.includes('ITEM_OPTION_ONLYDM')) continue
       const path = item.getResourcePath()
       if (path === null) continue
       let loadPath = path.replaceAll('\\', '/')
