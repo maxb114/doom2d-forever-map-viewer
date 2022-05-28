@@ -99,26 +99,28 @@ input.onchange = function () {
     const button = document.createElement('button')
     button.innerHTML = 'Load map'
     button.id = 'load-button'
-    button.onclick = async function () {
-      const value = select.value
-      const resource = wad.findResourceByPath(value)
-      if (resource === null) return false
-      const parsed = new DFParser(resource.buffer)
-      const map = new DFMap(parsed.parsed, file.name)
-      const options = new DFRenderOptions()
-      const render = new DFRender(map, options, db)
-      await render.preload()
-      const mapCanvas = await render.render()
-      const context = canvas.getContext('2d')
-      if (context == null) return false
-      canvas.width = map.size.x
-      canvas.height = map.size.y
-      context.drawImage(mapCanvas, 0, 0)
-      return true
-    }
+    button.onclick = () => (draw(select, wad, file))
     div.appendChild(button)
     return true
   }
+  return true
+}
+
+async function draw (/** @type {HTMLSelectElement} */ select, /** @type {DFWad} */ wad, /** @type {File} */ file) {
+  const value = select.value
+  const resource = wad.findResourceByPath(value)
+  if (resource === null) return false
+  const parsed = new DFParser(resource.buffer)
+  const map = new DFMap(parsed.parsed, file.name)
+  const options = new DFRenderOptions()
+  const render = new DFRender(map, options, db)
+  await render.preload()
+  const mapCanvas = await render.render()
+  const context = canvas.getContext('2d')
+  if (context == null) return false
+  canvas.width = map.size.x
+  canvas.height = map.size.y
+  context.drawImage(mapCanvas, 0, 0)
   return true
 }
 
