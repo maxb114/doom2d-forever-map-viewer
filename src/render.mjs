@@ -245,16 +245,35 @@ class DFRender {
           loadPath = loadPath.toLowerCase() // lower case for now
           this.db?.loadByPath(loadPath).then((buffer) => {
             const view = new Uint8Array(buffer)
-            const blob = new window.Blob([view], { type: 'image/png' })
-            const url = window.URL.createObjectURL(blob)
-            const image = new window.Image()
-            image.src = url
-            image.onload = function () {
-              self.saveImage(image, loadPath)
-              resolve(true)
-            }
-            image.onerror = function () {
-              reject(Error('Error creating image!'))
+            if (area.type === 'AREA_BLUEFLAG' || area.type === 'AREA_REDFLAG' || area.type === 'AREA_DOMFLAG') { // we have to crop flags...
+              const flagwidth = 64
+              const flagheight = 64
+              cropImage(view, 'png', flagwidth, flagheight).then((buffer) => {
+                const view = new Uint8Array(buffer)
+                const blob = new window.Blob([view], { type: 'image/png' })
+                const url = window.URL.createObjectURL(blob)
+                const image = new window.Image()
+                image.src = url
+                image.onload = function () {
+                  self.saveImage(image, loadPath)
+                  resolve(true)
+                }
+                image.onerror = function () {
+                  reject(Error('Error creating image!'))
+                }
+              })
+            } else {
+              const blob = new window.Blob([view], { type: 'image/png' })
+              const url = window.URL.createObjectURL(blob)
+              const image = new window.Image()
+              image.src = url
+              image.onload = function () {
+                self.saveImage(image, loadPath)
+                resolve(true)
+              }
+              image.onerror = function () {
+                reject(Error('Error creating image!'))
+              }
             }
           }).catch((error) => reject(error))
         })
