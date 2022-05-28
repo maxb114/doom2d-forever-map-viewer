@@ -190,7 +190,7 @@ async function init () {
     window.alert('Your browser lacks the required features.')
     return false
   }
-  const check = await checkEssentialResources() || true
+  const check = await checkEssentialResources()
   if (check) {
     div.appendChild(input)
     document.body.appendChild(div)
@@ -203,19 +203,27 @@ async function init () {
     button.innerHTML = 'Download game resources from doom2d.org'
     button.id = 'download-button'
     button.onclick = async () => {
-      // const baseLink = 'https://doom2d.org/doom2d_forever/mapview/'
-      const baseLink = './assets/'
+      const baseLink = 'https://doom2d.org/doom2d_forever/mapview/'
+      // const baseLink = './assets/'
       for (const resource of resources) {
         const link = baseLink + resource
         try {
           const response = await fetch(link)
           const buffer = await response.arrayBuffer()
-          console.log(response)
+          const view = new Uint8Array(buffer)
+          const wad = await DfwadFrom(view)
+          await Promise.all(preloadWad(wad, resource))
         } catch (error) {
           window.alert(error)
           return false
         }
       }
+      document.body.removeChild(text)
+      document.body.removeChild(br)
+      document.body.removeChild(button)
+      div.appendChild(input)
+      document.body.appendChild(div)
+      document.body.appendChild(canvas)
       return true
     }
     document.body.appendChild(text)
