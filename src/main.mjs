@@ -79,6 +79,7 @@ input.onchange = function () {
       if (resource === null) return false
       const parsed = new DFParser(resource.buffer)
       const map = new DFMap(parsed.parsed, file.name)
+      console.log(map.asText())
       const options = new DFRenderOptions()
       const render = new DFRender(map, options, db)
       const flagsDiv = document.createElement('div')
