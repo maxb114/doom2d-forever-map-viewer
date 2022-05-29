@@ -105,15 +105,38 @@ function readSliceChar (/** @type {Uint8Array} */ buffer, /** @type {number} */ 
   return val
 }
 
-function readSliceLongWord (/** @type {Uint8Array} */ buffer, /** @type {number} */ pos) {
-  const nameSlice = buffer.slice(pos, pos + 4)
-  const longwordArray = new ArrayBuffer(4)
-  const view1 = new Uint32Array(longwordArray)
-  const view2 = new Uint8Array(longwordArray)
-  nameSlice.forEach(/** @type {number} */ e => {
-    view2[nameSlice.indexOf(e)] = e
-  })
-  return view1[0]
+function readSliceLongWord (/** @type {Uint8Array} */ buffer, /** @type {number} */ pos, signed = false) {
+  if (signed) {
+    const converted = new Int8Array(buffer)
+    const slice = converted.slice(pos, pos + 4)
+    const longwordArray = new ArrayBuffer(4)
+    const view1 = new Int8Array(longwordArray)
+    let count = 0
+    slice.forEach(e => {
+      if (e === -1) { ++count; return false }
+      view1[slice.indexOf(e)] = e
+      return true
+    })
+    const createRequiredArray = (/** @type {number} */ count, /** @type {ArrayBuffer} */ buffer) => {
+      if (count >= 3) return new Int8Array(buffer)
+      else if (count === 2) return new Int16Array(buffer)
+      else if (count < 2) return new Int32Array(buffer)
+      return new Int8Array(buffer)
+    }
+    const view2 = createRequiredArray(count, longwordArray)
+    const number = view2[0]
+    return number
+  } else {
+    const nameSlice = buffer.slice(pos, pos + 4)
+    const longwordArray = new ArrayBuffer(4)
+    const view1 = new Uint32Array(longwordArray)
+    const view2 = new Uint8Array(longwordArray)
+    nameSlice.forEach(/** @type {number} */ e => {
+      view2[nameSlice.indexOf(e)] = e
+    })
+    const number = view1[0]
+    return number
+  }
 }
 
 function readSliceWord (/** @type {Uint8Array} */ buffer, /** @type {number} */ pos) {
