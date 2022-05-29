@@ -41,9 +41,9 @@ class DFBinaryParser {
       const pos = i * binsize
       const binblock = buffer.slice(pos, pos + binsize)
       let offset = 0
-      const x = readSliceLongWord(binblock, offset) // TODO: Sign is lost here!
+      const x = readSliceLongWord(binblock, offset, true)
       offset += 4
-      const y = readSliceLongWord(binblock, offset)
+      const y = readSliceLongWord(binblock, offset, true)
       offset += 4
       const width = readSliceWord(binblock, offset)
       offset += 2
