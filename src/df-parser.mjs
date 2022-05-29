@@ -439,14 +439,21 @@ class DFTextParser {
           activeElement = newElement
           const parentIndex = tokenIndex - 1
           if (parentPrevTokenIndex < 0 || parentIndex < 0) {
+            state = 'search' // we should start looking for properties
             return null
           }
           const objectParentIndex = copy.length - 2
-          if (objectParentIndex < 0 || objectParentIndex >= copy.length) return null
+          if (objectParentIndex < 0 || objectParentIndex >= copy.length) {
+            return null
+          }
           const currentScopeObject = copy[copy.length - 2]
-          if (currentScopeObject === undefined) return null
+          if (currentScopeObject === undefined) {
+            return null
+          }
           const parentOfPrev = tokenArray[parentPrevTokenIndex]
-          if (currentScopeObject[parentOfPrev.value] !== undefined) delete currentScopeObject[parentPrevToken.value] // delete wrongly-assumed properties
+          if (currentScopeObject[parentOfPrev.value] !== undefined) {
+            delete currentScopeObject[parentPrevToken.value] // delete wrongly-assumed properties
+          }
           state = 'search'
         }
       } else if (token.type === 'close_curly_brace') {
