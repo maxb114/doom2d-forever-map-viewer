@@ -133,7 +133,7 @@ function preloadWad (/** @type {DFWad} */ wad, /** @type {String} */ mapName) {
     } else if (type === 'bmp' || type === 'gif' || type === 'jpg' || type === 'png' || type === 'psd' || type === 'tga') { // just an image
       const promise = new Promise((resolve, reject) => {
         convertImage(file.buffer, type, 'png').then((buffer) => {
-          db.saveByPath(buffer, mapName + ':' + file.path).then(() => resolve(true)).catch((error) => reject(error))
+          db.saveByPath(buffer, mapName + ':' + file.path).then(() => resolve(true)).catch((/** @type {Error} */ error) => reject(error))
         }).catch((error) => reject(error))
       })
       promises.push(promise)
@@ -156,14 +156,21 @@ function preloadAnimated (/** @type {Resource} */ file, /** @type {String} */ ma
       const width = parser.parsed.frameWidth
       const height = parser.parsed.frameHeight
       const textureResource = dfwad.findResourceByPath(path)
-      if (textureResource === null) reject(Error('File is a WAD, but not an animated texture!'))
+      if (textureResource === null) {
+        reject(Error('File is a WAD, but not an animated texture!'))
+        return false
+      }
       const buffer = textureResource.buffer
+      if (buffer === undefined) {
+        reject(Error('File is a WAD, but not an animated texture!'))
+        return false
+      }
       const type = getExtensionFromBuffer(buffer)
       if (type === 'unknown' || type === 'dfpack' || type === 'dfwad' || type === 'dfzip') reject(Error('File is a WAD, but not an animated texture!'))
       convertImage(buffer, type, 'png').then((arrayBuffer) => {
         const view = new Uint8Array(arrayBuffer)
         cropImage(view, 'png', width, height).then((finalBuffer) => {
-          db.saveByPath(finalBuffer, mapName + ':' + file.path).then(() => resolve(true)).catch((error) => reject(error))
+          db.saveByPath(finalBuffer, mapName + ':' + file.path).then(() => resolve(true)).catch((/** @type {Error} */ error) => reject(error))
         }).catch((error) => reject(error))
       }).catch((error) => reject(error))
     }).catch((error) => reject(error))
@@ -173,11 +180,11 @@ function preloadAnimated (/** @type {Resource} */ file, /** @type {String} */ ma
 
 const resources = ['game.wad', 'standart.wad', 'shrshade.wad', 'editor.wad']
 
-async function checkEssentialResources() {
+async function checkEssentialResources () {
   try {
     const all = await db.getAll()
     for (const resource of resources) {
-      if (!all.some(element => element.includes(resource))) return false
+      if (!all.some((/** @type {string} */ element) => element.includes(resource))) return false
     }
     return true
   } catch (e) {

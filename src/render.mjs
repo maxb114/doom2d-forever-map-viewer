@@ -526,7 +526,7 @@ class DFRender {
     return canvas
   }
 
-  drawPattern (/** @type {null | HTMLImageElement} */ image, /** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasRenderingContext2D} */ context, /** @type {any} */ options) {
+  drawPattern (/** @type {null | HTMLImageElement} */ image, /** @type {HTMLCanvasElement} */ _canvas, /** @type {CanvasRenderingContext2D} */ context, /** @type {any} */ options) {
     if (options === undefined || typeof options !== 'object') return false
     else if (options.x === undefined || options.y === undefined || options.width === undefined || options.height === undefined) return false
     context.save()
