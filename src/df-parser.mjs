@@ -388,10 +388,10 @@ class DFTextParser {
     lexer.rule(/[+-]?[0-9]+/, (/** @type {any} */ ctx, /** @type {any} */ match) => {
       ctx.accept('number', parseInt(match[0]))
     })
-    lexer.rule(/"((?:\\"|[^\r\n])*)"/, (/** @type {any} */ ctx, /** @type {any} */ match) => {
-      ctx.accept('string', match[1].replace(/\\"/g, '"'))
+    lexer.rule(/"(?<=")(.+?)(?=")"/, (/** @type {any} */ ctx, /** @type {any} */ match) => {
+      ctx.accept('string', match[1].replace(/\\"/g, ''))
     })
-    lexer.rule(/'((?:\\"|[^\r\n])*)'/, (/** @type {any} */ ctx, /** @type {any} */ match) => {
+    lexer.rule(/'(?<=')(.+?)(?=')'/, (/** @type {any} */ ctx, /** @type {any} */ match) => {
       ctx.accept('stringcurly', match[1].replace(/"'"/g, ''))
     })
     lexer.rule(/\/\/[^\r\n]*\r?\n/, (/** @type {any} */ ctx) => {
