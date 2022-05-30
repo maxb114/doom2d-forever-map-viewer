@@ -1552,19 +1552,7 @@ function binaryTriggerScoreTeamToString (/** @type {number} */ team) {
 }
 
 function binaryActivateTypeToString (/** @type {number} */ type) {
-  /*
-  if (type === 0) return 'ACTIVATE_NONE'
-  else if (type === 1) return 'ACTIVATE_PLAYERCOLLIDE'
-  else if (type === 2) return 'ACTIVATE_MONSTERCOLLIDE'
-  else if (type === 4) return 'ACTIVATE_PLAYERPRESS'
-  else if (type === 8) return 'ACTIVATE_MONSTERPRESS'
-  else if (type === 16) return 'ACTIVATE_SHOT'
-  else if (type === 32) return 'ACTIVATE_NOMONSTER'
-  else if (type === 255) return 'ACTIVATE_CUSTOM'
-  else return 'ACTIVATE_NONE' */
   const flags = []
-  console.log(binaryIsBitSet(type, 1))
-  console.log(binaryIsBitSet(4, 4))
   if (type === 0) flags.push('ACTIVATE_NONE')
   if (binaryIsBitSet(type, 1) || type === 1) flags.push('ACTIVATE_PLAYERCOLLIDE')
   if (binaryIsBitSet(type, 2) || type === 2) flags.push('ACTIVATE_MONSTERCOLLIDE')
