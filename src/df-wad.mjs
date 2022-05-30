@@ -48,7 +48,6 @@ class DFWad {
     let folder = zip
     for (let i = 0; i < paths.length - 1; i++) {
       folder = await zip.folder(paths[i])
-      // debugger
     }
     await folder.file(paths[paths.length - 1], value)
     return true
@@ -58,9 +57,10 @@ class DFWad {
     const zip = new JSZip()
     const promises = []
     for (const map of this.maps) {
-      const parsed = new DFParser(map.buffer)
-      const converted = new DFMap(parsed.parsed, map.path)
-      const view = converted.asText()
+      const parser = new DFParser(map.buffer)
+      const parsed = new DFMap(parser.parsed, map.path)
+      const text = parsed.asText()
+      const view = text
       promises.push(this.saveToZip(zip, map.path, view))
     }
     for (const resource of this.resources) {
