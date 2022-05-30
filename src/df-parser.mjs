@@ -213,7 +213,8 @@ class DFBinaryParser {
       } else if (option.handler === 'longword') {
         const number = readSliceLongWord(buffer, offset, true) // don't lose the sign
         if (option.path === 'monsterid') {
-          if (number !== 0) value = 'monster' + number?.toString(10)
+          if (number === undefined) value = null
+          else if (number !== 0) value = 'monster' + (number - 1).toString(10)
           else value = null
         } else if (option.path === 'panelid') {
           if (number !== -1) value = 'panel' + number?.toString(10)
@@ -588,8 +589,8 @@ class DFParser {
     } else { // text map
       const decoder = new TextDecoder('utf-8')
       const view = decoder.decode(buffer)
-      const hasNonPrintable = /[\x00-\x1F\x80-\xFF]/.test(view)
-      if (hasNonPrintable) {
+      const onlyPrintable = /^[ -~\t\n\r]+$/.test(view)
+      if (!onlyPrintable) {
         return
       }
       const parsed = new DFTextParser(view)
