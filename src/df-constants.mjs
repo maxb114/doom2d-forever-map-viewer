@@ -1392,4 +1392,168 @@ const binaryItemTypeToString = (/** @type {number | undefined} */ type) => {
   return 'ITEM_NONE'
 }
 
-export { binaryMonsterToString, binaryAreaToString, binaryItemOptionsToString, binaryItemTypeToString, binaryPanelTypeToString, binaryPanelFlagToString, specialItemToJSON, getMonsterSize, getMonsterDelta, convertSpecialItem, convertGameItems, getAreaSize, areaToTexture }
+function binaryTriggerTypeToString (/** @type {number} */ trigger) {
+  if (trigger === 0) return 'TRIGGER_NONE'
+  else if (trigger === 1) return 'TRIGGER_EXIT'
+  else if (trigger === 2) return 'TRIGGER_TELEPORT'
+  else if (trigger === 3) return 'TRIGGER_OPENDOOR'
+  else if (trigger === 4) return 'TRIGGER_CLOSEDOOR'
+  else if (trigger === 5) return 'TRIGGER_DOOR'
+  else if (trigger === 6) return 'TRIGGER_DOOR5'
+  else if (trigger === 7) return 'TRIGGER_CLOSETRAP'
+  else if (trigger === 8) return 'TRIGGER_TRAP'
+  else if (trigger === 9) return 'TRIGGER_PRESS'
+  else if (trigger === 10) return 'TRIGGER_SECRET'
+  else if (trigger === 11) return 'TRIGGER_LIFTUP'
+  else if (trigger === 12) return 'TRIGGER_LIFTDOWN'
+  else if (trigger === 13) return 'TRIGGER_LIFT'
+  else if (trigger === 14) return 'TRIGGER_TEXTURE'
+  else if (trigger === 15) return 'TRIGGER_ON'
+  else if (trigger === 16) return 'TRIGGER_OFF'
+  else if (trigger === 17) return 'TRIGGER_ONOFF'
+  else if (trigger === 18) return 'TRIGGER_SOUND'
+  else if (trigger === 19) return 'TRIGGER_SPAWNMONSTER'
+  else if (trigger === 20) return 'TRIGGER_SPAWNITEM'
+  else if (trigger === 21) return 'TRIGGER_MUSIC'
+  else if (trigger === 22) return 'TRIGGER_PUSH'
+  else if (trigger === 23) return 'TRIGGER_SCORE'
+  else if (trigger === 24) return 'TRIGGER_MESSAGE'
+  else if (trigger === 25) return 'TRIGGER_DAMAGE'
+  else if (trigger === 26) return 'TRIGGER_HEALTH'
+  else if (trigger === 27) return 'TRIGGER_SHOT'
+  else if (trigger === 28) return 'TRIGGER_EFFECT'
+  else if (trigger === 29) return 'TRIGGER_SCRIPT'
+  else return 'TRIGGER_NONE'
+}
+
+function binaryTriggerShotToString (/** @type {number} */ trigger) {
+  if (trigger === 0) return 'TRIGGER_SHOT_PISTOL'
+  else if (trigger === 1) return 'TRIGGER_SHOT_BULLET'
+  else if (trigger === 2) return 'TRIGGER_SHOT_SHOTGUN'
+  else if (trigger === 3) return 'TRIGGER_SHOT_SSG'
+  else if (trigger === 4) return 'TRIGGER_SHOT_IMP'
+  else if (trigger === 5) return 'TRIGGER_SHOT_PLASMA'
+  else if (trigger === 6) return 'TRIGGER_SHOT_SPIDER'
+  else if (trigger === 7) return 'TRIGGER_SHOT_CACO'
+  else if (trigger === 8) return 'TRIGGER_SHOT_BARON'
+  else if (trigger === 9) return 'TRIGGER_SHOT_MANCUB'
+  else if (trigger === 10) return 'TRIGGER_SHOT_REV'
+  else if (trigger === 11) return 'TRIGGER_SHOT_ROCKET'
+  else if (trigger === 12) return 'TRIGGER_SHOT_BFG'
+  else if (trigger === 13) return 'TRIGGER_SHOT_EXPL'
+  else if (trigger === 14) return 'TRIGGER_SHOT_BFGEXPL'
+  else return 'TRIGGER_SHOT_PISTOL'
+}
+
+function binaryTriggerShotTargetToString (/** @type {number} */ trigger) {
+  if (trigger === 0) return 'TRIGGER_SHOT_TARGET_NONE'
+  else if (trigger === 1) return 'TRIGGER_SHOT_TARGET_MON'
+  else if (trigger === 2) return 'TRIGGER_SHOT_TARGET_PLR'
+  else if (trigger === 3) return 'TRIGGER_SHOT_TARGET_RED'
+  else if (trigger === 4) return 'TRIGGER_SHOT_TARGET_BLUE'
+  else if (trigger === 5) return 'TRIGGER_SHOT_TARGET_MONPLR'
+  else if (trigger === 6) return 'TRIGGER_SHOT_TARGET_PLRMON'
+  return 'TRIGGER_SHOT_TARGET_NONE'
+}
+
+function binaryTriggerShotAimToString (/** @type {number} */ trigger) {
+  if (trigger === 0) return 'TRIGGER_SHOT_AIM_DEFAULT'
+  else if (trigger === 1) return 'TRIGGER_SHOT_AIM_ALLMAP'
+  else if (trigger === 2) return 'TRIGGER_SHOT_AIM_TRACE'
+  else if (trigger === 3) return 'TRIGGER_SHOT_AIM_TRACEALL'
+  else return 'TRIGGER_SHOT_AIM_DEFAULT'
+}
+
+function binaryTriggerEffectToString (/** @type {number} */ trigger) {
+  if (trigger === 0) return 'TRIGGER_EFFECT_PARTICLE'
+  else if (trigger === 1) return 'TRIGGER_EFFECT_ANIMATION'
+  else return 'TRIGGER_EFFECT_PARTICLE'
+}
+
+function binaryTriggerEffectTypeToString (/** @type {number} */ trigger) {
+  if (trigger === 0) return 'TRIGGER_EFFECT_SLIQUID'
+  else if (trigger === 1) return 'TRIGGER_EFFECT_LLIQUID'
+  else if (trigger === 2) return 'TRIGGER_EFFECT_DLIQUID'
+  else if (trigger === 3) return 'TRIGGER_EFFECT_BLOOD'
+  else if (trigger === 4) return 'TRIGGER_EFFECT_SPARK'
+  else if (trigger === 5) return 'TRIGGER_EFFECT_BUBBLE'
+  else return 'TRIGGER_EFFECT_SLIQUID'
+}
+
+function binaryTriggerEffectPosToString (/** @type {number} */ trigger) {
+  if (trigger === 0) return 'TRIGGER_EFFECT_POS_CENTER'
+  else if (trigger === 1) return 'TRIGGER_EFFECT_POS_AREA'
+  else return 'TRIGGER_EFFECT_POS_CENTER'
+}
+
+function binaryTriggerMusicActionToString (/** @type {number} */ trigger) {
+  if (trigger === 0) return 'TRIGGER_MUSIC_ACTION_STOP'
+  else if (trigger === 1) return 'TRIGGER_MUSIC_ACTION_PLAY' // ; unpause or restart
+  else return 'TRIGGER_MUSIC_ACTION_STOP'
+}
+
+function binaryTriggerScoreActionToString (/** @type {number} */ trigger) {
+  if (trigger === 0) return 'TRIGGER_SCORE_ACTION_ADD'
+  else if (trigger === 1) return 'TRIGGER_SCORE_ACTION_SUB'
+  else if (trigger === 2) return 'TRIGGER_SCORE_ACTION_WIN'
+  else if (trigger === 3) return 'TRIGGER_SCORE_ACTION_LOOSE'
+  return 'TRIGGER_SCORE_ACTION_ADD'
+}
+
+function binaryTriggerMessageDestToString (/** @type {number} */ trigger) {
+  if (trigger === 0) return 'TRIGGER_MESSAGE_DEST_ME'
+  else if (trigger === 1) return 'TRIGGER_MESSAGE_DEST_MY_TEAM'
+  else if (trigger === 2) return 'TRIGGER_MESSAGE_DEST_ENEMY_TEAM'
+  else if (trigger === 3) return 'TRIGGER_MESSAGE_DEST_RED_TEAM'
+  else if (trigger === 4) return 'TRIGGER_MESSAGE_DEST_BLUE_TEAM'
+  else if (trigger === 5) return 'TRIGGER_MESSAGE_DEST_EVERYONE'
+  return 'TRIGGER_MESSAGE_DEST_ME'
+}
+
+function binaryTriggerMessageKind (/** @type {number} */ trigger) {
+  if (trigger === 0) return 'TRIGGER_MESSAGE_KIND_CHAT'
+  else if (trigger === 1) return 'TRIGGER_MESSAGE_KIND_GAME'
+  return 'TRIGGER_MESSAGE_KIND_CHAT'
+}
+
+function binaryKeysToString (/** @type {number | undefined} */ options) {
+  const flags = []
+  if (options === 0 || options === undefined) return 'KEY_NONE'
+  if (binaryIsBitSet(options, 1)) flags.push('KEY_RED')
+  if (binaryIsBitSet(options, 2)) flags.push('KEY_GREEN')
+  if (binaryIsBitSet(options, 4)) flags.push('KEY_BLUE')
+  if (binaryIsBitSet(options, 8)) flags.push('KEY_REDTEAM')
+  if (binaryIsBitSet(options, 16)) flags.push('KEY_BLUETEAM')
+  const test = flags.join('|')
+  return test
+}
+
+function binaryHitTypeToString (/** @type {number} */ hit) {
+  if (hit === 0) return 'HIT_SOME'
+  else if (hit === 1) return 'HIT_ROCKET'
+  else if (hit === 2) return 'HIT_BFG'
+  else if (hit === 3) return 'HIT_TRAP'
+  else if (hit === 4) return 'HIT_FALL'
+  else if (hit === 5) return 'HIT_WATER'
+  else if (hit === 6) return 'HIT_ACID'
+  else if (hit === 7) return 'HIT_ELECTRO'
+  else if (hit === 8) return 'HIT_FLAME'
+  else if (hit === 9) return 'HIT_SELF'
+  else if (hit === 10) return 'HIT_DISCON'
+  return 'HIT_SOME'
+}
+
+function binaryTriggerScoreTeamToString (/** @type {number} */ team) {
+  if (team === 0) return 'TRIGGER_SCORE_TEAM_MINE_RED'
+  else if (team === 1) return 'TRIGGER_SCORE_TEAM_MINE_BLUE'
+  else if (team === 2) return 'TRIGGER_SCORE_TEAM_FORCE_RED'
+  else if (team === 3) return 'TRIGGER_SCORE_TEAM_FORCE_BLUE'
+  return 'TRIGGER_SCORE_TEAM_MINE_RED'
+}
+
+export {
+  binaryMonsterToString, binaryAreaToString, binaryItemOptionsToString, binaryItemTypeToString, binaryPanelTypeToString, binaryPanelFlagToString,
+  specialItemToJSON, getMonsterSize, getMonsterDelta, convertSpecialItem, convertGameItems, getAreaSize, areaToTexture, binaryTriggerTypeToString,
+  binaryTriggerShotToString, binaryTriggerShotTargetToString, binaryTriggerShotAimToString, binaryTriggerEffectToString, binaryTriggerEffectTypeToString,
+  binaryTriggerEffectPosToString, binaryTriggerMusicActionToString, binaryTriggerScoreActionToString, binaryTriggerMessageDestToString, binaryTriggerMessageKind, binaryKeysToString, binaryHitTypeToString, binaryTriggerScoreTeamToString
+}
