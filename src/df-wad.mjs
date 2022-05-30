@@ -1,6 +1,7 @@
 import { getExtensionFromBuffer, wadToJSON } from './utility.mjs'
 import { inflate } from './pako.esm.mjs'
 import './jszip.js'
+import { DFParser } from './df-parser.mjs'
 class WadStruct {
   constructor (/** @type {any} */ structObject) {
     if (structObject !== undefined) {
@@ -21,41 +22,32 @@ class Resource {
   }
 }
 
+function isMap (/** @type {Uint8Array} */ buffer) {
+  const parser = new DFParser(buffer)
+  return parser.valid
+}
+
 class DFWad {
   constructor (/** @type {Uint8Array} */ buffer) {
     this.buffer = buffer
     /** @type {Resource[]} */ this.files = []
     /** @type {WadStruct[]} */ this.structs = []
+    /** @type {Resource[]} */ this._maps = []
+    /** @type {Resource[]} */ this._resources = []
+  }
+
+  addResource (/** @type Resource */ resource) {
+    this.files.push(resource)
+    if (isMap(resource.buffer)) this._maps.push(resource)
+    else this._resources.push(resource)
   }
 
   get maps () {
-    let /** @type {Resource[]} */ mapsArray = []
-    const matchexpr = /^MAP([0-9]*)(\.txt)?$/i
-    for (const file of this.files) {
-      const find = (file.path.match(matchexpr) !== null)
-      if (find) mapsArray.push(file)
-    }
-    mapsArray = mapsArray.sort((a, b) => {
-      const aFind = a.path.match(matchexpr)
-      const bFind = b.path.match(matchexpr)
-      if (aFind === null || bFind === null || aFind[1] === undefined || bFind[1] === undefined) return 0
-      const aIndex = parseInt(aFind[1].toString(), 10) // unpad
-      const bIndex = parseInt(bFind[1].toString(), 10)
-      if (aIndex > bIndex) return 1
-      else if (aIndex < bIndex) return -1
-      else return 0
-    })
-    return mapsArray
+    return this._maps
   }
 
   get resources () {
-    const /** @type {Resource[]} */ resourcesArray = []
-    const matchexpr = /^MAP([0-9]*)(\.txt)?$/i
-    for (const file of this.files) {
-      const find = (file.path.match(matchexpr) !== null)
-      if (!find) resourcesArray.push(file)
-    }
-    return resourcesArray
+    return this._resources
   }
 
   findResourceByPath (/** @type {String} */ path) {
@@ -89,7 +81,7 @@ function DfwadFrom (/** @type {Uint8Array} */ buffer) {
         const parent = struct.parentSection
         const resname = struct.name
         const resource = new Resource(decompressed, (parent === '' ? '' : parent + '/') + resname) // if empty, don't add slash
-        Dfwad.files.push(resource)
+        Dfwad.addResource(resource)
       }
       resolve(Dfwad)
     })
@@ -106,7 +98,7 @@ function DfwadFrom (/** @type {Uint8Array} */ buffer) {
             file.async('ArrayBuffer').then((/** @type {ArrayBuffer} */ content) => {
               const view = new Uint8Array(content)
               const resource = new Resource(view, file.name)
-              Dfwad.files.push(resource)
+              Dfwad.addResource(resource)
               resolve(true)
             }).catch(() => {
               reject(Error('Failed to load file in ZIP!'))
