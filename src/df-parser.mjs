@@ -573,6 +573,7 @@ class DFTextParser {
 
 class DFParser {
   constructor (/** @type {Uint8Array} */ buffer) {
+    this.type = 'unknown'
     this.buffer = buffer
     if (buffer[0] === undefined || buffer[1] === undefined || buffer[2] === undefined || buffer[3] === undefined) {
       return
@@ -582,6 +583,7 @@ class DFParser {
       const parsed = new DFBinaryParser(buffer)
       this.parsed = parsed
       this.valid = true
+      this.type = 'binary'
     } else { // text map
       const decoder = new TextDecoder('utf-8')
       const view = decoder.decode(buffer)
@@ -591,6 +593,7 @@ class DFParser {
         this.valid = false
         return
       } else this.valid = true
+      this.type = 'text'
       if (parsed.mapObject.map === undefined) parsed.mapObject.map = {} // we don't know what may happen
       this.parsed = parsed.mapObject.map
     }
