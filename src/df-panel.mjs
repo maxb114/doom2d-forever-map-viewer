@@ -13,8 +13,8 @@ class DFPlatformOptions {
    * @param {number} [endPosTrigger]
    * @param {number} [endSizeTrigger]
    */
-  constructor (moveSpeedX = 0, moveSpeedY = 0, sizeSpeedWidth = 0, sizeSpeedHeight = 0,
-    moveStartX = 0, moveStartY = 0, moveEndX = 0, moveEndY = 0, moveActive = false, moveOnce = false, endPosTrigger = -1, endSizeTrigger = -1) {
+  constructor (moveSpeedX = -1, moveSpeedY = -1, sizeSpeedWidth = -1, sizeSpeedHeight = -1,
+    moveStartX = -1, moveStartY = -1, moveEndX = -1, moveEndY = -1, moveActive = false, moveOnce = false, endPosTrigger = -1, endSizeTrigger = -1) {
     this.moveSpeed = { x: 0, y: 0 }
     this.sizeSpeed = { width: 0, height: 0 }
     this.moveStart = { x: 0, y: 0 }
