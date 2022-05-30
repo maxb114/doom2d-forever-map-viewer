@@ -3,6 +3,7 @@ import { DFItem } from './df-item.mjs'
 import { DFMonster } from './df-monster.mjs'
 import { DFPanel } from './df-panel.mjs'
 import { DFTexture } from './df-texture.mjs'
+import { DFTrigger } from './df-trigger.mjs'
 import { parse2Ints } from './utility.mjs'
 
 class DFMap {
@@ -12,6 +13,7 @@ class DFMap {
     /** @type {DFMonster[]} */ this.monsters = []
     /** @type {DFArea[]} */ this.areas = []
     /** @type {DFItem[]} */ this.items = []
+    /** @type {DFTrigger[]} */ this.triggers = []
     this.name = ''
     this.author = ''
     this.description = ''
@@ -94,6 +96,24 @@ class DFMap {
           const item = new DFItem(x, y, type, options)
           item.id = element._token.value
           this.items.push(item)
+        } else if (element._hint === 'trigger') {
+          const position = parse2Ints(element.position)
+          if (position === null || position[0] === undefined || position[1] === undefined) continue
+          const x = position[0]
+          const y = position[1]
+          const size = parse2Ints(element.size)
+          if (size === null || size[0] === undefined || size[1] === undefined) continue
+          const width = size[0]
+          const height = size[1]
+          const enabled = element.enabled
+          const texturePanel = element.texturepanel
+          const type = element.type
+          const activateType = (element.activate_type && element.activate_type !== '' ? element.activate_type : 'ACTIVATE_NONE').replace(/\s+/g, '').split('|')
+          const keys = (element.keys && element.keys !== '' ? element.keys : 'KEY_NONE').replace(/\s+/g, '').split('|')
+          const triggerData = element.triggerdata
+          const trigger = new DFTrigger(x, y, width, height, enabled, texturePanel, type, activateType, keys, triggerData)
+          trigger.id = element._token.value
+          this.triggers.push(trigger)
         }
       }
     }
@@ -164,6 +184,31 @@ class DFMap {
       msg = msg + ' '.repeat(4) + 'position' + ' ' + '(' + (area.pos.x).toString(10) + ' ' + (area.pos.y).toString(10) + ')' + ';' + '\n'
       msg = msg + ' '.repeat(4) + 'type' + ' ' + area.type + ';' + '\n'
       msg = msg + ' '.repeat(4) + 'direction' + ' ' + (area.direction === '' ? 'DIR_LEFT' : area.direction) + ';' + '\n'
+      msg = msg + ' '.repeat(2) + '}' + '\n'
+      body = body + msg
+    }
+    for (const trigger of this.triggers) {
+      let msg = ''
+      msg = msg + '\n'
+      msg = msg + ' '.repeat(2) + 'trigger' + ' ' + trigger.id + ' ' + '{' + '\n'
+      msg = msg + ' '.repeat(4) + 'position' + ' ' + '(' + (trigger.position.x).toString(10) + ' ' + (trigger.position.y).toString(10) + ')' + ';' + '\n'
+      msg = msg + ' '.repeat(4) + 'size' + ' ' + '(' + (trigger.size.width).toString(10) + ' ' + (trigger.size.height).toString(10) + ')' + ';' + '\n'
+      msg = msg + ' '.repeat(4) + 'enabled' + ' ' + (trigger.enabled ? 'true' : 'false') + ';' + '\n'
+      if (trigger.texturePanel !== '') msg = msg + ' '.repeat(4) + 'texture_panel' + ' ' + trigger.texturePanel + ';' + '\n'
+      msg = msg + ' '.repeat(4) + 'type' + ' ' + (trigger.type) + ';' + '\n'
+      msg = msg + ' '.repeat(4) + 'activate_type' + ' ' + (trigger.activateType).join(' | ') + ';' + '\n'
+      msg = msg + ' '.repeat(4) + 'keys' + ' ' + trigger.key.join(' | ') + ';' + '\n'
+      msg = msg + ' '.repeat(4) + 'triggerdata' + ' ' + '{' + '\n'
+      for (const option of trigger.options) {
+        if (option.value === null) continue
+        msg = msg + ' '.repeat(6) + option.path + ' '
+        if (option.handler === 'char') msg = msg + "'" + option.value + "'"
+        else if (option.handler === 'double_longword' || option.handler === 'double_word') msg = msg + '(' + option.value[0] + ' ' + option.value[1] + ')'
+        else if (option.handler === 'bool') msg = msg + (option.value ? 'true' : 'false')
+        else msg = msg + option.value
+        msg = msg + ';' + '\n'
+      }
+      msg = msg + ' '.repeat(4) + '}' + '\n'
       msg = msg + ' '.repeat(2) + '}' + '\n'
       body = body + msg
     }

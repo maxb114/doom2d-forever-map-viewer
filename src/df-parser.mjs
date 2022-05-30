@@ -1,6 +1,7 @@
 import { numberToChar, readSliceByte, readSliceChar, readSliceLongWord, readSliceWord } from './utility.mjs'
 import * as tokenizr from './tokenizr.js'
-import { binaryAreaToString, binaryItemOptionsToString, binaryItemTypeToString, binaryMonsterToString, binaryPanelFlagToString, binaryPanelTypeToString } from './df-constants.mjs'
+import { binaryActivateTypeToString, binaryAreaToString, binaryEffectActionToString, binaryHitTypeToString, binaryItemOptionsToString, binaryItemTypeToString, binaryKeysToString, binaryMonsterBehaviourToString, binaryMonsterToString, binaryPanelFlagToString, binaryPanelTypeToString, binaryTriggerEffectPosToString, binaryTriggerEffectToString, binaryTriggerEffectTypeToString, binaryTriggerMessageDestToString, binaryTriggerMessageKindToString, binaryTriggerMusicActionToString, binaryTriggerScoreActionToString, binaryTriggerScoreTeamToString, binaryTriggerShotAimToString, binaryTriggerShotTargetToString, binaryTriggerTypeToString } from './df-constants.mjs'
+import { getTriggerUsedData } from './df-trigger.mjs'
 const Tokenizr = tokenizr.wrapExport()
 
 class DFBinaryParser {
@@ -170,6 +171,84 @@ class DFBinaryParser {
     return monsters
   }
 
+  handleTriggerData (/** @type {Uint8Array} */ buffer, /** @type {string} */ type) {
+    const /** @type {any} */ triggerDataObject = {}
+    const options = getTriggerUsedData(type)
+    let offset = 0
+    for (const option of options) {
+      if (option.size === -1) continue // skip text-only properties
+      let value = null
+      if (option.handler === 'byte') {
+        const number = readSliceByte(buffer, offset) ?? 0
+        if (type === 'TRIGGER_EFFECT' && option.path === 'pos') value = binaryTriggerEffectPosToString(number)
+        else if (type === 'TRIGGER_EFFECT' && option.path === 'subtype') value = binaryTriggerEffectTypeToString(number)
+        else if (type === 'TRIGGER_EFFECT' && option.path === 'type') value = binaryTriggerEffectToString(number)
+
+        else if (type === 'TRIGGER_SHOT' && option.path === 'aim') value = binaryTriggerShotAimToString(number)
+        else if (type === 'TRIGGER_SHOT' && option.path === 'target') value = binaryTriggerShotTargetToString(number)
+        else if (type === 'TRIGGER_SHOT' && option.path === 'type') value = binaryTriggerShotAimToString(number)
+
+        else if (type === 'TRIGGER_DAMAGE' && option.path === 'kind') value = binaryHitTypeToString(number)
+
+        else if (type === 'TRIGGER_MESSAGE' && option.path === 'dest') value = binaryTriggerMessageDestToString(number)
+        else if (type === 'TRIGGER_MESSAGE' && option.path === 'kind') value = binaryTriggerMessageKindToString(number)
+
+        else if (type === 'TRIGGER_SCORE' && option.path === 'team') value = binaryTriggerScoreTeamToString(number)
+        else if (type === 'TRIGGER_SCORE' && option.path === 'action') value = binaryTriggerScoreActionToString(number)
+
+        else if (type === 'TRIGGER_MUSIC' && option.path === 'action') value = binaryTriggerMusicActionToString(number)
+
+        else if (type === 'TRIGGER_SPAWNITEM' && option.path === 'effect') value = binaryEffectActionToString(number)
+        else if (type === 'TRIGGER_SPAWNITEM' && option.path === 'type') value = binaryItemTypeToString(number)
+
+        else if (type === 'TRIGGER_SPAWNMONSTER' && option.path === 'behaviour') value = binaryMonsterBehaviourToString(number)
+        else if (type === 'TRIGGER_SPAWNMONSTER' && option.path === 'effect') value = binaryEffectActionToString(number)
+        else if (type === 'TRIGGER_SPAWNMONSTER' && option.path === 'type') value = binaryMonsterToString(number)
+
+        else if (option.path === 'direction') value = (number === 1 ? 'DIR_RIGHT' : 'DIR_LEFT')
+        else value = number.toString(10)
+      } else if (option.handler === 'word') {
+        const number = readSliceWord(buffer, offset) ?? 0
+        value = number.toString(10)
+      } else if (option.handler === 'longword') {
+        const number = readSliceLongWord(buffer, offset, true) // don't lose the sign
+        if (option.path === 'monsterid') {
+          if (number !== 0) value = 'monster' + number?.toString(10)
+          else value = null
+        } else if (option.path === 'panelid') {
+          if (number !== -1) value = 'panel' + number?.toString(10)
+          else value = null
+        }
+      } else if (option.handler === 'bool') {
+        const number = readSliceByte(buffer, offset)
+        if (number === 0) value = 'false'
+        else value = 'true'
+      } else if (option.handler === 'double_longword') {
+        let signed = false
+        if (option.path === 'position' || option.path === 'target') signed = true
+        const first = readSliceLongWord(buffer, offset, signed) ?? 0
+        const second = readSliceLongWord(buffer, offset + (option.size / 2), signed) ?? 0
+        value = first.toString(10) + ',' + second.toString(10)
+      } else if (option.handler === 'double_word') {
+        let signed = false
+        if (option.path === 'position' || option.path === 'target') signed = true
+        const first = readSliceWord(buffer, offset, signed) ?? 0
+        const second = readSliceWord(buffer, offset + (option.size / 2), signed) ?? 0
+        value = first.toString(10) + ',' + second.toString(10)
+      } else if (option.handler === 'char') {
+        value = readSliceChar(buffer, offset, option.size)
+      } else if (option.handler === 'direction') {
+        const number = readSliceByte(buffer, offset)
+        if (number === 0) value = 'DIR_LEFT'
+        else value = 'DIR_RIGHT'
+      }
+      value = value ?? option.defaultValue // initialise properties if not they are not set
+      triggerDataObject[option.path] = value
+      offset += option.size
+    }
+    return triggerDataObject
+  }
+
   handleTriggerBlock (/** @type {Uint8Array} */ buffer) {
     const size = buffer.length
     const binsize = 148
@@ -181,38 +260,36 @@ class DFBinaryParser {
       const pos = i * binsize
       const binblock = buffer.slice(pos, pos + binsize)
       let offset = 0
-      const x = readSliceLongWord(binblock, offset)
+      const x = readSliceLongWord(binblock, offset) ?? 0
       offset += 4
-      const y = readSliceLongWord(binblock, offset)
+      const y = readSliceLongWord(binblock, offset) ?? 0
       offset += 4
-      const width = readSliceWord(binblock, offset)
+      const width = readSliceWord(binblock, offset) ?? 0
       offset += 2
-      const height = readSliceWord(binblock, offset)
+      const height = readSliceWord(binblock, offset) ?? 0
       offset += 2
-      const enabled = readSliceByte(binblock, offset)
+      const enabled = readSliceByte(binblock, offset) ?? 0
       offset += 1
       const texturepanel = readSliceLongWord(binblock, offset)
       offset += 4
-      const type = readSliceByte(binblock, offset)
+      const type = binaryTriggerTypeToString(readSliceByte(binblock, offset) ?? 0)
       offset += 1
-      const activatetype = readSliceByte(binblock, offset)
+      const activateType = binaryActivateTypeToString(readSliceByte(binblock, offset) ?? 0)
       offset += 1
-      const keys = readSliceByte(binblock, offset)
-      offset += 1
-      const direction = readSliceByte(binblock, offset)
+      const keys = binaryKeysToString(readSliceByte(binblock, offset) ?? 0)
       offset += 1
       const triggerData = binblock.slice(offset, 128) // TODO: handle triggerdata
       offset += 128
+      const triggerDataObject = this.handleTriggerData(triggerData, type)
       const obj = {
-        pos: x?.toString(10) + ',' + y?.toString(10),
+        position: x?.toString(10) + ',' + y?.toString(10),
         size: width?.toString(10) + ',' + height?.toString(10),
-        enabled: enabled === 1,
-        texturepanel: 'panel' + texturepanel?.toString(10),
+        enabled: (enabled === 1 ? 'true' : 'false'),
+        texture_panel: (texturepanel !== 255 ? 'panel' + texturepanel?.toString(10) : null),
         type,
-        activatetype,
+        activate_type: activateType,
         keys,
-        direction,
-        triggerData,
+        triggerdata: triggerDataObject,
         _hint: 'trigger',
         _token: { value: '' }
       }
