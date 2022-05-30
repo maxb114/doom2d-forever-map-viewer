@@ -129,11 +129,11 @@ class DFMap {
   asText () {
     const start = 'map' + ' {'
     let body = '\n'
-    body = body + ' '.repeat(2) + 'name' + ' ' + "'" + (this.name === '' ? 'Unnamed' : this.name) + "'" + ';' + '\n'
-    if (this.author !== '') body = body + ' '.repeat(2) + 'author' + ' ' + "'" + this.author + "'" + ';' + '\n'
-    if (this.description !== '') body = body + ' '.repeat(2) + 'description' + ' ' + "'" + this.description + "'" + ';' + '\n'
-    if (this.music !== '') body = body + ' '.repeat(2) + 'music' + ' ' + "'" + this.music + "'" + ';' + '\n'
-    if (this.sky !== '') body = body + ' '.repeat(2) + 'sky' + ' ' + "'" + this.sky + "'" + ';' + '\n'
+    body = body + ' '.repeat(2) + 'name' + ' ' + "'" + (this.name === '' ? 'Unnamed' : this.name).replaceAll("'", '"') + "'" + ';' + '\n'
+    if (this.author !== '') body = body + ' '.repeat(2) + 'author' + ' ' + "'" + this.author.replaceAll("'", '"') + "'" + ';' + '\n'
+    if (this.description !== '') body = body + ' '.repeat(2) + 'description' + ' ' + "'" + this.description.replaceAll("'", '"') + "'" + ';' + '\n'
+    if (this.music !== '') body = body + ' '.repeat(2) + 'music' + ' ' + "'" + this.music.replaceAll("'", '"') + "'" + ';' + '\n'
+    if (this.sky !== '') body = body + ' '.repeat(2) + 'sky' + ' ' + "'" + this.sky.replaceAll("'", '"') + "'" + ';' + '\n'
     body = body + ' '.repeat(2) + 'size' + ' ' + '(' + (this.size.x ?? 0).toString(10) + ' ' + (this.size.y ?? 0).toString(10) + ')' + ';' + '\n'
     for (const texture of this.textures) {
       let msg = ''
@@ -198,17 +198,19 @@ class DFMap {
       msg = msg + ' '.repeat(4) + 'type' + ' ' + (trigger.type) + ';' + '\n'
       msg = msg + ' '.repeat(4) + 'activate_type' + ' ' + (trigger.activateType).join(' | ') + ';' + '\n'
       msg = msg + ' '.repeat(4) + 'keys' + ' ' + trigger.key.join(' | ') + ';' + '\n'
-      msg = msg + ' '.repeat(4) + 'triggerdata' + ' ' + '{' + '\n'
-      for (const option of trigger.options) {
-        if (option.value === null) continue
-        msg = msg + ' '.repeat(6) + option.path + ' '
-        if (option.handler === 'char') msg = msg + "'" + option.value + "'"
-        else if (option.handler === 'double_longword' || option.handler === 'double_word') msg = msg + '(' + option.value[0] + ' ' + option.value[1] + ')'
-        else if (option.handler === 'bool') msg = msg + (option.value ? 'true' : 'false')
-        else msg = msg + option.value
-        msg = msg + ';' + '\n'
+      if (trigger.options.length >= 0) {
+        msg = msg + ' '.repeat(4) + 'triggerdata' + ' ' + '{' + '\n'
+        for (const option of trigger.options) {
+          if (option.value === null) continue
+          msg = msg + ' '.repeat(6) + option.path + ' '
+          if (option.handler === 'char') msg = msg + "'" + option.value + "'"
+          else if (option.handler === 'double_longword' || option.handler === 'double_word') msg = msg + '(' + option.value[0] + ' ' + option.value[1] + ')'
+          else if (option.handler === 'bool') msg = msg + (option.value ? 'true' : 'false')
+          else msg = msg + option.value
+          msg = msg + ';' + '\n'
+        }
+        msg = msg + ' '.repeat(4) + '}' + '\n'
       }
-      msg = msg + ' '.repeat(4) + '}' + '\n'
       msg = msg + ' '.repeat(2) + '}' + '\n'
       body = body + msg
     }

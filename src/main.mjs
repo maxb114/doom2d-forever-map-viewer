@@ -26,16 +26,14 @@ input.onchange = function () {
     const buttonId = 'load-button'
     const cacheButtonId = 'cache-button'
     const flagsDivId = 'flags'
-    const deleteSelect = document.getElementById(selectId)
-    if (deleteSelect !== null) div.removeChild(deleteSelect)
-    const deleteButton = document.getElementById(buttonId)
-    if (deleteButton !== null) div.removeChild(deleteButton)
-    const deleteCacheButton = document.getElementById(cacheButtonId)
-    if (deleteCacheButton !== null) div.removeChild(deleteCacheButton)
-    const deleteFlagsDiv = document.getElementById(flagsDivId)
-    if (deleteFlagsDiv !== null) {
-      deleteFlagsDiv.innerHTML = ''
-      div.removeChild(deleteFlagsDiv)
+    const zipButtonId = 'zip-button'
+    const deleteArray = [selectId, buttonId, cacheButtonId, flagsDivId, zipButtonId]
+    for (const elementid of deleteArray) {
+      const deleteElement = document.getElementById(elementid)
+      if (deleteElement !== null) {
+        deleteElement.innerHTML = ''
+        div.removeChild(deleteElement)
+      }
     }
     if (event.target === null) return false
     const content = event.target.result
@@ -53,6 +51,15 @@ input.onchange = function () {
       return true
     }
     div.appendChild(cacheButton)
+    const zipButton = document.createElement('button')
+    zipButton.innerHTML = 'Convert to .dfz and .txt'
+    zipButton.id = zipButtonId
+    zipButton.onclick = async function () {
+      const zip = await wad.saveAsZip()
+      const blob = await zip.generateAsync({ type: 'blob' })
+      download(blob, 'convert-' + file.name.toLowerCase())
+    }
+    div.appendChild(zipButton)
     if (maps.length === 0) return true
     const select = document.createElement('select')
     select.id = selectId
@@ -79,6 +86,7 @@ input.onchange = function () {
       if (resource === null) return false
       const parsed = new DFParser(resource.buffer)
       const map = new DFMap(parsed.parsed, file.name)
+      console.log(map)
       console.log(map.asText())
       const options = new DFRenderOptions()
       const render = new DFRender(map, options, db)
@@ -112,6 +120,13 @@ input.onchange = function () {
     return true
   }
   return true
+}
+
+function download(/** @type {Blob} */ blob, /** @type {string} */ name) {
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(blob)
+  a.download = name
+  a.click()
 }
 
 async function draw (/** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasRenderingContext2D} */ context, /** @type {DFMap} */ map, /** @type {DFRender} */ render) {

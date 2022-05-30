@@ -161,4 +161,10 @@ function readSliceByte (/** @type {Uint8Array} */ buffer, /** @type {number} */ 
   return view1[0]
 }
 
-export { getExtensionFromBuffer, wadToJSON, numberToChar, binaryIsBitSet, parse2Ints, readSliceByte, readSliceChar, readSliceLongWord, readSliceWord }
+function splitPath (/** @type {string} */ path) {
+  let split = path.split('/')
+  split = split.filter((item) => item !== '/')
+  return split
+}
+
+export { getExtensionFromBuffer, wadToJSON, numberToChar, binaryIsBitSet, parse2Ints, readSliceByte, readSliceChar, readSliceLongWord, readSliceWord, splitPath }

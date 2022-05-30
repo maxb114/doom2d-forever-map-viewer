@@ -1,6 +1,6 @@
 import { numberToChar, readSliceByte, readSliceChar, readSliceLongWord, readSliceWord } from './utility.mjs'
 import * as tokenizr from './tokenizr.js'
-import { binaryActivateTypeToString, binaryAreaToString, binaryEffectActionToString, binaryHitTypeToString, binaryItemOptionsToString, binaryItemTypeToString, binaryKeysToString, binaryMonsterBehaviourToString, binaryMonsterToString, binaryPanelFlagToString, binaryPanelTypeToString, binaryTriggerEffectPosToString, binaryTriggerEffectToString, binaryTriggerEffectTypeToString, binaryTriggerMessageDestToString, binaryTriggerMessageKindToString, binaryTriggerMusicActionToString, binaryTriggerScoreActionToString, binaryTriggerScoreTeamToString, binaryTriggerShotAimToString, binaryTriggerShotTargetToString, binaryTriggerTypeToString } from './df-constants.mjs'
+import { binaryActivateTypeToString, binaryAreaToString, binaryEffectActionToString, binaryHitTypeToString, binaryItemOptionsToString, binaryItemTypeToString, binaryKeysToString, binaryMonsterBehaviourToString, binaryMonsterToString, binaryPanelFlagToString, binaryPanelTypeToString, binaryTriggerEffectPosToString, binaryTriggerEffectToString, binaryTriggerEffectTypeToString, binaryTriggerMessageDestToString, binaryTriggerMessageKindToString, binaryTriggerMusicActionToString, binaryTriggerScoreActionToString, binaryTriggerScoreTeamToString, binaryTriggerShotAimToString, binaryTriggerShotTargetToString, binaryTriggerShotToString, binaryTriggerTypeToString } from './df-constants.mjs'
 import { getTriggerUsedData } from './df-trigger.mjs'
 const Tokenizr = tokenizr.wrapExport()
 
@@ -186,7 +186,7 @@ class DFBinaryParser {
 
         else if (type === 'TRIGGER_SHOT' && option.path === 'aim') value = binaryTriggerShotAimToString(number)
         else if (type === 'TRIGGER_SHOT' && option.path === 'target') value = binaryTriggerShotTargetToString(number)
-        else if (type === 'TRIGGER_SHOT' && option.path === 'type') value = binaryTriggerShotAimToString(number)
+        else if (type === 'TRIGGER_SHOT' && option.path === 'type') value = binaryTriggerShotToString(number)
 
         else if (type === 'TRIGGER_DAMAGE' && option.path === 'kind') value = binaryHitTypeToString(number)
 
@@ -198,22 +198,23 @@ class DFBinaryParser {
 
         else if (type === 'TRIGGER_MUSIC' && option.path === 'action') value = binaryTriggerMusicActionToString(number)
 
-        else if (type === 'TRIGGER_SPAWNITEM' && option.path === 'effect') value = binaryEffectActionToString(number)
         else if (type === 'TRIGGER_SPAWNITEM' && option.path === 'type') value = binaryItemTypeToString(number)
 
         else if (type === 'TRIGGER_SPAWNMONSTER' && option.path === 'behaviour') value = binaryMonsterBehaviourToString(number)
-        else if (type === 'TRIGGER_SPAWNMONSTER' && option.path === 'effect') value = binaryEffectActionToString(number)
         else if (type === 'TRIGGER_SPAWNMONSTER' && option.path === 'type') value = binaryMonsterToString(number)
 
         else if (option.path === 'direction') value = (number === 1 ? 'DIR_RIGHT' : 'DIR_LEFT')
         else value = number.toString(10)
       } else if (option.handler === 'word') {
         const number = readSliceWord(buffer, offset) ?? 0
-        value = number.toString(10)
+        if (type === 'TRIGGER_SPAWNITEM' && option.path === 'effect') value = binaryEffectActionToString(number) 
+        else if (type === 'TRIGGER_SPAWNMONSTER' && option.path === 'effect') value = binaryEffectActionToString(number)
+        else value = number.toString(10)
       } else if (option.handler === 'longword') {
         const number = readSliceLongWord(buffer, offset, true) // don't lose the sign
         if (option.path === 'monsterid') {
-          if (number !== 0) value = 'monster' + number?.toString(10)
+          if (number === undefined) value = null
+          else if (number !== 0) value = 'monster' + (number - 1).toString(10)
           else value = null
         } else if (option.path === 'panelid') {
           if (number !== -1) value = 'panel' + number?.toString(10)
@@ -241,6 +242,9 @@ class DFBinaryParser {
         const number = readSliceByte(buffer, offset)
         if (number === 0) value = 'DIR_LEFT'
         else value = 'DIR_RIGHT'
+      } else if (option.handler === 'sbyte') {
+        const number = (readSliceByte(buffer, offset) ?? 0) << 24 >> 24
+        value = number
       }
       value = value ?? option.defaultValue // initialise properties if not they are not set
       triggerDataObject[option.path] = value
@@ -454,7 +458,7 @@ class DFBinaryParser {
 }
 
 class DFTextParser {
-  constructor (/** @type {string} */ content) {
+  constructor (/** @type {string} */ content, checkValid = false) {
     const lexer = new Tokenizr()
     lexer.rule(/\((-?[0-9]+?)\s(-?[0-9]+?)\)/, (/** @type {any} */ ctx, /** @type {any} */ match) => {
       ctx.accept('double_assignment', [parseInt(match[1], 10), parseInt(match[2], 10)])
@@ -483,11 +487,17 @@ class DFTextParser {
     lexer.rule(/}/, (/** @type {any} */ ctx) => {
       ctx.accept('close_curly_brace')
     })
+    lexer.rule(/\/\*(\*(?!\/)|[^*])*\*\//, (/** @type {any} */ ctx) => {
+      ctx.ignore()
+    })
     lexer.rule(/;/, (/** @type {any} */ ctx) => {
       ctx.accept('semicolon')
     })
-    lexer.rule(/./, (/** @type {any} */ ctx) => {
+    lexer.rule(/[|+]/, (/** @type {any} */ ctx) => {
       ctx.accept('char')
+    })
+    lexer.rule(/./, (/** @type {any} */ ctx) => {
+      ctx.accept('other')
     })
     lexer.input(content)
     const tokenArray = lexer.tokens()
@@ -496,7 +506,16 @@ class DFTextParser {
     let /** @type {any} */ evaluatedElement
     const /** @type {any} */ copy = []
     const /** @type {any} */ mapObj = {}
+    this.valid = false
+    if (tokenArray !== undefined && tokenArray[0] !== undefined && tokenArray[0].value === 'map' && tokenArray[1] !== undefined && tokenArray[1].type === 'open_curly_brace' && tokenArray[tokenArray.length - 2] !== undefined && tokenArray[tokenArray.length - 2].type === 'close_curly_brace') this.valid = true
+    if ((!this.valid && !checkValid) || checkValid) {
+      return
+    }
     tokenArray.forEach((token) => {
+      if (token.type === 'other') {
+        this.valid = false
+        return
+      }
       const tokenIndex = tokenArray.indexOf(token)
       const prevTokenIndex = tokenIndex - 1
       const prevToken = (prevTokenIndex >= 0 ? tokenArray[prevTokenIndex] : undefined)
@@ -558,6 +577,8 @@ class DFTextParser {
 
 class DFParser {
   constructor (/** @type {Uint8Array} */ buffer) {
+    this.type = 'unknown'
+    this.valid = false
     this.buffer = buffer
     if (buffer[0] === undefined || buffer[1] === undefined || buffer[2] === undefined || buffer[3] === undefined) {
       return
@@ -566,10 +587,20 @@ class DFParser {
     if (isBinary) {
       const parsed = new DFBinaryParser(buffer)
       this.parsed = parsed
+      this.valid = true
+      this.type = 'binary'
     } else { // text map
       const decoder = new TextDecoder('utf-8')
       const view = decoder.decode(buffer)
+      const onlyPrintable = /^[ -~\t\n\r]+$/.test(view)
+      if (!onlyPrintable) {
+        return
+      }
       const parsed = new DFTextParser(view)
+      if (parsed.valid !== true) {
+        return
+      } else this.valid = true
+      this.type = 'text'
       if (parsed.mapObject.map === undefined) parsed.mapObject.map = {} // we don't know what may happen
       this.parsed = parsed.mapObject.map
     }
