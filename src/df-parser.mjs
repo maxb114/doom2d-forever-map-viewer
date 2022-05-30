@@ -483,10 +483,13 @@ class DFTextParser {
     lexer.rule(/}/, (/** @type {any} */ ctx) => {
       ctx.accept('close_curly_brace')
     })
+    lexer.rule(/\/\*(\*(?!\/)|[^*])*\*\//, (/** @type {any} */ ctx) => {
+      ctx.ignore()
+    })
     lexer.rule(/;/, (/** @type {any} */ ctx) => {
       ctx.accept('semicolon')
     })
-    lexer.rule(/[|]/, (/** @type {any} */ ctx) => {
+    lexer.rule(/[|+]/, (/** @type {any} */ ctx) => {
       ctx.accept('char')
     })
     lexer.rule(/./, (/** @type {any} */ ctx) => {
@@ -501,7 +504,7 @@ class DFTextParser {
     const /** @type {any} */ mapObj = {}
     this.valid = false
     if (tokenArray !== undefined && tokenArray[0] !== undefined && tokenArray[0].value === 'map' && tokenArray[1] !== undefined && tokenArray[1].type === 'open_curly_brace' && tokenArray[tokenArray.length - 2] !== undefined && tokenArray[tokenArray.length - 2].type === 'close_curly_brace') this.valid = true
-    if (!this.valid || checkValid) {
+    if ((!this.valid && !checkValid) || checkValid) {
       return
     }
     tokenArray.forEach((token) => {
@@ -587,7 +590,7 @@ class DFParser {
       if (parsed.valid !== true) {
         this.valid = false
         return
-      }
+      } else this.valid = true
       if (parsed.mapObject.map === undefined) parsed.mapObject.map = {} // we don't know what may happen
       this.parsed = parsed.mapObject.map
     }
