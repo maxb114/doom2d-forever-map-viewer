@@ -1,7 +1,8 @@
-import { getExtensionFromBuffer, wadToJSON } from './utility.mjs'
+import { getExtensionFromBuffer, splitPath, wadToJSON } from './utility.mjs'
 import { inflate } from './pako.esm.mjs'
 import './jszip.js'
 import { DFParser } from './df-parser.mjs'
+import { DFMap } from './df-map.mjs'
 class WadStruct {
   constructor (/** @type {any} */ structObject) {
     if (structObject !== undefined) {
@@ -40,6 +41,33 @@ class DFWad {
     this.files.push(resource)
     if (isMap(resource.buffer)) this._maps.push(resource)
     else this._resources.push(resource)
+  }
+
+  async saveToZip ( /** @type {any} */ zip, /** @type {string} */ fullPath, /** @type {any} */ value) {
+    const paths = splitPath(fullPath)
+    let folder = zip
+    for (let i = 0; i < paths.length - 1; i++) {
+      folder = await zip.folder(paths[i])
+      // debugger
+    }
+    await folder.file(paths[paths.length - 1], value)
+    return true
+  }
+
+  async saveAsZip () {
+    const zip = new JSZip()
+    const promises = []
+    for (const map of this.maps) {
+      const parsed = new DFParser(map.buffer)
+      const converted = new DFMap(parsed.parsed, map.path)
+      const view = converted.asText()
+      promises.push(this.saveToZip(zip, map.path, view))
+    }
+    for (const resource of this.resources) {
+      promises.push(this.saveToZip(zip, resource.path, resource.buffer))
+    }
+    await Promise.all(promises)
+    return zip
   }
 
   get maps () {
