@@ -1510,7 +1510,7 @@ function binaryTriggerMessageDestToString (/** @type {number} */ trigger) {
   return 'TRIGGER_MESSAGE_DEST_ME'
 }
 
-function binaryTriggerMessageKind (/** @type {number} */ trigger) {
+function binaryTriggerMessageKindToString (/** @type {number} */ trigger) {
   if (trigger === 0) return 'TRIGGER_MESSAGE_KIND_CHAT'
   else if (trigger === 1) return 'TRIGGER_MESSAGE_KIND_GAME'
   return 'TRIGGER_MESSAGE_KIND_CHAT'
@@ -1551,9 +1551,53 @@ function binaryTriggerScoreTeamToString (/** @type {number} */ team) {
   return 'TRIGGER_SCORE_TEAM_MINE_RED'
 }
 
+function binaryActivateTypeToString (/** @type {number} */ type) {
+  /*
+  if (type === 0) return 'ACTIVATE_NONE'
+  else if (type === 1) return 'ACTIVATE_PLAYERCOLLIDE'
+  else if (type === 2) return 'ACTIVATE_MONSTERCOLLIDE'
+  else if (type === 4) return 'ACTIVATE_PLAYERPRESS'
+  else if (type === 8) return 'ACTIVATE_MONSTERPRESS'
+  else if (type === 16) return 'ACTIVATE_SHOT'
+  else if (type === 32) return 'ACTIVATE_NOMONSTER'
+  else if (type === 255) return 'ACTIVATE_CUSTOM'
+  else return 'ACTIVATE_NONE' */
+  const flags = []
+  console.log(binaryIsBitSet(type, 1))
+  console.log(binaryIsBitSet(4, 4))
+  if (type === 0) flags.push('ACTIVATE_NONE')
+  if (binaryIsBitSet(type, 1) || type === 1) flags.push('ACTIVATE_PLAYERCOLLIDE')
+  if (binaryIsBitSet(type, 2) || type === 2) flags.push('ACTIVATE_MONSTERCOLLIDE')
+  if (binaryIsBitSet(type, 4) || type === 4) flags.push('ACTIVATE_PLAYERPRESS')
+  if (binaryIsBitSet(type, 8) || type === 8) flags.push('ACTIVATE_MONSTERPRESS')
+  if (binaryIsBitSet(type, 16) || type === 16) flags.push('ACTIVATE_SHOT')
+  if (binaryIsBitSet(type, 32) || type === 32) flags.push('ACTIVATE_PLAYERCOLLIDE')
+  if (type === 255) flags.push('ACTIVATE_CUSTOM')
+  return flags.join('|')
+}
+
+function binaryEffectActionToString (/** @type {number} */ type) {
+  if (type === 0) return 'EFFECT_NONE'
+  else if (type === 1) return 'EFFECT_TELEPORT'
+  else if (type === 2) return 'EFFECT_RESPAWN'
+  else if (type === 3) return 'EFFECT_FIRE'
+  else return 'EFFECT_NONE'
+}
+
+function binaryMonsterBehaviourToString(/** @type {number} */ monster) {
+  if (monster === 0) return 'BH_NORMAL'
+  else if (monster === 1) return 'BH_KILLER'
+  else if (monster === 2) return 'BH_MANIAC'
+  else if (monster === 3) return 'BH_INSANE'
+  else if (monster === 4) return 'BH_CANNIBAL'
+  else if (monster === 5) return 'BH_GOOD'
+  return 'BH_NORMAL'
+}
+
 export {
   binaryMonsterToString, binaryAreaToString, binaryItemOptionsToString, binaryItemTypeToString, binaryPanelTypeToString, binaryPanelFlagToString,
   specialItemToJSON, getMonsterSize, getMonsterDelta, convertSpecialItem, convertGameItems, getAreaSize, areaToTexture, binaryTriggerTypeToString,
   binaryTriggerShotToString, binaryTriggerShotTargetToString, binaryTriggerShotAimToString, binaryTriggerEffectToString, binaryTriggerEffectTypeToString,
-  binaryTriggerEffectPosToString, binaryTriggerMusicActionToString, binaryTriggerScoreActionToString, binaryTriggerMessageDestToString, binaryTriggerMessageKind, binaryKeysToString, binaryHitTypeToString, binaryTriggerScoreTeamToString
+  binaryTriggerEffectPosToString, binaryTriggerMusicActionToString, binaryTriggerScoreActionToString, binaryTriggerMessageDestToString, binaryTriggerMessageKindToString,
+  binaryKeysToString, binaryHitTypeToString, binaryTriggerScoreTeamToString, binaryActivateTypeToString, binaryEffectActionToString, binaryMonsterBehaviourToString
 }
