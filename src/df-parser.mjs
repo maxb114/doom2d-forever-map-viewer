@@ -1,6 +1,6 @@
 import { numberToChar, readSliceByte, readSliceChar, readSliceLongWord, readSliceWord } from './utility.mjs'
 import * as tokenizr from './tokenizr.js'
-import { binaryActivateTypeToString, binaryAreaToString, binaryEffectActionToString, binaryHitTypeToString, binaryItemOptionsToString, binaryItemTypeToString, binaryKeysToString, binaryMonsterBehaviourToString, binaryMonsterToString, binaryPanelFlagToString, binaryPanelTypeToString, binaryTriggerEffectPosToString, binaryTriggerEffectToString, binaryTriggerEffectTypeToString, binaryTriggerMessageDestToString, binaryTriggerMessageKindToString, binaryTriggerMusicActionToString, binaryTriggerScoreActionToString, binaryTriggerScoreTeamToString, binaryTriggerShotAimToString, binaryTriggerShotTargetToString, binaryTriggerTypeToString } from './df-constants.mjs'
+import { binaryActivateTypeToString, binaryAreaToString, binaryEffectActionToString, binaryHitTypeToString, binaryItemOptionsToString, binaryItemTypeToString, binaryKeysToString, binaryMonsterBehaviourToString, binaryMonsterToString, binaryPanelFlagToString, binaryPanelTypeToString, binaryTriggerEffectPosToString, binaryTriggerEffectToString, binaryTriggerEffectTypeToString, binaryTriggerMessageDestToString, binaryTriggerMessageKindToString, binaryTriggerMusicActionToString, binaryTriggerScoreActionToString, binaryTriggerScoreTeamToString, binaryTriggerShotAimToString, binaryTriggerShotTargetToString, binaryTriggerShotToString, binaryTriggerTypeToString } from './df-constants.mjs'
 import { getTriggerUsedData } from './df-trigger.mjs'
 const Tokenizr = tokenizr.wrapExport()
 
@@ -186,7 +186,7 @@ class DFBinaryParser {
 
         else if (type === 'TRIGGER_SHOT' && option.path === 'aim') value = binaryTriggerShotAimToString(number)
         else if (type === 'TRIGGER_SHOT' && option.path === 'target') value = binaryTriggerShotTargetToString(number)
-        else if (type === 'TRIGGER_SHOT' && option.path === 'type') value = binaryTriggerShotAimToString(number)
+        else if (type === 'TRIGGER_SHOT' && option.path === 'type') value = binaryTriggerShotToString(number)
 
         else if (type === 'TRIGGER_DAMAGE' && option.path === 'kind') value = binaryHitTypeToString(number)
 
@@ -198,18 +198,18 @@ class DFBinaryParser {
 
         else if (type === 'TRIGGER_MUSIC' && option.path === 'action') value = binaryTriggerMusicActionToString(number)
 
-        else if (type === 'TRIGGER_SPAWNITEM' && option.path === 'effect') value = binaryEffectActionToString(number)
         else if (type === 'TRIGGER_SPAWNITEM' && option.path === 'type') value = binaryItemTypeToString(number)
 
         else if (type === 'TRIGGER_SPAWNMONSTER' && option.path === 'behaviour') value = binaryMonsterBehaviourToString(number)
-        else if (type === 'TRIGGER_SPAWNMONSTER' && option.path === 'effect') value = binaryEffectActionToString(number)
         else if (type === 'TRIGGER_SPAWNMONSTER' && option.path === 'type') value = binaryMonsterToString(number)
 
         else if (option.path === 'direction') value = (number === 1 ? 'DIR_RIGHT' : 'DIR_LEFT')
         else value = number.toString(10)
       } else if (option.handler === 'word') {
         const number = readSliceWord(buffer, offset) ?? 0
-        value = number.toString(10)
+        if (type === 'TRIGGER_SPAWNITEM' && option.path === 'effect') value = binaryEffectActionToString(number) 
+        else if (type === 'TRIGGER_SPAWNMONSTER' && option.path === 'effect') value = binaryEffectActionToString(number)
+        else value = number.toString(10)
       } else if (option.handler === 'longword') {
         const number = readSliceLongWord(buffer, offset, true) // don't lose the sign
         if (option.path === 'monsterid') {
@@ -242,6 +242,9 @@ class DFBinaryParser {
         const number = readSliceByte(buffer, offset)
         if (number === 0) value = 'DIR_LEFT'
         else value = 'DIR_RIGHT'
+      } else if (option.handler === 'sbyte') {
+        const number = (readSliceByte(buffer, offset) ?? 0) << 24 >> 24
+        value = number
       }
       value = value ?? option.defaultValue // initialise properties if not they are not set
       triggerDataObject[option.path] = value

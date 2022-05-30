@@ -47,12 +47,12 @@ function getTriggerUsedData (/** @type {String} */ trigger) {
     properties.push(new TriggerOption('sound_switch', 'true', 'bool', 1))
   } else if (trigger === 'TRIGGER_SPAWNMONSTER') {
     properties.push(new TriggerOption('position', '0,0', 'double_longword', 8))
-    properties.push(new TriggerOption('type', 0, 'longword', 4))
+    properties.push(new TriggerOption('type', 'MONSTER_NONE', 'longword', 4))
     properties.push(new TriggerOption('health', 4, 'longword', 4))
     properties.push(new TriggerOption('direction', 'DIR_LEFT', 'direction', 1))
     properties.push(new TriggerOption('active', 'true', 'bool', 3)) // why does this have to be 3?
     properties.push(new TriggerOption('count', 1, 'longword', 4))
-    properties.push(new TriggerOption('effect', 0, 'word', 2))
+    properties.push(new TriggerOption('effect', 'EFFECT_NONE', 'word', 2))
     properties.push(new TriggerOption('max', 1, 'word', 2))
     properties.push(new TriggerOption('delay', 1000, 'word', 2))
     properties.push(new TriggerOption('behaviour', 0, 'byte', 1))
@@ -62,7 +62,7 @@ function getTriggerUsedData (/** @type {String} */ trigger) {
     properties.push(new TriggerOption('gravity', 'true', 'bool', 1))
     properties.push(new TriggerOption('dmonly', 'false', 'bool', 2))
     properties.push(new TriggerOption('count', 1, 'longword', 4))
-    properties.push(new TriggerOption('effect', 0, 'word', 2))
+    properties.push(new TriggerOption('effect', 'EFFECT_NONE', 'word', 2))
     properties.push(new TriggerOption('max', 1, 'word', 2))
     properties.push(new TriggerOption('delay', 1000, 'word', 2))
   } else if (trigger === 'TRIGGER_MUSIC') {
@@ -86,13 +86,13 @@ function getTriggerUsedData (/** @type {String} */ trigger) {
   } else if (trigger === 'TRIGGER_DAMAGE') {
     properties.push(new TriggerOption('amount', 0, 'word', 2))
     properties.push(new TriggerOption('interval', 0, 'word', 2))
-    properties.push(new TriggerOption('kind', 0, 'byte', 1))
+    // properties.push(new TriggerOption('kind', 0, 'byte', 1)) // why...
   } else if (trigger === 'TRIGGER_HEALTH') {
     properties.push(new TriggerOption('amount', 0, 'word', 2))
     properties.push(new TriggerOption('interval', 0, 'word', 2))
     properties.push(new TriggerOption('max', 'false', 'bool', 1))
     properties.push(new TriggerOption('silent', 'false', 'bool', 2))
-  } else if (trigger === 'TRIGGER_SHOT') {
+  } else if (trigger === 'TRIGGER_SHOT' && false) {
     properties.push(new TriggerOption('position', '0,0', 'double_longword', 8))
     properties.push(new TriggerOption('type', 0, 'byte', 1))
     properties.push(new TriggerOption('target', 0, 'byte', 1))
@@ -114,8 +114,8 @@ function getTriggerUsedData (/** @type {String} */ trigger) {
     properties.push(new TriggerOption('blue', 0, 'byte', 1))
     properties.push(new TriggerOption('pos', 0, 'byte', 2))
     properties.push(new TriggerOption('wait', 0, 'word', 2))
-    properties.push(new TriggerOption('vel_x', 0, 'byte', 1)) // should it be signed?
-    properties.push(new TriggerOption('vel_y', 0, 'byte', 1))
+    properties.push(new TriggerOption('vel_x', 0, 'sbyte', 1)) // should it be signed?
+    properties.push(new TriggerOption('vel_y', 0, 'sbyte', 1))
     properties.push(new TriggerOption('spread_l', 0, 'byte', 1))
     properties.push(new TriggerOption('spread_r', 0, 'byte', 1))
     properties.push(new TriggerOption('spread_u', 0, 'byte', 1))
