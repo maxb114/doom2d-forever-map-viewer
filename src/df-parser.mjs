@@ -454,7 +454,7 @@ class DFBinaryParser {
 }
 
 class DFTextParser {
-  constructor (/** @type {string} */ content) {
+  constructor (/** @type {string} */ content, checkValid = false) {
     const lexer = new Tokenizr()
     lexer.rule(/\((-?[0-9]+?)\s(-?[0-9]+?)\)/, (/** @type {any} */ ctx, /** @type {any} */ match) => {
       ctx.accept('double_assignment', [parseInt(match[1], 10), parseInt(match[2], 10)])
@@ -486,8 +486,11 @@ class DFTextParser {
     lexer.rule(/;/, (/** @type {any} */ ctx) => {
       ctx.accept('semicolon')
     })
-    lexer.rule(/./, (/** @type {any} */ ctx) => {
+    lexer.rule(/[|]/, (/** @type {any} */ ctx) => {
       ctx.accept('char')
+    })
+    lexer.rule(/./, (/** @type {any} */ ctx) => {
+      ctx.accept('other')
     })
     lexer.input(content)
     const tokenArray = lexer.tokens()
@@ -496,7 +499,16 @@ class DFTextParser {
     let /** @type {any} */ evaluatedElement
     const /** @type {any} */ copy = []
     const /** @type {any} */ mapObj = {}
+    this.valid = false
+    if (tokenArray !== undefined && tokenArray[0] !== undefined && tokenArray[0].value === 'map' && tokenArray[1] !== undefined && tokenArray[1].type === 'open_curly_brace' && tokenArray[tokenArray.length - 2] !== undefined && tokenArray[tokenArray.length - 2].type === 'close_curly_brace') this.valid = true
+    if (!this.valid || checkValid) {
+      return
+    }
     tokenArray.forEach((token) => {
+      if (token.type === 'other') {
+        this.valid = false
+        return
+      }
       const tokenIndex = tokenArray.indexOf(token)
       const prevTokenIndex = tokenIndex - 1
       const prevToken = (prevTokenIndex >= 0 ? tokenArray[prevTokenIndex] : undefined)
@@ -566,10 +578,16 @@ class DFParser {
     if (isBinary) {
       const parsed = new DFBinaryParser(buffer)
       this.parsed = parsed
+      this.valid = true
     } else { // text map
       const decoder = new TextDecoder('utf-8')
       const view = decoder.decode(buffer)
       const parsed = new DFTextParser(view)
+      this.valid = true
+      if (parsed.valid !== true) {
+        this.valid = false
+        return
+      }
       if (parsed.mapObject.map === undefined) parsed.mapObject.map = {} // we don't know what may happen
       this.parsed = parsed.mapObject.map
     }
