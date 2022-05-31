@@ -119,6 +119,13 @@ class DFMap {
     }
   }
 
+  get allElements () {
+    const /** @type {(DFArea | DFItem | DFMonster | DFPanel | DFTexture | DFTrigger)[]} */ items = []
+    const toPush = [this.areas, this.items, this.monsters, this.panels, this.textures, this.triggers]
+    for (const i of toPush) items.push(...i)
+    return items
+  }
+
   getTexturePath = (/** @type {String} */ arg) => {
     for (const texture of this.textures) {
       if (texture.id === arg) return texture.path
@@ -135,84 +142,8 @@ class DFMap {
     if (this.music !== '') body = body + ' '.repeat(2) + 'music' + ' ' + "'" + this.music.replaceAll("'", '"') + "'" + ';' + '\n'
     if (this.sky !== '') body = body + ' '.repeat(2) + 'sky' + ' ' + "'" + this.sky.replaceAll("'", '"') + "'" + ';' + '\n'
     body = body + ' '.repeat(2) + 'size' + ' ' + '(' + (this.size.x ?? 0).toString(10) + ' ' + (this.size.y ?? 0).toString(10) + ')' + ';' + '\n'
-    for (const texture of this.textures) {
-      let msg = ''
-      msg = msg + '\n'
-      msg = msg + ' '.repeat(2) + 'texture' + ' ' + texture.id + ' ' + '{' + '\n'
-      msg = msg + ' '.repeat(4) + 'path' + ' ' + "'" + texture.path + "'" + ';' + '\n'
-      msg = msg + ' '.repeat(4) + 'animated' + ' ' + (texture.animated ? 'true' : 'false') + ';' + '\n'
-      msg = msg + ' '.repeat(2) + '}' + '\n'
-      body = body + msg
-    }
-    for (const panel of this.panels) {
-      let msg = ''
-      msg = msg + '\n'
-      msg = msg + ' '.repeat(2) + 'panel' + ' ' + panel.id + ' ' + '{' + '\n'
-      msg = msg + ' '.repeat(4) + 'position' + ' ' + '(' + (panel.pos.x).toString(10) + ' ' + (panel.pos.y).toString(10) + ')' + ';' + '\n'
-      msg = msg + ' '.repeat(4) + 'size' + ' ' + '(' + (panel.size.width).toString(10) + ' ' + (panel.size.height).toString(10) + ')' + ';' + '\n'
-      msg = msg + ' '.repeat(4) + 'texture' + ' ' + panel.texture + ';' + '\n'
-      msg = msg + ' '.repeat(4) + 'type' + ' ' + panel.type[0] + ';' + '\n'
-      msg = msg + ' '.repeat(4) + 'alpha' + ' ' + (panel.alpha === -1 ? 0 : panel.alpha) + ';' + '\n'
-      msg = msg + ' '.repeat(4) + 'flags' + ' ' + panel.flags.join(' | ') + ';' + '\n'
-      msg = msg + ' '.repeat(2) + '}' + '\n'
-      body = body + msg
-    }
-    for (const item of this.items) {
-      let msg = ''
-      msg = msg + '\n'
-      msg = msg + ' '.repeat(2) + 'item' + ' ' + item.id + ' ' + '{' + '\n'
-      msg = msg + ' '.repeat(4) + 'position' + ' ' + '(' + (item.pos.x).toString(10) + ' ' + (item.pos.y).toString(10) + ')' + ';' + '\n'
-      msg = msg + ' '.repeat(4) + 'type' + ' ' + item.type + ';' + '\n'
-      msg = msg + ' '.repeat(4) + 'options' + ' ' + item.options.join(' | ') + ';' + '\n'
-      msg = msg + ' '.repeat(2) + '}' + '\n'
-      body = body + msg
-    }
-    for (const monster of this.monsters) {
-      let msg = ''
-      msg = msg + '\n'
-      msg = msg + ' '.repeat(2) + 'monster' + ' ' + monster.id + ' ' + '{' + '\n'
-      msg = msg + ' '.repeat(4) + 'position' + ' ' + '(' + (monster.pos.x).toString(10) + ' ' + (monster.pos.y).toString(10) + ')' + ';' + '\n'
-      msg = msg + ' '.repeat(4) + 'type' + ' ' + monster.type + ';' + '\n'
-      msg = msg + ' '.repeat(4) + 'direction' + ' ' + (monster.direction === '' ? 'DIR_LEFT' : monster.direction) + ';' + '\n'
-      msg = msg + ' '.repeat(2) + '}' + '\n'
-      body = body + msg
-    }
-    for (const area of this.areas) {
-      let msg = ''
-      msg = msg + '\n'
-      msg = msg + ' '.repeat(2) + 'area' + ' ' + area.id + ' ' + '{' + '\n'
-      msg = msg + ' '.repeat(4) + 'position' + ' ' + '(' + (area.pos.x).toString(10) + ' ' + (area.pos.y).toString(10) + ')' + ';' + '\n'
-      msg = msg + ' '.repeat(4) + 'type' + ' ' + area.type + ';' + '\n'
-      msg = msg + ' '.repeat(4) + 'direction' + ' ' + (area.direction === '' ? 'DIR_LEFT' : area.direction) + ';' + '\n'
-      msg = msg + ' '.repeat(2) + '}' + '\n'
-      body = body + msg
-    }
-    for (const trigger of this.triggers) {
-      let msg = ''
-      msg = msg + '\n'
-      msg = msg + ' '.repeat(2) + 'trigger' + ' ' + trigger.id + ' ' + '{' + '\n'
-      msg = msg + ' '.repeat(4) + 'position' + ' ' + '(' + (trigger.position.x).toString(10) + ' ' + (trigger.position.y).toString(10) + ')' + ';' + '\n'
-      msg = msg + ' '.repeat(4) + 'size' + ' ' + '(' + (trigger.size.width).toString(10) + ' ' + (trigger.size.height).toString(10) + ')' + ';' + '\n'
-      msg = msg + ' '.repeat(4) + 'enabled' + ' ' + (trigger.enabled ? 'true' : 'false') + ';' + '\n'
-      if (trigger.texturePanel !== '') msg = msg + ' '.repeat(4) + 'texture_panel' + ' ' + trigger.texturePanel + ';' + '\n'
-      msg = msg + ' '.repeat(4) + 'type' + ' ' + (trigger.type) + ';' + '\n'
-      msg = msg + ' '.repeat(4) + 'activate_type' + ' ' + (trigger.activateType).join(' | ') + ';' + '\n'
-      msg = msg + ' '.repeat(4) + 'keys' + ' ' + trigger.key.join(' | ') + ';' + '\n'
-      if (trigger.options.length >= 0) {
-        msg = msg + ' '.repeat(4) + 'triggerdata' + ' ' + '{' + '\n'
-        for (const option of trigger.options) {
-          if (option.value === null) continue
-          msg = msg + ' '.repeat(6) + option.path + ' '
-          if (option.handler === 'char') msg = msg + "'" + option.value + "'"
-          else if (option.handler === 'double_longword' || option.handler === 'double_word') msg = msg + '(' + option.value[0] + ' ' + option.value[1] + ')'
-          else if (option.handler === 'bool') msg = msg + (option.value ? 'true' : 'false')
-          else msg = msg + option.value
-          msg = msg + ';' + '\n'
-        }
-        msg = msg + ' '.repeat(4) + '}' + '\n'
-      }
-      msg = msg + ' '.repeat(2) + '}' + '\n'
-      body = body + msg
+    for (const element of this.allElements) {
+      body = body + element.asText()
     }
     const end = '}'
     return start + body + end
