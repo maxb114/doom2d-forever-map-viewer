@@ -5,7 +5,7 @@ class DFTexture {
     this.id = 'default'
   }
 
-  asText() {
+  asText () {
     let msg = ''
     msg = msg + '\n'
     msg = msg + ' '.repeat(2) + 'texture' + ' ' + this.id + ' ' + '{' + '\n'
