@@ -5,13 +5,54 @@ import { getTriggerUsedData } from './df-trigger.mjs'
 const Tokenizr = tokenizr.wrapExport()
 
 class DFBinaryParser {
+  handleMapBlock (/** @type {Uint8Array} */ buffer) {
+    const size = buffer.length
+    const binsize = 452
+    const blocks = size / binsize
+    const isWhole = Number.isInteger(blocks)
+    if (isWhole === false) {
+      return null
+    }
+    const info = {
+      name: '',
+      author: '',
+      description: '',
+      music: '',
+      sky: '',
+      width: 0,
+      height: 0
+    }
+    for (let i = 0; i < blocks; i += 1) {
+      const pos = i * binsize
+      const binblock = buffer.slice(pos, pos + binsize)
+      let offset = 0
+      info.name = readSliceChar(binblock, offset, 32)
+      offset += 32
+      info.author = readSliceChar(binblock, offset, 32)
+      offset += 32
+      info.description = readSliceChar(binblock, offset, 256)
+      offset += 256
+      info.music = readSliceChar(binblock, offset, 64)
+      offset += 64
+      info.sky = readSliceChar(binblock, offset, 64)
+      offset += 64
+      info.width = (readSliceWord(binblock, offset) ?? 1000)
+      offset += 2
+      info.height = (readSliceWord(binblock, offset) ?? 1000)
+      offset += 2
+    }
+    return info
+  }
+
   handleTextureBlock (/** @type {Uint8Array} */ buffer) {
     const size = buffer.length
     const binsize = 65
     const blocks = size / binsize
     const isWhole = Number.isInteger(blocks)
     const /** @type {any} */ textures = {}
-    if (isWhole === false) return null
+    if (isWhole === false) {
+      return null
+    }
     for (let i = 0; i < blocks; ++i) {
       const pos = i * binsize
       const binblock = buffer.slice(pos, pos + binsize)
@@ -301,156 +342,210 @@ class DFBinaryParser {
     return triggers
   }
 
+  checkSignature (/** @type {Uint8Array} */ buffer, offset = 0) {
+    for (let i = 0; i <= 3; i++) {
+      const number = buffer[offset + i]
+      if (number !== undefined) {
+        if (number !== 0) return false
+      } else {
+        return false
+      }
+    }
+    return true
+  }
+
+  splitForSections (/** @type {Uint8Array} */ buffer) {
+    const /** @type {any} */ data = {
+      map: {
+        size: 452, binblock: 7
+      },
+      texture: {
+        size: 65, binblock: 1
+      },
+      panel: {
+        size: 18, binblock: 2
+      },
+      item: {
+        size: 10, binblock: 3
+      },
+      monster: {
+        size: 10, binblock: 5
+      },
+      area: {
+        size: 10, binblock: 4
+      },
+      trigger: {
+        size: 148, binblock: 6
+      }
+    }
+    const /** @type {any} */ sections = {}
+    for (const i in data) {
+      const section = data[i]
+      if (section === undefined) continue
+      const view = new Uint8Array(buffer)
+      view.forEach((n, index) => {
+        if (n !== section.binblock) return false
+        let offset = index
+        offset += 1
+        const check = this.checkSignature(view, offset)
+        offset += 4
+        if (!check) return false
+        const blockSize = readSliceLongWord(view, offset)
+        if (blockSize === undefined || blockSize === 0) return false
+        const magicValue = 2 ** 16
+        if (blockSize >= magicValue) { // there's no way around this...
+          return false
+        }
+        offset += 4
+        const blocks = blockSize / section.size
+        const isWhole = Number.isInteger(blocks)
+        if (!isWhole) {
+          return false
+        }
+        const copy = view.slice(index, index + 4 + 4 + blockSize + 1)
+        if (sections[i] !== undefined) {
+          return false
+        }
+        sections[i] = {}
+        sections[i].slice = copy
+        sections[i].pos = index
+        sections[i].blocks = blocks
+        sections[i].size = section.size
+        return true
+      })
+    }
+    return sections
+  }
+
   constructor (/** @type {Uint8Array} */ buffer) {
-    let offset = 0
-    // const signature = readSliceChar(buffer, offset, 3)
-    offset += 3
-    // const version = readSliceByte(buffer, offset)
-    offset += 1
-    // const type = readSliceByte(buffer, offset)
-    offset += 1
-    // const reserved = readSliceLongWord(buffer, offset)
-    offset += 4
-    // const blocksize = readSliceLongWord(buffer, offset)
-    offset += 4
-    const name = readSliceChar(buffer, offset, 32)
-    offset += 32
-    const author = readSliceChar(buffer, offset, 32)
-    offset += 32
-    const description = readSliceChar(buffer, offset, 256)
-    offset += 256
-    const music = readSliceChar(buffer, offset, 64)
-    offset += 64
-    const sky = readSliceChar(buffer, offset, 64)
-    offset += 64
-    const width = readSliceWord(buffer, offset)
-    offset += 2
-    const height = readSliceWord(buffer, offset)
-    offset += 2
-    let state = 'looking for texture'
-    // offset = 0
     const /** @type {any} */ mapObj = {}
-    for (; offset < buffer.length; offset++) {
-      const index = offset
-      const value = buffer[index]
-      if (value === undefined) continue
-      if (state === 'looking for texture') {
-        if (value === 1) { // texture, size 65
-          offset += 1
-          // const reserved = readSliceLongWord(buffer, offset)
-          offset += 4
-          const blocksize = readSliceLongWord(buffer, offset)
-          offset += 4
-          if (blocksize === undefined) return
-          const textureBlock = buffer.slice(offset, offset + blocksize)
-          const textures = this.handleTextureBlock(textureBlock)
-          for (const i in textures) {
-            const element = textures[i]
-            if (element === undefined) continue
-            mapObj[i] = element
-          }
-          offset += blocksize - 1
-          state = 'looking for panel'
+    this.valid = true
+    const sections = this.splitForSections(buffer)
+    for (const i in sections) {
+      const section = sections[i]
+      if (section === undefined) {
+        this.valid = false
+        return
+      }
+      let offset = 0
+      offset += 1 // skip binblock and reserved and size
+      offset += 4
+      offset += 4
+      const start = offset
+      const end = start + section.blocks * section.size
+      const view = section.slice.slice(start, end)
+      if (i === 'map') {
+        const info = this.handleMapBlock(view)
+        if (info === null) {
+          this.valid = false
+          return
         }
-      } else if (state === 'looking for panel') {
-        if (value === 2) { // panel, size 18
-          offset += 1
-          // const reserved = readSliceLongWord(buffer, offset)
-          offset += 4
-          const blocksize = readSliceLongWord(buffer, offset)
-          offset += 4
-          if (blocksize === undefined) return
-          const panelBlock = buffer.slice(offset, offset + blocksize)
-          const panels = this.handlePanelBlock(panelBlock)
-          for (const i in panels) {
-            const element = panels[i]
-            if (element === undefined) continue
-            mapObj[i] = element
-          }
-          offset += blocksize - 1
-          state = 'looking for item'
+        mapObj.name = info.name
+        mapObj.author = info.author
+        mapObj.description = info.description
+        mapObj.music = info.music
+        mapObj.sky = info.sky
+        mapObj.size = info.width.toString(10) + ',' + info.height.toString(10)
+      } else if (i === 'texture') {
+        const elements = this.handleTextureBlock(view)
+        if (elements === null) {
+          this.valid = false
+          return
         }
-      } else if (state === 'looking for item') {
-        if (value === 3) {
-          offset += 1
-          // const reserved = readSliceLongWord(buffer, offset)
-          offset += 4
-          const blocksize = readSliceLongWord(buffer, offset)
-          offset += 4
-          if (blocksize === undefined) return
-          const itemBlock = buffer.slice(offset, offset + blocksize)
-          const items = this.handleItemBlock(itemBlock)
-          for (const i in items) {
-            const element = items[i]
-            if (element === undefined) continue
-            mapObj[i] = element
+        for (const i in elements) {
+          const texture = elements[i]
+          if (texture === undefined) {
+            this.valid = false
+            return
           }
-          offset += blocksize - 1
-          state = 'looking for monster'
+          mapObj[i] = texture
         }
-      } else if (state === 'looking for monster') {
-        if (value === 5) { // why not 4?
-          offset += 1
-          // const reserved = readSliceLongWord(buffer, offset)
-          offset += 4
-          const blocksize = readSliceLongWord(buffer, offset)
-          offset += 4
-          if (blocksize === undefined) return
-          const monsterBlock = buffer.slice(offset, offset + blocksize)
-          const monsters = this.handleMonsterBlock(monsterBlock)
-          for (const i in monsters) {
-            const element = monsters[i]
-            if (element === undefined) continue
-            mapObj[i] = element
-          }
-          offset += blocksize - 1
-          state = 'looking for area'
+      } else if (i === 'panel') {
+        const elements = this.handlePanelBlock(view)
+        if (elements === null) {
+          this.valid = false
+          return
         }
-      } else if (state === 'looking for area') {
-        if (value === 4) {
-          offset += 1
-          // const reserved = readSliceLongWord(buffer, offset)
-          offset += 4
-          const blocksize = readSliceLongWord(buffer, offset)
-          offset += 4
-          if (blocksize === undefined) return
-          const areaBlock = buffer.slice(offset, offset + blocksize)
-          const areas = this.handleAreaBlock(areaBlock)
-          for (const i in areas) {
-            const element = areas[i]
-            if (element === undefined) continue
-            mapObj[i] = element
+        for (const i in elements) {
+          const panel = elements[i]
+          if (panel === undefined) {
+            this.valid = false
+            return
           }
-          offset += blocksize - 1
-          state = 'looking for trigger'
+          mapObj[i] = panel
         }
-      } else if (state === 'looking for trigger') {
-        if (value === 6) {
-          offset += 1
-          // const reserved = readSliceLongWord(buffer, offset)
-          offset += 4
-          const blocksize = readSliceLongWord(buffer, offset)
-          offset += 4
-          if (blocksize === undefined) return
-          const triggerBlock = buffer.slice(offset, offset + blocksize)
-          const triggers = this.handleTriggerBlock(triggerBlock)
-          for (const i in triggers) {
-            const element = triggers[i]
-            if (element === undefined) continue
-            mapObj[i] = element
+      } else if (i === 'item') {
+        const elements = this.handleItemBlock(view)
+        if (elements === null) {
+          this.valid = false
+          return
+        }
+        for (const i in elements) {
+          const item = elements[i]
+          if (item === undefined) {
+            this.valid = false
+            return
           }
-          offset += blocksize - 1
-          state = 'looking for trigger'
-          break
+          mapObj[i] = item
+        }
+      } else if (i === 'monster') {
+        const elements = this.handleMonsterBlock(view)
+        if (elements === null) {
+          this.valid = false
+          return
+        }
+        for (const i in elements) {
+          const monster = elements[i]
+          if (monster === undefined) {
+            this.valid = false
+            return
+          }
+          mapObj[i] = monster
+        }
+      } else if (i === 'monster') {
+        const elements = this.handleMonsterBlock(view)
+        if (elements === null) {
+          this.valid = false
+          return
+        }
+        for (const i in elements) {
+          const monster = elements[i]
+          if (monster === undefined) {
+            this.valid = false
+            return
+          }
+          mapObj[i] = monster
+        }
+      } else if (i === 'area') {
+        const elements = this.handleAreaBlock(view)
+        if (elements === null) {
+          this.valid = false
+          return
+        }
+        for (const i in elements) {
+          const area = elements[i]
+          if (area === undefined) {
+            this.valid = false
+            return
+          }
+          mapObj[i] = area
+        }
+      } else if (i === 'trigger') {
+        const elements = this.handleTriggerBlock(view)
+        if (elements === null) {
+          this.valid = false
+          return
+        }
+        for (const i in elements) {
+          const item = elements[i]
+          if (item === undefined) {
+            this.valid = false
+            return
+          }
+          mapObj[i] = item
         }
       }
     }
-    mapObj.name = name
-    mapObj.author = author
-    mapObj.description = description
-    mapObj.music = music
-    mapObj.sky = sky
-    mapObj.size = width?.toString(10) + ',' + height?.toString(10)
     return mapObj
   }
 }
