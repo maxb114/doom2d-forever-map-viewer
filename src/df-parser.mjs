@@ -506,7 +506,7 @@ class DFTextParser {
     const /** @type {any} */ mapObj = {}
     this.valid = false
     if (tokenArray !== undefined && tokenArray[0] !== undefined && tokenArray[0].value === 'map' && tokenArray[1] !== undefined && tokenArray[1].type === 'open_curly_brace' && tokenArray[tokenArray.length - 2] !== undefined && tokenArray[tokenArray.length - 2].type === 'close_curly_brace') this.valid = true
-    if ((!this.valid && !checkValid) || checkValid) {
+    if (!this.valid || checkValid) {
       return
     }
     tokenArray.forEach((token) => {
