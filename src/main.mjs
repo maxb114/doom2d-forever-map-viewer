@@ -122,7 +122,7 @@ input.onchange = function () {
   return true
 }
 
-function download(/** @type {Blob} */ blob, /** @type {string} */ name) {
+function download (/** @type {Blob} */ blob, /** @type {string} */ name) {
   const a = document.createElement('a')
   a.href = URL.createObjectURL(blob)
   a.download = name
