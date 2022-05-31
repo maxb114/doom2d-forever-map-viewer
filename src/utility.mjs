@@ -112,9 +112,9 @@ function readSliceLongWord (/** @type {Uint8Array} */ buffer, /** @type {number}
     const longwordArray = new ArrayBuffer(4)
     const view1 = new Int8Array(longwordArray)
     let count = 0
-    slice.forEach(e => {
+    slice.forEach((e, index) => {
       if (e === -1) { ++count; return false }
-      view1[slice.indexOf(e)] = e
+      view1[index] = e
       return true
     })
     const createRequiredArray = (/** @type {number} */ count, /** @type {ArrayBuffer} */ buffer) => {
