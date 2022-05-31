@@ -621,13 +621,15 @@ class DFAnimTextureParser {
     lexer.rule(/\/\/[^\r\n]*\r?\n/, (/** @type {any} */ ctx) => { // comments
       ctx.ignore()
     })
-    lexer.rule(/[ \t\r\n]+/, (/** @type {any} */ ctx) => { // whitespace
+    lexer.rule(/\n/, (/** @type {any} */ ctx) => {
+      ctx.accept('break')
+    })
+    lexer.rule(/[ \t\r]+/, (/** @type {any} */ ctx) => { // whitespace
       ctx.ignore()
     })
     lexer.rule(/./, (/** @type {any} */ ctx) => {
       ctx.accept('char')
     })
-    content = content.trim()
     lexer.input(content)
     const /** @type {any} */ parsedObject = {}
     const tokens = lexer.tokens()
@@ -639,11 +641,14 @@ class DFAnimTextureParser {
           activeElement = token
           state = 'assign' // look for assignment symbol
         } else if (state === 'evaluation') {
-          parsedObject[activeElement.value] = token.value
-          state = 'search'
+          let prepend = ''
+          if (activeElement !== undefined && activeElement.value !== undefined && parsedObject[activeElement.value] !== undefined) prepend = parsedObject[activeElement.value]
+          parsedObject[activeElement.value] = prepend + token.value
         }
       } else if (token.type === 'assignment') {
         state = 'evaluation'
+      } else if (token.type === 'break') {
+        state = 'search'
       }
     }
     this.parsed = {
