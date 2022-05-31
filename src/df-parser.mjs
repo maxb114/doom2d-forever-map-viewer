@@ -207,7 +207,7 @@ class DFBinaryParser {
         else value = number.toString(10)
       } else if (option.handler === 'word') {
         const number = readSliceWord(buffer, offset) ?? 0
-        if (type === 'TRIGGER_SPAWNITEM' && option.path === 'effect') value = binaryEffectActionToString(number) 
+        if (type === 'TRIGGER_SPAWNITEM' && option.path === 'effect') value = binaryEffectActionToString(number)
         else if (type === 'TRIGGER_SPAWNMONSTER' && option.path === 'effect') value = binaryEffectActionToString(number)
         else value = number.toString(10)
       } else if (option.handler === 'longword') {
@@ -231,10 +231,8 @@ class DFBinaryParser {
         const second = readSliceLongWord(buffer, offset + (option.size / 2), signed) ?? 0
         value = first.toString(10) + ',' + second.toString(10)
       } else if (option.handler === 'double_word') {
-        let signed = false
-        if (option.path === 'position' || option.path === 'target') signed = true
-        const first = readSliceWord(buffer, offset, signed) ?? 0
-        const second = readSliceWord(buffer, offset + (option.size / 2), signed) ?? 0
+        const first = readSliceWord(buffer, offset) ?? 0
+        const second = readSliceWord(buffer, offset + (option.size / 2)) ?? 0
         value = first.toString(10) + ',' + second.toString(10)
       } else if (option.handler === 'char') {
         value = readSliceChar(buffer, offset, option.size)
@@ -592,7 +590,7 @@ class DFParser {
     } else { // text map
       const decoder = new TextDecoder('utf-8')
       const view = decoder.decode(buffer)
-      const onlyPrintable = /^[ -~\t\n\r]+$/.test(view)
+      const onlyPrintable = /^[ -~\t\n\r\u0400-\u04FF]+$/.test(view)
       if (!onlyPrintable) {
         return
       }
