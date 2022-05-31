@@ -48,6 +48,17 @@ class DFItem {
     return options
   }
 
+  asText () {
+    let msg = ''
+    msg = msg + '\n'
+    msg = msg + ' '.repeat(2) + 'item' + ' ' + this.id + ' ' + '{' + '\n'
+    msg = msg + ' '.repeat(4) + 'position' + ' ' + '(' + (this.pos.x).toString(10) + ' ' + (this.pos.y).toString(10) + ')' + ';' + '\n'
+    msg = msg + ' '.repeat(4) + 'type' + ' ' + this.type + ';' + '\n'
+    msg = msg + ' '.repeat(4) + 'options' + ' ' + this.options.join(' | ') + ';' + '\n'
+    msg = msg + ' '.repeat(2) + '}' + '\n'
+    return msg
+  }
+
   get renderX () {
     return this.pos.x
   }

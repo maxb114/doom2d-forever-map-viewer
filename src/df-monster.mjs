@@ -50,6 +50,17 @@ class DFMonster {
     return options
   }
 
+  asText () {
+    let msg = ''
+    msg = msg + '\n'
+    msg = msg + ' '.repeat(2) + 'monster' + ' ' + this.id + ' ' + '{' + '\n'
+    msg = msg + ' '.repeat(4) + 'position' + ' ' + '(' + (this.pos.x).toString(10) + ' ' + (this.pos.y).toString(10) + ')' + ';' + '\n'
+    msg = msg + ' '.repeat(4) + 'type' + ' ' + this.type + ';' + '\n'
+    msg = msg + ' '.repeat(4) + 'direction' + ' ' + (this.direction === '' ? 'DIR_LEFT' : this.direction) + ';' + '\n'
+    msg = msg + ' '.repeat(2) + '}' + '\n'
+    return msg
+  }
+
   get renderX () {
     if (this.direction === '' || this.direction === 'DIR_LEFT') {
       let tempX = (this.monsterSizeObj.x - this.monsterDelta.x) + this.monsterSizeObj.width

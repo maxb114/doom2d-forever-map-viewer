@@ -96,6 +96,20 @@ class DFPanel {
     return options
   }
 
+  asText () {
+    let msg = ''
+    msg = msg + '\n'
+    msg = msg + ' '.repeat(2) + 'panel' + ' ' + this.id + ' ' + '{' + '\n'
+    msg = msg + ' '.repeat(4) + 'position' + ' ' + '(' + (this.pos.x).toString(10) + ' ' + (this.pos.y).toString(10) + ')' + ';' + '\n'
+    msg = msg + ' '.repeat(4) + 'size' + ' ' + '(' + (this.size.width).toString(10) + ' ' + (this.size.height).toString(10) + ')' + ';' + '\n'
+    msg = msg + ' '.repeat(4) + 'texture' + ' ' + this.texture + ';' + '\n'
+    msg = msg + ' '.repeat(4) + 'type' + ' ' + this.type[0] + ';' + '\n'
+    msg = msg + ' '.repeat(4) + 'alpha' + ' ' + (this.alpha === -1 ? 0 : this.alpha) + ';' + '\n'
+    msg = msg + ' '.repeat(4) + 'flags' + ' ' + this.flags.join(' | ') + ';' + '\n'
+    msg = msg + ' '.repeat(2) + '}' + '\n'
+    return msg
+  }
+
   get renderX () {
     return this.pos.x
   }

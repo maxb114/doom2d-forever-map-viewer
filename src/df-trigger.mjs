@@ -164,6 +164,34 @@ class DFTrigger {
       }
     }
   }
+
+  asText () {
+    let msg = ''
+    msg = msg + '\n'
+    msg = msg + ' '.repeat(2) + 'trigger' + ' ' + this.id + ' ' + '{' + '\n'
+    msg = msg + ' '.repeat(4) + 'position' + ' ' + '(' + (this.position.x).toString(10) + ' ' + (this.position.y).toString(10) + ')' + ';' + '\n'
+    msg = msg + ' '.repeat(4) + 'size' + ' ' + '(' + (this.size.width).toString(10) + ' ' + (this.size.height).toString(10) + ')' + ';' + '\n'
+    msg = msg + ' '.repeat(4) + 'enabled' + ' ' + (this.enabled ? 'true' : 'false') + ';' + '\n'
+    if (this.texturePanel !== '') msg = msg + ' '.repeat(4) + 'texture_panel' + ' ' + this.texturePanel + ';' + '\n'
+    msg = msg + ' '.repeat(4) + 'type' + ' ' + (this.type) + ';' + '\n'
+    msg = msg + ' '.repeat(4) + 'activate_type' + ' ' + (this.activateType).join(' | ') + ';' + '\n'
+    msg = msg + ' '.repeat(4) + 'keys' + ' ' + this.key.join(' | ') + ';' + '\n'
+    if (this.options.length >= 0) {
+      msg = msg + ' '.repeat(4) + 'triggerdata' + ' ' + '{' + '\n'
+      for (const option of this.options) {
+        if (option.value === null) continue
+        msg = msg + ' '.repeat(6) + option.path + ' '
+        if (option.handler === 'char') msg = msg + "'" + option.value + "'"
+        else if (option.handler === 'double_longword' || option.handler === 'double_word') msg = msg + '(' + option.value[0] + ' ' + option.value[1] + ')'
+        else if (option.handler === 'bool') msg = msg + (option.value ? 'true' : 'false')
+        else msg = msg + option.value
+        msg = msg + ';' + '\n'
+      }
+      msg = msg + ' '.repeat(4) + '}' + '\n'
+    }
+    msg = msg + ' '.repeat(2) + '}' + '\n'
+    return msg
+  }
 }
 
 export { DFTrigger, getTriggerUsedData }
