@@ -3,6 +3,7 @@ import { inflate } from './pako.esm.mjs'
 import './jszip.js'
 import { DFParser } from './df-parser.mjs'
 import { DFMap } from './df-map.mjs'
+import { convertImage } from './image.mjs'
 class WadStruct {
   constructor (/** @type {any} */ structObject) {
     if (structObject !== undefined) {
@@ -43,7 +44,7 @@ class DFWad {
     else this._resources.push(resource)
   }
 
-  async saveToZip ( /** @type {any} */ zip, /** @type {string} */ fullPath, /** @type {any} */ value) {
+  async saveToZip (/** @type {any} */ zip, /** @type {string} */ fullPath, /** @type {any} */ value) {
     const paths = splitPath(fullPath)
     let folder = zip
     for (let i = 0; i < paths.length - 1; i++) {
@@ -64,7 +65,21 @@ class DFWad {
       promises.push(this.saveToZip(zip, map.path, view))
     }
     for (const resource of this.resources) {
-      promises.push(this.saveToZip(zip, resource.path, resource.buffer))
+      const buffer = resource.buffer
+      const type = getExtensionFromBuffer(buffer)
+      const images = ['png', 'gif', 'psd', 'bmp', 'jpg', 'tga']
+      if (images.includes(type)) {
+        const promise = new Promise((resolve, reject) => {
+          convertImage(buffer, type, 'png').then((arrayBuffer) => {
+            const view = new Uint8Array(arrayBuffer)
+            this.saveToZip(zip, resource.path, view).then(() => resolve(true)).catch((error) => reject(error))
+          }).catch((error) => reject(error))
+        })
+        promises.push(promise)
+      } else {
+        const view = buffer
+        promises.push(this.saveToZip(zip, resource.path, view))
+      }
     }
     await Promise.all(promises)
     return zip
