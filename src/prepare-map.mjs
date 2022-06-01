@@ -30,6 +30,7 @@ function mapForRender (/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ 
     const width = map.size.x
     const height = map.size.y
     const blackPanel = new DFPanel(0, 0, width, height, undefined, undefined, undefined, undefined, undefined, undefined, undefined, { fillColor: '#000000', tile: true }) // create map-size black panel first
+    orderedElements.sky.push(blackPanel)
     const defaultSky = 'Standart.wad:D2DSKY\\RSKY1'
     const prefix = map.fileName
     const path = convertResourcePath(map.sky ?? defaultSky, prefix)
