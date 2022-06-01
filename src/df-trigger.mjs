@@ -92,13 +92,13 @@ function getTriggerUsedData (/** @type {String} */ trigger) {
     properties.push(new TriggerOption('interval', 0, 'word', 2))
     properties.push(new TriggerOption('max', 'false', 'bool', 1))
     properties.push(new TriggerOption('silent', 'false', 'bool', 2))
-  } else if (trigger === 'TRIGGER_SHOT' && false) {
+  } else if (trigger === 'TRIGGER_SHOT') {
     properties.push(new TriggerOption('position', '0,0', 'double_longword', 8))
     properties.push(new TriggerOption('type', 0, 'byte', 1))
     properties.push(new TriggerOption('target', 0, 'byte', 1))
     properties.push(new TriggerOption('sound', 'false', 'bool', 1)) // idgaf about no negbool!
     properties.push(new TriggerOption('aim', 0, 'byte', 1))
-    properties.push(new TriggerOption('panelid', 0, 'panelid', 4))
+    properties.push(new TriggerOption('panelid', null, 'longword', 4))
     properties.push(new TriggerOption('sight', 0, 'word', 2))
     properties.push(new TriggerOption('angle', 0, 'word', 2))
     properties.push(new TriggerOption('wait', 0, 'word', 2))
