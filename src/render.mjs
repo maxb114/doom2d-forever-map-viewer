@@ -102,7 +102,7 @@ class DFRender {
     const unique = [...new Map(array.map(item =>
       [item[key], item])).values()].filter((element) => {
       return element.editorPath !== null && element.editorPath !== '_water_0' && element.editorPath !== '_water_1' && element.editorPath !== '_water_2'
-    })
+    }) // filter elements by editorPath value and path validness
     for (const element of unique) {
       const path = element.editorPath
       if (path === null) continue
