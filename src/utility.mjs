@@ -162,4 +162,13 @@ function splitPath (/** @type {string} */ path) {
   return split
 }
 
+function convertResourcePath (/** @type {string} */ path, /** @type {string} */ prefix = '') {
+  let loadPath = path.replaceAll('\\', '/')
+  if (loadPath.charAt(0) === ':') {
+    if (loadPath.charAt(1) === '/') loadPath = loadPath.replace('/', '') // remove first slash
+    loadPath = prefix + loadPath // add map name for internal resources
+  }
+  return loadPath
+}
+
 export { getExtensionFromBuffer, wadToJSON, numberToChar, binaryIsBitSet, parse2Ints, readSliceByte, readSliceChar, readSliceLongWord, readSliceWord, splitPath }
