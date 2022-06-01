@@ -110,6 +110,7 @@ class DFWad {
                 })
               })
             })
+            return true
           })
         })
         promises.push(promise)

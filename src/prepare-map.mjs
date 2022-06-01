@@ -1,11 +1,9 @@
 import { DFArea } from './df-area.mjs'
 import { DFItem } from './df-item.mjs'
-import { DFMap } from './df-map.mjs'
 import { DFMonster } from './df-monster.mjs'
 import { DFPanel } from './df-panel.mjs'
 import { DFTexture } from './df-texture.mjs'
 import { DFTrigger } from './df-trigger.mjs'
-import { DFRenderOptions } from './render.mjs'
 import { convertResourcePath } from './utility.mjs'
 
 function mapForRender (/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ options) {

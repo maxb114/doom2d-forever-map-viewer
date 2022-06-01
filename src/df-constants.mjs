@@ -1572,7 +1572,7 @@ function binaryEffectActionToString (/** @type {number} */ type) {
   else return 'EFFECT_NONE'
 }
 
-function binaryMonsterBehaviourToString(/** @type {number} */ monster) {
+function binaryMonsterBehaviourToString (/** @type {number} */ monster) {
   if (monster === 0) return 'BH_NORMAL'
   else if (monster === 1) return 'BH_KILLER'
   else if (monster === 2) return 'BH_MANIAC'

@@ -55,6 +55,7 @@ function preloadAnimated (/** @type {Resource} */ file, /** @type {String} */ ma
           db.saveByPath(finalBuffer, mapName + ':' + file.path).then(() => resolve(true)).catch((/** @type {Error} */ error) => reject(error))
         }).catch((error) => reject(error))
       }).catch((error) => reject(error))
+      return true
     }).catch((error) => reject(error))
   })
   return promise
