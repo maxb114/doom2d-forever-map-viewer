@@ -311,7 +311,7 @@ class DFBinaryParser {
       offset += 2
       const enabled = readSliceByte(binblock, offset) ?? 0
       offset += 1
-      const texturepanel = readSliceLongWord(binblock, offset)
+      const texturepanel = readSliceLongWord(binblock, offset, true)
       offset += 4
       const type = binaryTriggerTypeToString(readSliceByte(binblock, offset) ?? 0)
       offset += 1
@@ -326,7 +326,7 @@ class DFBinaryParser {
         position: x?.toString(10) + ',' + y?.toString(10),
         size: width?.toString(10) + ',' + height?.toString(10),
         enabled: (enabled === 1 ? 'true' : 'false'),
-        texture_panel: (texturepanel !== 255 ? 'panel' + texturepanel?.toString(10) : null),
+        texture_panel: (texturepanel !== -1 ? 'panel' + texturepanel?.toString(10) : null),
         type,
         activate_type: activateType,
         keys,

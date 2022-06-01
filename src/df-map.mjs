@@ -112,7 +112,7 @@ class DFMap {
           const width = size[0]
           const height = size[1]
           const enabled = element.enabled
-          const texturePanel = element.texturepanel
+          const texturePanel = element.texture_panel
           const type = element.type
           const activateType = (element.activate_type && element.activate_type !== '' ? element.activate_type : 'ACTIVATE_NONE').replace(/\s+/g, '').split('|')
           const keys = (element.keys && element.keys !== '' ? element.keys : 'KEY_NONE').replace(/\s+/g, '').split('|')
