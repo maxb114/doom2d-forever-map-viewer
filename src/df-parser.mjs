@@ -392,7 +392,7 @@ class DFBinaryParser {
         if (!check) return false
         const blockSize = readSliceLongWord(view, offset)
         if (blockSize === undefined || blockSize === 0) return false
-        const magicValue = 2 ** 16
+        const magicValue = 2 ** 20
         if (blockSize >= magicValue) { // there's no way around this...
           return false
         }
@@ -404,7 +404,7 @@ class DFBinaryParser {
         }
         const copy = view.slice(index, index + 4 + 4 + blockSize + 1)
         if (sections[i] !== undefined) {
-          return false
+          if (sections[i].blocks < blocks) return false // if we have already found similiar stuff, prefer smaller section
         }
         sections[i] = {}
         sections[i].slice = copy
