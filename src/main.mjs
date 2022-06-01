@@ -89,7 +89,7 @@ input.onchange = function () {
       console.log(map)
       console.log(map.asText())
       const options = new DFRenderOptions()
-      const render = new DFRender(map, options, db)
+      const render = new DFRender()
       const flagsDiv = document.createElement('div')
       flagsDiv.id = flagsDivId
       const allOptions = options.all

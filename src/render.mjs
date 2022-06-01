@@ -1,14 +1,5 @@
 import { getImage, saveImage } from './cache-images.mjs'
 import { cropIfNeeded } from './crop-game-images.mjs'
-import { Database } from './db.mjs'
-import { DFArea } from './df-area.mjs'
-import { DFItem } from './df-item.mjs'
-import { DFMap } from './df-map.mjs'
-import { DFMonster } from './df-monster.mjs'
-import { DFPanel } from './df-panel.mjs'
-import { DFTexture } from './df-texture.mjs'
-import { DFTrigger } from './df-trigger.mjs'
-import { cropImage } from './image.mjs'
 import { convertResourcePath } from './utility.mjs'
 
 class DFRenderOption {
@@ -70,7 +61,7 @@ class DFRenderOptions {
 }
 
 class DFRender {
-  constructor (/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ options, /** @type {Database} */ db) {
+  constructor () {
     this.canvas = document.createElement('canvas')
     if (this.canvas === null) return
     /** @type {any} */ this.images = {}
@@ -83,7 +74,7 @@ class DFRender {
         resolve(true)
         return true
       }
-      db.loadByPath(path).then((arrayBuffer) => {
+      db.loadByPath(path).then((/** @type {ArrayBuffer} */ arrayBuffer) => {
         const view = new Uint8Array(arrayBuffer)
         cropIfNeeded(element, view).then((buffer) => {
           const blob = new window.Blob([buffer], { type: 'image/png' })
@@ -99,7 +90,7 @@ class DFRender {
             reject(Error('Error creating image!'))
           }
         })
-      }).catch((error) => reject(error))
+      }).catch((/** @type {Error} */ error) => reject(error))
       return true
     })
   }
