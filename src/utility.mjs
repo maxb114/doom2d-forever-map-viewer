@@ -113,7 +113,7 @@ function readSliceLongWord (/** @type {Uint8Array} */ buffer, /** @type {number}
     const view1 = new Int8Array(longwordArray)
     let count = 0
     slice.forEach((e, index) => {
-      if (e === -1) { ++count; return false }
+      if (e === -1 && index !== 0) { ++count; return false }
       view1[index] = e
       return true
     })
@@ -131,8 +131,8 @@ function readSliceLongWord (/** @type {Uint8Array} */ buffer, /** @type {number}
     const longwordArray = new ArrayBuffer(4)
     const view1 = new Uint32Array(longwordArray)
     const view2 = new Uint8Array(longwordArray)
-    nameSlice.forEach(/** @type {number} */ e => {
-      view2[nameSlice.indexOf(e)] = e
+    nameSlice.forEach((e, index) => {
+      view2[index] = e
     })
     const number = view1[0]
     return number
