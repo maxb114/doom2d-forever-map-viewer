@@ -1,9 +1,11 @@
 import { specialItemToJSON, getMonsterSize, getMonsterDelta, convertSpecialItem } from './df-constants.mjs'
+import { convertResourcePath } from './utility.mjs'
 class DFMonster {
   constructor (
     x = 0, y = 0,
     type = '',
-    direction = ''
+    direction = '',
+    specialOptions = {}
   ) {
     this.pos = { x: 0, y: 0 }
     this.type = ''
@@ -19,6 +21,9 @@ class DFMonster {
     this.monsterDelta = getMonsterDelta(this.type)
     this.id = 'default'
     this.editorPath = ''
+    this.alpha = 1
+    /** @type {any} */ this.specialOptions = specialOptions
+    this.editorPath = this.getResourcePath()
   }
 
   getResourcePath () {
@@ -26,28 +31,27 @@ class DFMonster {
     if (monsterFrame === null) return null
     const monsterFrameObject = specialItemToJSON(monsterFrame)
     if (monsterFrameObject === undefined || monsterFrameObject.name === '') return null
-    return monsterFrameObject.resource
+    const path = convertResourcePath(monsterFrameObject.resource)
+    return path
   }
 
   getRenderOptions () {
     const options = {
-      x: 0,
-      y: 0,
+      x: this.renderX,
+      y: this.renderY,
       width: 0,
       height: 0,
-      alpha: -1,
+      alpha: this.alpha,
       stroke: 'rgba(0, 0, 0, 0)',
-      blending: false,
-      operation: '',
-      fillColor: '',
-      drawImage: true,
-      flop: false
+      operation: 'source-over',
+      specialOptions: this.specialOptions
     }
-    if (this.direction === '' || this.direction === 'DIR_LEFT') {
-      options.flop = true
+    if (this.direction === 'DIR_RIGHT') {
+      options.specialOptions.flop = false
+    } else {
+      options.specialOptions.flop = true
     }
-    options.x = this.renderX
-    options.y = this.renderY
+    options.specialOptions.tile = false
     return options
   }
 

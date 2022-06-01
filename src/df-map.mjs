@@ -4,7 +4,7 @@ import { DFMonster } from './df-monster.mjs'
 import { DFPanel } from './df-panel.mjs'
 import { DFTexture } from './df-texture.mjs'
 import { DFTrigger } from './df-trigger.mjs'
-import { parse2Ints } from './utility.mjs'
+import { convertResourcePath, parse2Ints } from './utility.mjs'
 
 class DFMap {
   constructor (/** @type {any} */ parsed, /** @type {string} */ fileName) {
@@ -41,6 +41,7 @@ class DFMap {
           const path = element.path
           const texture = new DFTexture(path, animated)
           texture.id = element._token.value
+          texture.editorPath = convertResourcePath(path, this.fileName)
           this.textures.push(texture)
         } else if (element._hint === 'panel') {
           const position = element.position
@@ -59,7 +60,9 @@ class DFMap {
           const alpha = (element.alpha === undefined ? -1 : element.alpha) // if unset, then -1
           let flags = (element.flags === undefined || element.flags === '' ? 'PANEL_FLAG_NONE' : element.flags)
           flags = flags.replace(/\s+/g, '').split('|')
-          const panel = new DFPanel(x, y, width, height, texture, type, alpha, flags)
+          const blending = flags.includes('PANEL_FLAG_BLENDING')
+          const panel = new DFPanel(x, y, width, height, texture, type, alpha, flags, undefined, undefined, blending, undefined)
+          // we map textures to panels later
           panel.id = element._token.value
           this.panels.push(panel)
         } else if (element._hint === 'monster') {
@@ -72,6 +75,7 @@ class DFMap {
           const direction = element.direction
           const monster = new DFMonster(x, y, type, direction)
           monster.id = element._token.value
+          monster.editorPath = convertResourcePath((monster.getResourcePath() ?? ''))
           this.monsters.push(monster)
         } else if (element._hint === 'area') {
           const position = element.position
@@ -83,6 +87,7 @@ class DFMap {
           const direction = element.direction
           const area = new DFArea(x, y, type, direction)
           area.id = element._token.value
+          area.editorPath = convertResourcePath((area.getResourcePath() ?? ''))
           this.areas.push(area)
         } else if (element._hint === 'item') {
           const position = element.position
@@ -95,6 +100,7 @@ class DFMap {
           options = options.replace(/\s+/g, '').split('|')
           const item = new DFItem(x, y, type, options)
           item.id = element._token.value
+          item.editorPath = convertResourcePath((item.getResourcePath() ?? ''))
           this.items.push(item)
         } else if (element._hint === 'trigger') {
           const position = parse2Ints(element.position)
@@ -113,9 +119,20 @@ class DFMap {
           const triggerData = element.triggerdata
           const trigger = new DFTrigger(x, y, width, height, enabled, texturePanel, type, activateType, keys, triggerData)
           trigger.id = element._token.value
+          trigger.editorPath = '' // triggers don't have any textures as far as i'm aware
           this.triggers.push(trigger)
         }
       }
+    }
+    for (const panel of this.panels) { // map textures to panels
+      const texture = panel.texture
+      const textureObject = this.textures.find((element) => {
+        if (element.id === texture) return true
+        return false
+      })
+      const fullPath = textureObject?.path ?? ''
+      panel.texturePath = fullPath
+      panel.editorPath = textureObject?.editorPath ?? ''
     }
   }
 

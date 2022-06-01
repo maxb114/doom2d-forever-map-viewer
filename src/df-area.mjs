@@ -1,10 +1,12 @@
 import { getAreaSize, areaToTexture } from './df-constants.mjs'
+import { convertResourcePath } from './utility.mjs'
 
 class DFArea {
   constructor (
     x = 0, y = 0,
     type = '',
-    direction = ''
+    direction = '',
+    specialOptions = {}
   ) {
     this.pos = { x: 0, y: 0 }
     this.pos.x = x
@@ -14,14 +16,39 @@ class DFArea {
     this.areaSize = getAreaSize(this.type)
     this.id = 'default'
     this.editorPath = ''
+    /** @type {any} */ this.specialOptions = specialOptions
+    this.alpha = 1
+    this.editorPath = this.getResourcePath()
   }
 
   getResourcePath () {
     const elementTextureName = areaToTexture(this.type)
     if (elementTextureName === null) return null
-    return elementTextureName
+    const path = convertResourcePath(elementTextureName)
+    return path
   }
 
+  getRenderOptions () {
+    const options = {
+      x: this.renderX,
+      y: this.renderY,
+      width: 0,
+      height: 0,
+      alpha: this.alpha,
+      stroke: 'rgba(0, 0, 0, 0)',
+      operation: 'source-over',
+      specialOptions: this.specialOptions
+    }
+    if (this.direction === 'DIR_RIGHT') {
+      options.specialOptions.flop = false
+    } else {
+      options.specialOptions.flop = true
+    }
+    options.specialOptions.tile = false
+    return options
+  }
+
+  /*
   getRenderOptions () {
     const options = {
       x: 0,
@@ -43,6 +70,7 @@ class DFArea {
     }
     return options
   }
+  */
 
   asText () {
     let msg = ''

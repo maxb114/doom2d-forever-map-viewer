@@ -6,6 +6,7 @@ import { DFPanel } from './df-panel.mjs'
 import { DFTexture } from './df-texture.mjs'
 import { DFTrigger } from './df-trigger.mjs'
 import { DFRenderOptions } from './render.mjs'
+import { convertResourcePath } from './utility.mjs'
 
 function mapForRender (/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ options) {
   // create new panel as sky
@@ -27,6 +28,17 @@ function mapForRender (/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ 
     forgeround: ['PANEL_WATER', 'PANEL_ACID1', 'PANEL_ACID2', 'PANEL_FORE']
   }
   const water = ['_water_0', '_water_1', '_water_2']
+  if (options?.getFlag('rendersky')) { // mimic sky as a DFPanel
+    const width = map.size.x
+    const height = map.size.y
+    const blackPanel = new DFPanel(0, 0, width, height, undefined, undefined, undefined, undefined, undefined, undefined, undefined, { fillColor: '#000000', tile: true }) // create map-size black panel first
+    const defaultSky = 'Standart.wad:D2DSKY\\RSKY1'
+    const prefix = map.fileName
+    const path = convertResourcePath(map.sky ?? defaultSky, prefix)
+    const panel = new DFPanel(0, 0, width, height, undefined, undefined, undefined, undefined, undefined, path, undefined, { tile: false })
+    panel.editorPath = convertResourcePath(path)
+    orderedElements.sky.push(panel)
+  }
   for (const element of elements) {
     if (element instanceof DFArea) {
       if (!options?.getFlag('renderdmplayers') && (element.type === 'AREA_DMPOINT')) continue
@@ -42,6 +54,11 @@ function mapForRender (/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ 
       if (!options?.getFlag('rendermonsters')) continue
       orderedElements.monsters.push(element)
     } else if (element instanceof DFPanel) {
+      if (element.flags.includes('PANEL_FLAG_HIDE')) {
+        continue
+      } else if (element.flags.includes('PANEL_FLAG_WATERTEXTURES')) {
+        // continue
+      }
       const skip = ['PANEL_NONE', 'PANEL_LIFTUP', 'PANEL_LIFTDOWN', 'PANEL_BLOCKMON', 'PANEL_LIFTLEFT', 'PANEL_LIFTRIGHT']
       let stop = false
       for (const i of skip) {
