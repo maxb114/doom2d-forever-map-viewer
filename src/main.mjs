@@ -1,10 +1,10 @@
 import { DfwadFrom } from './df-wad.mjs'
-import { DFAnimTextureParser, DFParser } from './df-parser.mjs'
+import { DFParser } from './df-parser.mjs'
 import { DFMap } from './df-map.mjs'
 import { DatabaseFrom } from './db.mjs'
 import { DFRender, DFRenderOptions } from './render.mjs'
-import { getExtensionFromBuffer } from './utility.mjs'
-import { convertImage, cropImage } from './image.mjs'
+import { mapForRender } from './prepare-map.mjs'
+import { preloadWad } from './save-to-db.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
 const input = document.createElement('input')
@@ -46,7 +46,7 @@ input.onchange = function () {
     cacheButton.id = 'cache-button'
     cacheButton.onclick = async function () {
       const mapName = file.name.toLowerCase() // lower case for now
-      const promises = preloadWad(wad, mapName)
+      const promises = preloadWad(wad, mapName, db)
       await Promise.allSettled(promises)
       return true
     }
@@ -89,10 +89,10 @@ input.onchange = function () {
       console.log(map)
       console.log(map.asText())
       const options = new DFRenderOptions()
-      const render = new DFRender(map, options, db)
+      const render = new DFRender()
       const flagsDiv = document.createElement('div')
       flagsDiv.id = flagsDivId
-      const allOptions = render.options?.all || []
+      const allOptions = options.all
       for (const renderOption of allOptions) {
         const object = renderOption[0]
         const set = renderOption[1]
@@ -106,14 +106,17 @@ input.onchange = function () {
         label.htmlFor = input.id
         label.appendChild(document.createTextNode(object.full))
         input.onchange = () => {
-          render.options?.setFlag(input.id, input.checked)
-          draw(canvas, context, map, render)
+          options.setFlag(input.id, input.checked)
+          draw1(canvas, context, map, render, options)
+          // @ts-ignore
+          // const mapView = mapForRender(map, options)
+          // const test = render.render1(mapView)
         }
         flagsDiv.appendChild(input)
         flagsDiv.appendChild(label)
       }
       div.appendChild(flagsDiv)
-      draw(canvas, context, map, render)
+      draw1(canvas, context, map, render, options)
       return true
     }
     div.appendChild(button)
@@ -129,69 +132,19 @@ function download (/** @type {Blob} */ blob, /** @type {string} */ name) {
   a.click()
 }
 
-async function draw (/** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasRenderingContext2D} */ context, /** @type {DFMap} */ map, /** @type {DFRender} */ render) {
-  await render.preload()
-  const mapCanvas = await render.render()
+async function draw1 (/** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasRenderingContext2D} */ context, /** @type {DFMap} */ map, /** @type {DFRender} */ render, /** @type {DFRenderOptions} */ options) {
+  const mapView = mapForRender(map, options)
+  const allElements = map.allElements
+  const sky = map.sky
+  const prefix = map.fileName
+  await render.preload(allElements, db, sky, prefix)
+  const width = map.size.x
+  const height = map.size.y
+  const mapCanvas = await render.render1(mapView, width, height)
   canvas.width = map.size.x
   canvas.height = map.size.y
   context.drawImage(mapCanvas, 0, 0)
   return true
-}
-
-function preloadWad (/** @type {DFWad} */ wad, /** @type {String} */ mapName) {
-  const promises = []
-  for (const file of wad.resources) {
-    const type = getExtensionFromBuffer(file.buffer)
-    if (type === 'unknown') continue // probably music
-    if (type === 'dfwad' || type === 'dfzip') { // animated
-      const promise = preloadAnimated(file, mapName)
-      promises.push(promise)
-    } else if (type === 'bmp' || type === 'gif' || type === 'jpg' || type === 'png' || type === 'psd' || type === 'tga') { // just an image
-      const promise = new Promise((resolve, reject) => {
-        convertImage(file.buffer, type, 'png').then((buffer) => {
-          db.saveByPath(buffer, mapName + ':' + file.path).then(() => resolve(true)).catch((/** @type {Error} */ error) => reject(error))
-        }).catch((error) => reject(error))
-      })
-      promises.push(promise)
-    }
-  }
-  return promises
-}
-
-function preloadAnimated (/** @type {Resource} */ file, /** @type {String} */ mapName) {
-  const promise = new Promise((resolve, reject) => {
-    const view = file.buffer
-    DfwadFrom(view).then((dfwad) => {
-      const animPath = 'TEXT/ANIM'
-      const animDescription = dfwad.findResourceByPath(animPath)
-      if (animDescription === null) reject(Error('File is a WAD, but not an animated texture!'))
-      const decoder = new TextDecoder('utf-8')
-      const view = decoder.decode(animDescription?.buffer)
-      const parser = new DFAnimTextureParser(view)
-      const path = 'TEXTURES' + '/' + parser.parsed.resource
-      const width = parser.parsed.frameWidth
-      const height = parser.parsed.frameHeight
-      const textureResource = dfwad.findResourceByPath(path)
-      if (textureResource === null) {
-        reject(Error('File is a WAD, but not an animated texture!'))
-        return false
-      }
-      const buffer = textureResource.buffer
-      if (buffer === undefined) {
-        reject(Error('File is a WAD, but not an animated texture!'))
-        return false
-      }
-      const type = getExtensionFromBuffer(buffer)
-      if (type === 'unknown' || type === 'dfpack' || type === 'dfwad' || type === 'dfzip') reject(Error('File is a WAD, but not an animated texture!'))
-      convertImage(buffer, type, 'png').then((arrayBuffer) => {
-        const view = new Uint8Array(arrayBuffer)
-        cropImage(view, 'png', width, height).then((finalBuffer) => {
-          db.saveByPath(finalBuffer, mapName + ':' + file.path).then(() => resolve(true)).catch((/** @type {Error} */ error) => reject(error))
-        }).catch((error) => reject(error))
-      }).catch((error) => reject(error))
-    }).catch((error) => reject(error))
-  })
-  return promise
 }
 
 const resources = ['game.wad', 'standart.wad', 'shrshade.wad', 'editor.wad']
@@ -235,7 +188,7 @@ async function init () {
           const buffer = await response.arrayBuffer()
           const view = new Uint8Array(buffer)
           const wad = await DfwadFrom(view)
-          await Promise.all(preloadWad(wad, resource))
+          await Promise.all(preloadWad(wad, resource, db))
         } catch (error) {
           window.alert(error)
           return false

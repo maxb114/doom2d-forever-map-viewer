@@ -193,6 +193,10 @@ class DFTrigger {
     msg = msg + ' '.repeat(2) + '}' + '\n'
     return msg
   }
+
+  getResourcePath () {
+    return null
+  }
 }
 
 export { DFTrigger, getTriggerUsedData }

@@ -168,7 +168,8 @@ function convertResourcePath (/** @type {string} */ path, /** @type {string} */ 
     if (loadPath.charAt(1) === '/') loadPath = loadPath.replace('/', '') // remove first slash
     loadPath = prefix + loadPath // add map name for internal resources
   }
+  loadPath = loadPath.toLowerCase() // lower case for now
   return loadPath
 }
 
-export { getExtensionFromBuffer, wadToJSON, numberToChar, binaryIsBitSet, parse2Ints, readSliceByte, readSliceChar, readSliceLongWord, readSliceWord, splitPath }
+export { getExtensionFromBuffer, wadToJSON, numberToChar, binaryIsBitSet, parse2Ints, readSliceByte, readSliceChar, readSliceLongWord, readSliceWord, splitPath, convertResourcePath }

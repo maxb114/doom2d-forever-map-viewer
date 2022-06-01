@@ -1,6 +1,7 @@
 import { specialItemToJSON, convertSpecialItem, convertGameItems } from './df-constants.mjs'
+import { convertResourcePath } from './utility.mjs'
 class DFItem {
-  constructor (/** @type {number} **/ x, /** @type {number} **/ y, /** @type {string} **/ type, options = ['ITEM_OPTION_NONE']) {
+  constructor (/** @type {number} **/ x, /** @type {number} **/ y, /** @type {string} **/ type, options = ['ITEM_OPTION_NONE'], /** @type {any} */ specialOptions = {}) {
     this.pos = { x: 0, y: 0 }
     this.type = ''
     this.options = ''
@@ -19,33 +20,35 @@ class DFItem {
       this.frameObject = null
     }
     this.editorPath = ''
+    this.alpha = 1
+    this.specialOptions = specialOptions
+    this.editorPath = this.getResourcePath()
   }
 
   getResourcePath () {
     if (this.special === true && this.frameObject !== null) {
-      return this.frameObject.resource
+      const path = convertResourcePath(this.frameObject.resource)
+      return path
     } else {
       const itemResourceName = convertGameItems(this.type)
-      return itemResourceName
+      if (itemResourceName === null) return null
+      const path = convertResourcePath(itemResourceName)
+      return path
     }
   }
 
   getRenderOptions () {
     const options = {
-      x: 0,
-      y: 0,
+      x: this.renderX,
+      y: this.renderY,
       width: 0,
       height: 0,
-      alpha: -1,
+      alpha: this.alpha,
       stroke: 'rgba(0, 0, 0, 0)',
-      blending: false,
-      operation: '',
-      fillColor: '',
-      drawImage: true,
-      flop: false
+      operation: 'source-over',
+      specialOptions: this.specialOptions
     }
-    options.x = this.renderX
-    options.y = this.renderY
+    options.specialOptions.tile = false
     return options
   }
 

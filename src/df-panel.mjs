@@ -37,7 +37,7 @@ class DFPlatformOptions {
 
 class DFPanel {
   constructor (x = 0, y = 0, width = 0, height = 0, texture = '', type = ['PANEL_NONE'],
-    alpha = -1, flags = ['PANEL_FLAG_NONE'], platformOptions = new DFPlatformOptions(), texturePath = '') {
+    alpha = -1, flags = ['PANEL_FLAG_NONE'], platformOptions = new DFPlatformOptions(), texturePath = '', blending = false, specialOptions = {}) {
     this.pos = { x: 0, y: 0 }
     this.size = { width: 0, height: 0 }
     this.pos.x = x
@@ -52,50 +52,40 @@ class DFPanel {
     this.texturePath = texturePath
     this.id = 'default'
     this.editorPath = ''
-  }
-
-  getResourcePath () {
-    return this.texture
+    this.blending = blending
+    /** @type {any} */ this.specialOptions = specialOptions
   }
 
   getRenderOptions () {
+    let convertAlpha = 1
+    if (this.alpha === -1) convertAlpha = 1
+    else convertAlpha = (255 - this.alpha) / 255
     const options = {
-      x: 0,
-      y: 0,
-      width: 0,
-      height: 0,
-      alpha: -1,
+      x: this.renderX,
+      y: this.renderY,
+      width: this.size.width,
+      height: this.size.height,
+      alpha: convertAlpha,
       stroke: 'rgba(0, 0, 0, 0)',
-      blending: false,
-      operation: '',
-      fillColor: '',
-      drawImage: false,
-      flop: false,
-      invisible: false, // skip through these
-      water: false // don't skip through these
+      blending: this.blending,
+      operation: 'source-over',
+      specialOptions: this.specialOptions
     }
-    options.x = this.renderX
-    options.y = this.renderY
-    options.width = this.size.width
-    options.height = this.size.height
-    if (this.alpha === -1) options.alpha = -1
-    else options.alpha = (255 - this.alpha) / 255
-    if (this.flags.includes('PANEL_FLAG_BLENDING')) {
-      options.blending = true
+    const water = ['_water_0', '_water_1', '_water_2']
+    const color = ['blue', 'green', 'red']
+    if (water.includes(this.editorPath)) {
+      options.specialOptions.fillColor = color[water.indexOf(this.editorPath)]
+      options.operation = 'darken'
     }
-    if (this.flags.includes('PANEL_FLAG_HIDE')) {
-      options.invisible = true
-    }
-    if (this.flags.includes('PANEL_FLAG_WATERTEXTURES')) {
-      // options.invisible = true
-    }
-    const skip = ['PANEL_NONE', 'PANEL_LIFTUP', 'PANEL_LIFTDOWN', 'PANEL_BLOCKMON', 'PANEL_LIFTLEFT', 'PANEL_LIFTRIGHT']
-    for (const i of skip) {
-      if (this.type.includes(i)) {
-        options.invisible = true
-      }
+    if (this.blending) {
+      options.operation = 'lighter'
     }
     return options
+  }
+
+  getResourcePath () {
+    const path = this.editorPath
+    return path
   }
 
   asText () {
