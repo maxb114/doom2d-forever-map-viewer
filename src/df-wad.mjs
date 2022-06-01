@@ -1,9 +1,10 @@
 import { getExtensionFromBuffer, splitPath, wadToJSON } from './utility.mjs'
 import { inflate } from './pako.esm.mjs'
 import './jszip.js'
-import { DFAnimTextureParser, DFParser } from './df-parser.mjs'
+import { DFParser } from './df-parser.mjs'
 import { DFMap } from './df-map.mjs'
 import { convertImage } from './image.mjs'
+import { DFAnimTextureParser } from './df-animtexture-parser.mjs'
 class WadStruct {
   constructor (/** @type {any} */ structObject) {
     if (structObject !== undefined) {

@@ -1,4 +1,4 @@
-import { DFAnimTextureParser } from './df-parser.mjs'
+import { DFAnimTextureParser } from './df-animtexture-parser.mjs'
 import { DfwadFrom } from './df-wad.mjs'
 import { convertImage, cropImage } from './image.mjs'
 import { convertResourcePath, getExtensionFromBuffer } from './utility.mjs'
