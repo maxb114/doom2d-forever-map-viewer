@@ -193,6 +193,7 @@ async function init () {
           window.alert(error)
           return false
         }
+      }
       document.body.removeChild(text)
       document.body.removeChild(br)
       document.body.removeChild(button)
