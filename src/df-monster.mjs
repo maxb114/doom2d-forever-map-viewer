@@ -18,6 +18,7 @@ class DFMonster {
     this.monsterSizeObj = getMonsterSize(this.type)
     this.monsterDelta = getMonsterDelta(this.type)
     this.id = 'default'
+    this.editorPath = ''
   }
 
   getResourcePath () {

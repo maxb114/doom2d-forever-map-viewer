@@ -13,6 +13,7 @@ class DFArea {
     this.direction = direction
     this.areaSize = getAreaSize(this.type)
     this.id = 'default'
+    this.editorPath = ''
   }
 
   getResourcePath () {

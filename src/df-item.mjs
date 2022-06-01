@@ -18,6 +18,7 @@ class DFItem {
     } else {
       this.frameObject = null
     }
+    this.editorPath = ''
   }
 
   getResourcePath () {

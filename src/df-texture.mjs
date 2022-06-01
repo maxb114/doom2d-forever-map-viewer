@@ -3,6 +3,7 @@ class DFTexture {
     this.path = path
     this.animated = animated
     this.id = 'default'
+    this.editorPath = ''
   }
 
   asText () {

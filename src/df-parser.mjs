@@ -502,20 +502,6 @@ class DFBinaryParser {
           }
           mapObj[i] = monster
         }
-      } else if (i === 'monster') {
-        const elements = this.handleMonsterBlock(view)
-        if (elements === null) {
-          this.valid = false
-          return
-        }
-        for (const i in elements) {
-          const monster = elements[i]
-          if (monster === undefined) {
-            this.valid = false
-            return
-          }
-          mapObj[i] = monster
-        }
       } else if (i === 'area') {
         const elements = this.handleAreaBlock(view)
         if (elements === null) {

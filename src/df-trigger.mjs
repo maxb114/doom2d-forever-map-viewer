@@ -136,6 +136,7 @@ class DFTrigger {
     /** @type {TriggerOption[]} */ this.options = getTriggerUsedData(this.type)
     this.#mapUsedDataToOptions(triggerData)
     this.id = 'default'
+    this.editorPath = ''
   }
 
   #mapUsedDataToOptions (/** @type {any} */ triggerData) {

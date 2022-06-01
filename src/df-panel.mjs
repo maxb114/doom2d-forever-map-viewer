@@ -37,7 +37,7 @@ class DFPlatformOptions {
 
 class DFPanel {
   constructor (x = 0, y = 0, width = 0, height = 0, texture = '', type = ['PANEL_NONE'],
-    alpha = -1, flags = ['PANEL_FLAG_NONE'], platformOptions = new DFPlatformOptions()) {
+    alpha = -1, flags = ['PANEL_FLAG_NONE'], platformOptions = new DFPlatformOptions(), texturePath = '') {
     this.pos = { x: 0, y: 0 }
     this.size = { width: 0, height: 0 }
     this.pos.x = x
@@ -49,7 +49,9 @@ class DFPanel {
     this.alpha = alpha
     this.flags = flags
     this.platform = platformOptions
+    this.texturePath = texturePath
     this.id = 'default'
+    this.editorPath = ''
   }
 
   getResourcePath () {
