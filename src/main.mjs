@@ -23,6 +23,7 @@ input.onchange = function () {
   const reader = new window.FileReader()
   reader.readAsArrayBuffer(file)
   reader.onload = async function (event) {
+    const mapName = file.name.toLowerCase() // lower case for now
     const selectId = 'map-select'
     const buttonId = 'load-button'
     const cacheButtonId = 'cache-button'
@@ -46,7 +47,6 @@ input.onchange = function () {
     cacheButton.innerHTML = 'Save resources'
     cacheButton.id = 'cache-button'
     cacheButton.onclick = async function () {
-      const mapName = file.name.toLowerCase() // lower case for now
       const promises = preloadWad(wad, mapName, db)
       await Promise.allSettled(promises)
       return true
@@ -87,7 +87,7 @@ input.onchange = function () {
       if (resource === null) return false
       const parsed = new DFParser(resource.buffer)
       const intermediateMap = parsed.parsed
-      const handledMap = handleParsedMap(intermediateMap)
+      const handledMap = handleParsedMap(intermediateMap, mapName)
       const map = new DFMap(handledMap)
       console.log(map)
       console.log(map.asText())
