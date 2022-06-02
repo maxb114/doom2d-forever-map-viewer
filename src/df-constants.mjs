@@ -1345,7 +1345,7 @@ const binaryPanelFlagToString = (/** @type {number | undefined} */ type) => {
   if (type === 0 || type === undefined) return 'PANEL_FLAG_NONE'
   if (binaryIsBitSet(type, 1)) flags.push('PANEL_FLAG_BLENDING')
   if (binaryIsBitSet(type, 2)) flags.push('PANEL_FLAG_HIDE')
-  if (binaryIsBitSet(type, 4)) flags.push('PANEL_FLAG_WATERTEXTURES')
+  if (binaryIsBitSet(type, 3)) flags.push('PANEL_FLAG_WATERTEXTURES')
   return flags.join('|')
 }
 
@@ -1521,9 +1521,9 @@ function binaryKeysToString (/** @type {number | undefined} */ options) {
   if (options === 0 || options === undefined) return 'KEY_NONE'
   if (binaryIsBitSet(options, 1)) flags.push('KEY_RED')
   if (binaryIsBitSet(options, 2)) flags.push('KEY_GREEN')
-  if (binaryIsBitSet(options, 4)) flags.push('KEY_BLUE')
-  if (binaryIsBitSet(options, 8)) flags.push('KEY_REDTEAM')
-  if (binaryIsBitSet(options, 16)) flags.push('KEY_BLUETEAM')
+  if (binaryIsBitSet(options, 3)) flags.push('KEY_BLUE')
+  if (binaryIsBitSet(options, 4)) flags.push('KEY_REDTEAM')
+  if (binaryIsBitSet(options, 5)) flags.push('KEY_BLUETEAM')
   const test = flags.join('|')
   return test
 }
@@ -1554,13 +1554,14 @@ function binaryTriggerScoreTeamToString (/** @type {number} */ team) {
 function binaryActivateTypeToString (/** @type {number} */ type) {
   const flags = []
   if (type === 0) flags.push('ACTIVATE_NONE')
-  if (binaryIsBitSet(type, 1) || type === 1) flags.push('ACTIVATE_PLAYERCOLLIDE')
-  if (binaryIsBitSet(type, 2) || type === 2) flags.push('ACTIVATE_MONSTERCOLLIDE')
-  if (binaryIsBitSet(type, 4) || type === 4) flags.push('ACTIVATE_PLAYERPRESS')
-  if (binaryIsBitSet(type, 8) || type === 8) flags.push('ACTIVATE_MONSTERPRESS')
-  if (binaryIsBitSet(type, 16) || type === 16) flags.push('ACTIVATE_SHOT')
-  if (binaryIsBitSet(type, 32) || type === 32) flags.push('ACTIVATE_PLAYERCOLLIDE')
+  if (binaryIsBitSet(type, 0)) flags.push('ACTIVATE_PLAYERCOLLIDE')
+  if (binaryIsBitSet(type, 1)) flags.push('ACTIVATE_MONSTERCOLLIDE')
+  if (binaryIsBitSet(type, 2)) flags.push('ACTIVATE_PLAYERPRESS')
+  if (binaryIsBitSet(type, 3)) flags.push('ACTIVATE_MONSTERPRESS')
+  if (binaryIsBitSet(type, 4)) flags.push('ACTIVATE_SHOT')
+  if (binaryIsBitSet(type, 5)) flags.push('ACTIVATE_PLAYERCOLLIDE')
   if (type === 255) flags.push('ACTIVATE_CUSTOM')
+  // debugger
   return flags.join('|')
 }
 
