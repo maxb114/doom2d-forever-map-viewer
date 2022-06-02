@@ -101,26 +101,39 @@ function handleParsedMap (/** @type {any} */ map, /** @type {string} */ mapFile)
         monster.editorPath = convertResourcePath((monster.getResourcePath() ?? ''))
         monsters.push(monster)
       } else if (element._hint === 'area') {
-        const position = element.position
-        const numbers = parse2Ints(position)
-        if (numbers === null || numbers[0] === undefined || numbers[1] === undefined) continue
-        const x = numbers[0]
-        const y = numbers[1]
-        const type = element.type
-        const direction = element.direction
+        let positionValue = element.position
+        if (positionValue === undefined || positionValue === null) positionValue = '0,0'
+        const position = parse2Ints(positionValue)
+        if (position == null || position[0] === undefined || position[1] === undefined) {
+          throw Error('Invalid panel position!')
+        }
+        const x = position[0]
+        const y = position[1]
+        let typeValue = element.type
+        if (typeValue === null || typeValue === undefined || typeValue === '') typeValue = 'AREA_NONE'
+        const type = typeValue
+        let directionValue = element.direction
+        if (directionValue === undefined || directionValue === null || directionValue === '') directionValue = 'DIR_LEFT'
+        const direction = directionValue
         const area = new DFArea(x, y, type, direction)
         area.id = element._token.value
         area.editorPath = convertResourcePath((area.getResourcePath() ?? ''))
         areas.push(area)
       } else if (element._hint === 'item') {
-        const position = element.position
-        const numbers = parse2Ints(position)
-        if (numbers === null || numbers[0] === undefined || numbers[1] === undefined) continue
-        const x = numbers[0]
-        const y = numbers[1]
-        const type = element.type
-        let options = element.options ?? 'ITEM_OPTION_NONE'
-        options = options.replace(/\s+/g, '').split('|')
+        let positionValue = element.position
+        if (positionValue === undefined || positionValue === null) positionValue = '0,0'
+        const position = parse2Ints(positionValue)
+        if (position == null || position[0] === undefined || position[1] === undefined) {
+          throw Error('Invalid panel position!')
+        }
+        const x = position[0]
+        const y = position[1]
+        let typeValue = element.type
+        if (typeValue === null || typeValue === undefined || typeValue === '') typeValue = 'AREA_NONE'
+        const type = typeValue
+        let optionsValue = element.options
+        if (optionsValue === undefined || optionsValue === null || optionsValue === '') optionsValue = 'ITEM_OPTION_NONE'
+        const options = (optionsValue).replace(/\s+/g, '').split('|')
         const item = new DFItem(x, y, type, options)
         item.id = element._token.value
         item.editorPath = convertResourcePath((item.getResourcePath() ?? ''))
