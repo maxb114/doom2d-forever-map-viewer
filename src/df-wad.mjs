@@ -96,12 +96,12 @@ class DFWad {
               return false
             }
             const buffer = textureResource.buffer
-            const type = getExtensionFromBuffer(buffer)
-            if (type === 'unknown') {
+            const filetype = getExtensionFromBuffer(buffer)
+            if (filetype === 'unknown') {
               reject(Error('Unknown image format!'))
               return false
             }
-            convertImage(buffer, type, 'png').then((arrayBuffer) => {
+            convertImage(buffer, filetype, 'png').then((arrayBuffer) => {
               const view = new Uint8Array(arrayBuffer)
               const animZip = new JSZip()
               const anim = this.saveToZip(animZip, animDescription.path, animView)
@@ -145,9 +145,9 @@ class DFWad {
     for (const file of this.files) {
       if (ignoreExtension) {
         const extensionless = getFileNameWithoutExtension(path)
-        if (extensionless === path) return file
+        if (extensionless === file.path) return file
       } else {
-        if (file.path === path) return file
+        if (path === file.path) return file
       }
     }
     return null
