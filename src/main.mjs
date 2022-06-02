@@ -5,6 +5,7 @@ import { DatabaseFrom } from './db.mjs'
 import { DFRender, DFRenderOptions } from './render.mjs'
 import { mapForRender } from './prepare-map-for-render.mjs'
 import { preloadWad } from './save-to-db.mjs'
+import { handleParsedMap } from './handle-parsed-map.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
 const input = document.createElement('input')
@@ -85,7 +86,9 @@ input.onchange = function () {
       const resource = wad.findResourceByPath(value)
       if (resource === null) return false
       const parsed = new DFParser(resource.buffer)
-      const map = new DFMap(parsed.parsed, file.name)
+      const intermediateMap = parsed.parsed
+      const handledMap = handleParsedMap(intermediateMap)
+      const map = new DFMap(handledMap)
       console.log(map)
       console.log(map.asText())
       const options = new DFRenderOptions()
