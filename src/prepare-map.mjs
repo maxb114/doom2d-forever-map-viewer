@@ -14,15 +14,15 @@ function mapForRender (/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ 
     /** @type {DFPanel[]} */ sky: [],
     /** @type {DFPanel[]} */ background: [],
     /** @type {DFItem[]} */ items: [],
-    /** @type {DFMonster[]} */ monsters: [],
     /** @type {DFPanel[]} */ walls: [],
+    /** @type {DFMonster[]} */ monsters: [],
     /** @type {DFArea[]} */ areas: [],
     /** @type {DFPanel[]} */ foreground: [],
     /** @type {DFTrigger[]} */ triggers: []
   }
   const order = {
-    background: ['PANEL_BACK', 'PANEL_STEP'],
-    walls: ['PANEL_WALL', 'PANEL_OPENDOOR', 'PANEL_CLOSEDOOR'],
+    background: ['PANEL_BACK'],
+    walls: ['PANEL_WALL', 'PANEL_OPENDOOR', 'PANEL_CLOSEDOOR', 'PANEL_STEP'],
     forgeround: ['PANEL_WATER', 'PANEL_ACID1', 'PANEL_ACID2', 'PANEL_FORE']
   }
   const water = ['_water_0', '_water_1', '_water_2']
