@@ -39,31 +39,45 @@ function handleParsedMap (/** @type {any} */ map, /** @type {string} */ mapFile)
     } else {
       if (element._hint === undefined) continue
       if (element._hint === 'texture') {
-        const animated = /true/i.test(element.animated)
-        const path = element.path
+        let animatedValue = element.animated
+        if (animatedValue === undefined || animatedValue === null) animatedValue = 'false'
+        const animated = /true/i.test(animatedValue)
+        let pathValue = element.path
+        if (pathValue === undefined || pathValue === null) pathValue = ''
+        const path = pathValue
         const texture = new DFTexture(path, animated)
         texture.id = element._token.value
         texture.editorPath = convertResourcePath(path, prefix)
         textures.push(texture)
       } else if (element._hint === 'panel') {
-        const position = element.position
-        const numbers = parse2Ints(position)
-        if (numbers == null || numbers[0] === undefined || numbers[1] === undefined) continue
-        const x = numbers[0]
-        const y = numbers[1]
-        const size = element.size
-        const dimensions = parse2Ints(size)
-        if (dimensions === null || dimensions[0] === undefined || dimensions[1] === undefined) continue
-        const width = dimensions[0]
-        const height = dimensions[1]
-        const texture = element.texture
-        let type = (element.type === undefined || element.type === '' ? 'PANEL_NONE' : element.type)
-        type = type.replace(/\s+/g, '').split('|')
-        const alpha = (element.alpha === undefined ? -1 : element.alpha) // if unset, then -1
-        let flags = (element.flags === undefined || element.flags === '' ? 'PANEL_FLAG_NONE' : element.flags)
-        flags = flags.replace(/\s+/g, '').split('|')
+        let positionValue = element.position
+        if (positionValue === undefined || positionValue === null) positionValue = '0,0'
+        const position = parse2Ints(positionValue)
+        if (position == null || position[0] === undefined || position[1] === undefined) {
+          throw Error('Invalid panel position!')
+        }
+        const x = position[0]
+        const y = position[1]
+        let sizeValue = element.size
+        if (sizeValue === undefined || sizeValue === null) sizeValue = '0,0'
+        const size = parse2Ints(sizeValue)
+        if (size === null || size[0] === undefined || size[1] === undefined) continue
+        const width = size[0]
+        const height = size[1]
+        let textureValue = element.texture
+        if (textureValue === undefined || textureValue === null) textureValue = ''
+        const textureId = textureValue
+        let typeValue = element.type
+        if (typeValue === undefined || typeValue === '') typeValue = 'PANEL_NONE'
+        const type = typeValue.replace(/\s+/g, '').split('|')
+        let alphaValue = element.alpha
+        if (alphaValue === undefined || alphaValue === null || alphaValue > 255 || alphaValue < -1) alphaValue = -1
+        const alpha = alphaValue
+        let flagsValue = element.flags
+        if (flagsValue === null || flagsValue === null || flagsValue === '') flagsValue = 'PANEL_FLAG_NONE'
+        const flags = flagsValue.replace(/\s+/g, '').split('|')
         const blending = flags.includes('PANEL_FLAG_BLENDING')
-        const panel = new DFPanel(x, y, width, height, texture, type, alpha, flags, undefined, undefined, blending, undefined)
+        const panel = new DFPanel(x, y, width, height, textureId, type, alpha, flags, undefined, undefined, blending, undefined)
         // we map textures to panels later
         panel.id = element._token.value
         panels.push(panel)
