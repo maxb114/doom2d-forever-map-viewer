@@ -13,19 +13,22 @@ function mapForRender (/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ 
   const orderedElements = {
     /** @type {DFPanel[]} */ sky: [],
     /** @type {DFPanel[]} */ background: [],
+    /** @type {DFPanel[]} */ steps: [],
     /** @type {DFItem[]} */ items: [],
     /** @type {DFPanel[]} */ walls: [],
     /** @type {DFMonster[]} */ monsters: [],
     /** @type {DFArea[]} */ areas: [],
+    /** @type {DFPanel[]} */ liquids: [],
     /** @type {DFPanel[]} */ foreground: [],
     /** @type {DFTrigger[]} */ triggers: []
   }
   const order = {
     background: ['PANEL_BACK'],
-    walls: ['PANEL_WALL', 'PANEL_OPENDOOR', 'PANEL_CLOSEDOOR', 'PANEL_STEP'],
-    forgeround: ['PANEL_WATER', 'PANEL_ACID1', 'PANEL_ACID2', 'PANEL_FORE']
+    walls: ['PANEL_WALL', 'PANEL_OPENDOOR', 'PANEL_CLOSEDOOR'],
+    steps: ['PANEL_STEP'],
+    foreground: ['PANEL_FORE'],
+    liquids: ['PANEL_WATER', 'PANEL_ACID1', 'PANEL_ACID2']
   }
-  const water = ['_water_0', '_water_1', '_water_2']
   if (options?.getFlag('rendersky')) { // mimic sky as a DFPanel
     const width = map.size.x
     const height = map.size.y
@@ -66,17 +69,20 @@ function mapForRender (/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ 
         }
       }
       if (stop) continue
-      const isWater = water.includes(element.editorPath)
-      if (!options?.getFlag('renderforeground') && element.type.includes('PANEL_FORE') && !isWater) continue
-      else if (!options?.getFlag('renderwalls') && (!element.type.includes('PANEL_FORE') && !element.type.includes('PANEL_BACK')) && !isWater) continue
-      else if (!options?.getFlag('renderbackground') && element.type.includes('PANEL_BACK') && !isWater) continue
+      const type = element.type.join('')
+      const isWater = order.liquids.includes(type)
+      if (!options?.getFlag('renderforeground') && (type === 'PANEL_FORE') && !isWater) continue
+      else if (!options?.getFlag('renderwalls') && (type === 'PANEL_WALL') && !isWater) continue
+      else if (!options?.getFlag('renderbackground') && (type === 'PANEL_BACK') && !isWater) continue
       else if (!options?.getFlag('renderliquids') && isWater) continue
-      else if (!options?.getFlag('renderopendoors') && element.type.includes('PANEL_OPENDOOR')) continue
-      else if (options?.getFlag('renderopendoors') && element.type.includes('PANEL_CLOSEDOOR')) continue // traps and doors should be handled differently
+      else if (!options?.getFlag('renderopendoors') && (type === 'PANEL_OPENDOOR')) continue
+      else if (options?.getFlag('renderopendoors') && (type === 'PANEL_CLOSEDOOR')) continue // traps and doors should be handled differently
 
-      if (order.background.includes(element.type.join(''))) orderedElements.background.push(element) // why is type string[]?
-      else if (order.walls.includes(element.type.join(''))) orderedElements.walls.push(element)
-      else if (order.forgeround.includes(element.type.join(''))) orderedElements.foreground.push(element)
+      if (order.background.includes(type)) orderedElements.background.push(element)
+      else if (order.walls.includes(type)) orderedElements.walls.push(element)
+      else if (order.foreground.includes(type)) orderedElements.foreground.push(element)
+      else if (order.liquids.includes(type)) orderedElements.liquids.push(element)
+      else if (order.steps.includes(type)) orderedElements.steps.push(element)
     } else if (element instanceof DFTexture) {
       continue
     } else if (element instanceof DFTrigger) {
