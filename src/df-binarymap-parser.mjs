@@ -55,7 +55,7 @@ class DFBinaryParser {
       const pos = i * binsize
       const binblock = buffer.slice(pos, pos + binsize)
       let offset = 0
-      const texture = readSliceChar(binblock, offset, offset + 64, true)
+      const texture = readSliceChar(binblock, offset, offset + 64)
       offset += 64
       const animated = readSliceByte(binblock, offset)
       const obj = {

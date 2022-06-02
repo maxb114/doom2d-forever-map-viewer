@@ -1335,8 +1335,8 @@ const binaryItemOptionsToString = (/** @type {number | undefined} */ options) =>
   const flags = []
   const none = 'ITEM_OPTION_NONE'
   if (options === undefined) return [none]
-  if (binaryIsBitSet(options, 1)) flags.push('ITEM_OPTION_ONLYDM')
-  if (binaryIsBitSet(options, 2)) flags.push('ITEM_OPTION_FALL')
+  if (binaryIsBitSet(options, 0)) flags.push('ITEM_OPTION_ONLYDM')
+  if (binaryIsBitSet(options, 1)) flags.push('ITEM_OPTION_FALL')
   if (flags.length === 0) flags.push(none)
   const test = flags.join('|')
   return test

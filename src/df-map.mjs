@@ -161,9 +161,9 @@ class DFMap {
     const x = this.size.x.toString(10)
     const y = this.size.y.toString(10)
     body = body + ' '.repeat(2) + 'name' + ' ' + "'" + name + "'" + ';' + '\n'
-    if (this.author !== '') body = body + ' '.repeat(2) + 'author' + ' ' + "'" + author + "'" + ';' + '\n'
-    if (this.description !== '') body = body + ' '.repeat(2) + 'description' + ' ' + "'" + description + "'" + ';' + '\n'
-    if (this.music !== '') body = body + ' '.repeat(2) + 'music' + ' ' + "'" + music + "'" + ';' + '\n'
+    body = body + ' '.repeat(2) + 'author' + ' ' + "'" + author + "'" + ';' + '\n'
+    body = body + ' '.repeat(2) + 'description' + ' ' + "'" + description + "'" + ';' + '\n'
+    body = body + ' '.repeat(2) + 'music' + ' ' + "'" + music + "'" + ';' + '\n'
     body = body + ' '.repeat(2) + 'sky' + ' ' + "'" + sky + "'" + ';' + '\n'
     body = body + ' '.repeat(2) + 'size' + ' ' + '(' + x + ' ' + y + ')' + ';' + '\n'
     for (const element of this.allElements) {
