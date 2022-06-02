@@ -181,4 +181,9 @@ function trimStringBySize (/** @type {string} */ value, /** @type {number} */ si
   return trimmed
 }
 
-export { getExtensionFromBuffer, wadToJSON, numberToChar, binaryIsBitSet, parse2Ints, readSliceByte, readSliceChar, readSliceLongWord, readSliceWord, splitPath, convertResourcePath, trimStringBySize }
+function getFileNameWithoutExtension (/** @type {string} */ path) {
+  const delimiter = '.'
+  return path.substring(0, path.lastIndexOf(delimiter)) || path + ''
+}
+
+export { getExtensionFromBuffer, wadToJSON, numberToChar, binaryIsBitSet, parse2Ints, readSliceByte, readSliceChar, readSliceLongWord, readSliceWord, splitPath, convertResourcePath, trimStringBySize, getFileNameWithoutExtension }
