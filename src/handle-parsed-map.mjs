@@ -82,13 +82,20 @@ function handleParsedMap (/** @type {any} */ map, /** @type {string} */ mapFile)
         panel.id = element._token.value
         panels.push(panel)
       } else if (element._hint === 'monster') {
-        const position = element.position
-        const numbers = parse2Ints(position)
-        if (numbers === null || numbers[0] === undefined || numbers[1] === undefined) continue
-        const x = numbers[0]
-        const y = numbers[1]
-        const type = element.type
-        const direction = element.direction
+        let positionValue = element.position
+        if (positionValue === undefined || positionValue === null) positionValue = '0,0'
+        const position = parse2Ints(positionValue)
+        if (position == null || position[0] === undefined || position[1] === undefined) {
+          throw Error('Invalid panel position!')
+        }
+        const x = position[0]
+        const y = position[1]
+        let typeValue = element.type
+        if (typeValue === null || typeValue === undefined || typeValue === '') typeValue = 'MONSTER_NONE'
+        const type = typeValue
+        let directionValue = element.direction
+        if (directionValue === undefined || directionValue === null || directionValue === '') directionValue = 'DIR_LEFT'
+        const direction = directionValue
         const monster = new DFMonster(x, y, type, direction)
         monster.id = element._token.value
         monster.editorPath = convertResourcePath((monster.getResourcePath() ?? ''))
