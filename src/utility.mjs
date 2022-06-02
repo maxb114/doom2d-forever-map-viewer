@@ -78,9 +78,8 @@ function wadToJSON (/** @type {Uint8Array} */ mapArray) {
   return wadObject
 }
 
-function binaryIsBitSet (/** @type {number} */ n, /** @type {number} */ k) {
-  if ((n & (1 << (k - 1))) > 0) return true
-  else return false
+function binaryIsBitSet (/** @type {number} */ num, /** @type {number} */ bit) {
+  return ((num >> bit) % 2 !== 0)
 }
 
 const parse2Ints = (/** @type {string | undefined} */ e) => {
