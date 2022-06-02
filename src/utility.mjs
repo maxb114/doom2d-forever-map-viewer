@@ -92,13 +92,16 @@ const parse2Ints = (/** @type {string | undefined} */ e) => {
 }
 
 const decoder = new TextDecoder('windows-1251')
+const encoder = new TextEncoder()
+const utf8decoder = new TextDecoder('utf-8')
 
-function readSliceChar (/** @type {Uint8Array} */ buffer, /** @type {number} */ pos, /** @type {number} */ offset) {
+function readSliceChar (/** @type {Uint8Array} */ buffer, /** @type {number} */ pos, /** @type {number} */ offset, utf8 = false) {
   const nameSlice = buffer.slice(pos, pos + offset)
   let val = ''
   nameSlice.forEach(/** @type {number} */ e => {
     if (e === 0) return false
-    val = val + decoder.decode(Uint8Array.from([e]))
+    if (utf8 === true) val = val + String.fromCharCode(e)
+    else val = val + decoder.decode(Uint8Array.from([e]))
     return true
   })
   return val
@@ -171,4 +174,11 @@ function convertResourcePath (/** @type {string} */ path, /** @type {string} */ 
   return loadPath
 }
 
-export { getExtensionFromBuffer, wadToJSON, numberToChar, binaryIsBitSet, parse2Ints, readSliceByte, readSliceChar, readSliceLongWord, readSliceWord, splitPath, convertResourcePath }
+function trimStringBySize (/** @type {string} */ value, /** @type {number} */ size) {
+  const bytes = encoder.encode(value)
+  const slice = bytes.slice(0, size)
+  const trimmed = utf8decoder.decode(slice)
+  return trimmed
+}
+
+export { getExtensionFromBuffer, wadToJSON, numberToChar, binaryIsBitSet, parse2Ints, readSliceByte, readSliceChar, readSliceLongWord, readSliceWord, splitPath, convertResourcePath, trimStringBySize }

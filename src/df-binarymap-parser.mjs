@@ -55,7 +55,7 @@ class DFBinaryParser {
       const pos = i * binsize
       const binblock = buffer.slice(pos, pos + binsize)
       let offset = 0
-      const texture = readSliceChar(binblock, offset, offset + 64)
+      const texture = readSliceChar(binblock, offset, offset + 64, true)
       offset += 64
       const animated = readSliceByte(binblock, offset)
       const obj = {
@@ -301,9 +301,9 @@ class DFBinaryParser {
       const pos = i * binsize
       const binblock = buffer.slice(pos, pos + binsize)
       let offset = 0
-      const x = readSliceLongWord(binblock, offset) ?? 0
+      const x = readSliceLongWord(binblock, offset, true) ?? 0
       offset += 4
-      const y = readSliceLongWord(binblock, offset) ?? 0
+      const y = readSliceLongWord(binblock, offset, true) ?? 0
       offset += 4
       const width = readSliceWord(binblock, offset) ?? 0
       offset += 2
@@ -325,7 +325,7 @@ class DFBinaryParser {
       const obj = {
         position: x?.toString(10) + ',' + y?.toString(10),
         size: width?.toString(10) + ',' + height?.toString(10),
-        enabled: (enabled === 1 ? 'true' : 'false'),
+        enabled: (enabled === 0 ? 'false' : 'true'),
         texture_panel: (texturepanel !== -1 ? 'panel' + texturepanel?.toString(10) : null),
         type,
         activate_type: activateType,
@@ -402,7 +402,7 @@ class DFBinaryParser {
         }
         const copy = view.slice(index, index + 4 + 4 + blockSize + 1)
         if (sections[i] !== undefined) {
-          if (sections[i].blocks < blocks) return false // if we have already found similiar stuff, prefer smaller section
+          if (sections[i].blocks > blocks) return false // if we have already found similiar stuff, prefer bigger section
         }
         sections[i] = {}
         sections[i].slice = copy

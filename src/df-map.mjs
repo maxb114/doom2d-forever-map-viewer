@@ -4,7 +4,7 @@ import { DFMonster } from './df-monster.mjs'
 import { DFPanel } from './df-panel.mjs'
 import { DFTexture } from './df-texture.mjs'
 import { DFTrigger } from './df-trigger.mjs'
-import { convertResourcePath, parse2Ints } from './utility.mjs'
+import { convertResourcePath, parse2Ints, trimStringBySize } from './utility.mjs'
 
 class DFMap {
   constructor (/** @type {any} */ parsed, /** @type {string} */ fileName) {
@@ -111,7 +111,7 @@ class DFMap {
           if (size === null || size[0] === undefined || size[1] === undefined) continue
           const width = size[0]
           const height = size[1]
-          const enabled = element.enabled
+          const enabled = (element.enabled === 'true')
           const texturePanel = element.texture_panel
           const type = element.type
           const activateType = (element.activate_type && element.activate_type !== '' ? element.activate_type : 'ACTIVATE_NONE').replace(/\s+/g, '').split('|')
@@ -153,12 +153,19 @@ class DFMap {
   asText () {
     const start = 'map' + ' {'
     let body = '\n'
-    body = body + ' '.repeat(2) + 'name' + ' ' + "'" + (this.name === '' ? 'Unnamed' : this.name).replaceAll("'", '"') + "'" + ';' + '\n'
-    if (this.author !== '') body = body + ' '.repeat(2) + 'author' + ' ' + "'" + this.author.replaceAll("'", '"') + "'" + ';' + '\n'
-    if (this.description !== '') body = body + ' '.repeat(2) + 'description' + ' ' + "'" + this.description.replaceAll("'", '"') + "'" + ';' + '\n'
-    if (this.music !== '') body = body + ' '.repeat(2) + 'music' + ' ' + "'" + this.music.replaceAll("'", '"') + "'" + ';' + '\n'
-    if (this.sky !== '') body = body + ' '.repeat(2) + 'sky' + ' ' + "'" + this.sky.replaceAll("'", '"') + "'" + ';' + '\n'
-    body = body + ' '.repeat(2) + 'size' + ' ' + '(' + (this.size.x ?? 0).toString(10) + ' ' + (this.size.y ?? 0).toString(10) + ')' + ';' + '\n'
+    const name = trimStringBySize(this.name.replaceAll("'", '"'), 32)
+    const author = trimStringBySize(this.author.replaceAll("'", '"'), 32)
+    const description = trimStringBySize(this.description.replaceAll("'", '"'), 256)
+    const music = trimStringBySize(this.music.replaceAll("'", '"'), 64)
+    const sky = trimStringBySize(this.sky.replaceAll("'", '"'), 64)
+    const x = this.size.x.toString(10)
+    const y = this.size.y.toString(10)
+    body = body + ' '.repeat(2) + 'name' + ' ' + "'" + name + "'" + ';' + '\n'
+    if (this.author !== '') body = body + ' '.repeat(2) + 'author' + ' ' + "'" + author + "'" + ';' + '\n'
+    if (this.description !== '') body = body + ' '.repeat(2) + 'description' + ' ' + "'" + description + "'" + ';' + '\n'
+    if (this.music !== '') body = body + ' '.repeat(2) + 'music' + ' ' + "'" + music + "'" + ';' + '\n'
+    body = body + ' '.repeat(2) + 'sky' + ' ' + "'" + sky + "'" + ';' + '\n'
+    body = body + ' '.repeat(2) + 'size' + ' ' + '(' + x + ' ' + y + ')' + ';' + '\n'
     for (const element of this.allElements) {
       body = body + element.asText()
     }

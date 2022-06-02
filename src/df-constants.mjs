@@ -1333,19 +1333,23 @@ const binaryPanelTypeToString = (/** @type {number | undefined} */ type) => {
 
 const binaryItemOptionsToString = (/** @type {number | undefined} */ options) => {
   const flags = []
-  if (options === 0 || options === undefined) return 'ITEM_OPTION_NONE'
+  const none = 'ITEM_OPTION_NONE'
+  if (options === undefined) return [none]
   if (binaryIsBitSet(options, 1)) flags.push('ITEM_OPTION_ONLYDM')
   if (binaryIsBitSet(options, 2)) flags.push('ITEM_OPTION_FALL')
+  if (flags.length === 0) flags.push(none)
   const test = flags.join('|')
   return test
 }
 
 const binaryPanelFlagToString = (/** @type {number | undefined} */ type) => {
   const flags = []
-  if (type === 0 || type === undefined) return 'PANEL_FLAG_NONE'
-  if (binaryIsBitSet(type, 1)) flags.push('PANEL_FLAG_BLENDING')
-  if (binaryIsBitSet(type, 2)) flags.push('PANEL_FLAG_HIDE')
-  if (binaryIsBitSet(type, 3)) flags.push('PANEL_FLAG_WATERTEXTURES')
+  const none = 'PANEL_FLAG_NONE'
+  if (type === undefined) return [none]
+  if (binaryIsBitSet(type, 0)) flags.push('PANEL_FLAG_BLENDING')
+  if (binaryIsBitSet(type, 1)) flags.push('PANEL_FLAG_HIDE')
+  if (binaryIsBitSet(type, 2)) flags.push('PANEL_FLAG_WATERTEXTURES')
+  if (flags.length === 0) flags.push(none)
   return flags.join('|')
 }
 
@@ -1518,12 +1522,14 @@ function binaryTriggerMessageKindToString (/** @type {number} */ trigger) {
 
 function binaryKeysToString (/** @type {number | undefined} */ options) {
   const flags = []
-  if (options === 0 || options === undefined) return 'KEY_NONE'
-  if (binaryIsBitSet(options, 1)) flags.push('KEY_RED')
-  if (binaryIsBitSet(options, 2)) flags.push('KEY_GREEN')
-  if (binaryIsBitSet(options, 3)) flags.push('KEY_BLUE')
-  if (binaryIsBitSet(options, 4)) flags.push('KEY_REDTEAM')
-  if (binaryIsBitSet(options, 5)) flags.push('KEY_BLUETEAM')
+  const none = 'KEY_NONE'
+  if (options === undefined) return [none]
+  if (binaryIsBitSet(options, 0)) flags.push('KEY_RED')
+  if (binaryIsBitSet(options, 1)) flags.push('KEY_GREEN')
+  if (binaryIsBitSet(options, 2)) flags.push('KEY_BLUE')
+  if (binaryIsBitSet(options, 3)) flags.push('KEY_REDTEAM')
+  if (binaryIsBitSet(options, 4)) flags.push('KEY_BLUETEAM')
+  if (flags.length === 0) flags.push(none)
   const test = flags.join('|')
   return test
 }
@@ -1553,7 +1559,7 @@ function binaryTriggerScoreTeamToString (/** @type {number} */ team) {
 
 function binaryActivateTypeToString (/** @type {number} */ type) {
   const flags = []
-  if (type === 0) flags.push('ACTIVATE_NONE')
+  const none = 'ACTIVATE_NONE'
   if (binaryIsBitSet(type, 0)) flags.push('ACTIVATE_PLAYERCOLLIDE')
   if (binaryIsBitSet(type, 1)) flags.push('ACTIVATE_MONSTERCOLLIDE')
   if (binaryIsBitSet(type, 2)) flags.push('ACTIVATE_PLAYERPRESS')
@@ -1561,7 +1567,7 @@ function binaryActivateTypeToString (/** @type {number} */ type) {
   if (binaryIsBitSet(type, 4)) flags.push('ACTIVATE_SHOT')
   if (binaryIsBitSet(type, 5)) flags.push('ACTIVATE_PLAYERCOLLIDE')
   if (type === 255) flags.push('ACTIVATE_CUSTOM')
-  // debugger
+  if (flags.length === 0) flags.push(none)
   return flags.join('|')
 }
 

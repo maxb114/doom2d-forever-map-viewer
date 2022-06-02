@@ -180,11 +180,11 @@ class DFTrigger {
     if (this.options.length >= 0) {
       msg = msg + ' '.repeat(4) + 'triggerdata' + ' ' + '{' + '\n'
       for (const option of this.options) {
-        if (option.value === null) continue
         msg = msg + ' '.repeat(6) + option.path + ' '
-        if (option.handler === 'char') msg = msg + "'" + option.value + "'"
-        else if (option.handler === 'double_longword' || option.handler === 'double_word') msg = msg + '(' + option.value[0] + ' ' + option.value[1] + ')'
-        else if (option.handler === 'bool') msg = msg + (option.value ? 'true' : 'false')
+        if (option.handler === 'char' && option.value !== null) msg = msg + "'" + option.value + "'"
+        else if ((option.handler === 'double_longword' || option.handler === 'double_word') && option.value !== null) msg = msg + '(' + option.value[0] + ' ' + option.value[1] + ')'
+        else if (option.handler === 'bool' && option.value !== null) msg = msg + (option.value ? 'true' : 'false')
+        else if (option.value === null) msg = msg + 'null'
         else msg = msg + option.value
         msg = msg + ';' + '\n'
       }
