@@ -3,7 +3,7 @@ import { DFParser } from './df-parser.mjs'
 import { DFMap } from './df-map.mjs'
 import { DatabaseFrom } from './db.mjs'
 import { DFRender, DFRenderOptions } from './render.mjs'
-import { mapForRender } from './prepare-map.mjs'
+import { mapForRender } from './prepare-map-for-render.mjs'
 import { preloadWad } from './save-to-db.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
