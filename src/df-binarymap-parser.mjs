@@ -377,40 +377,42 @@ class DFBinaryParser {
       }
     }
     const /** @type {any} */ sections = {}
+    let view = new Uint8Array(buffer)
     for (const i in data) {
       const section = data[i]
       if (section === undefined) continue
-      const view = new Uint8Array(buffer)
-      view.forEach((n, index) => {
-        if (n !== section.binblock) return false
+      for (const [index, n] of view.entries()) {
+        if (n !== section.binblock) continue
         let offset = index
         offset += 1
         const check = this.checkSignature(view, offset)
         offset += 4
-        if (!check) return false
+        if (!check) continue
         const blockSize = readSliceLongWord(view, offset)
-        if (blockSize === undefined || blockSize === 0) return false
+        if (blockSize === undefined || blockSize === 0) continue
         const magicValue = 2 ** 20
         if (blockSize >= magicValue) { // there's no way around this...
-          return false
+          continue
         }
         offset += 4
         const blocks = blockSize / section.size
         const isWhole = Number.isInteger(blocks)
         if (!isWhole) {
-          return false
+          continue
         }
         const copy = view.slice(index, index + 4 + 4 + blockSize + 1)
         if (sections[i] !== undefined) {
-          if (sections[i].blocks > blocks) return false // if we have already found similiar stuff, prefer bigger section
+          if (sections[i].blocks > blocks) continue // if we have already found similiar stuff, prefer bigger section
         }
         sections[i] = {}
         sections[i].slice = copy
         sections[i].pos = index
         sections[i].blocks = blocks
         sections[i].size = section.size
-        return true
-      })
+        offset += blockSize
+        view = view.slice(offset)
+        break
+      }
     }
     return sections
   }
