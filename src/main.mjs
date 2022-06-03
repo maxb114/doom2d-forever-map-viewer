@@ -111,9 +111,6 @@ input.onchange = function () {
         input.onchange = () => {
           options.setFlag(input.id, input.checked)
           draw1(canvas, context, map, render, options)
-          // @ts-ignore
-          // const mapView = mapForRender(map, options)
-          // const test = render.render1(mapView)
         }
         flagsDiv.appendChild(input)
         flagsDiv.appendChild(label)
@@ -176,7 +173,6 @@ async function init () {
     document.body.appendChild(canvas)
   } else {
     const text = document.createTextNode('Doom 2D: Forever resources have not been found!')
-    // show preload resources
     const br = document.createElement('br')
     const button = document.createElement('button')
     button.innerHTML = 'Download game resources from doom2d.org'
