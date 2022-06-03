@@ -86,7 +86,7 @@ function handleParsedMap (/** @type {any} */ map, /** @type {string} */ mapFile)
         if (positionValue === undefined || positionValue === null) positionValue = '0,0'
         const position = parse2Ints(positionValue)
         if (position == null || position[0] === undefined || position[1] === undefined) {
-          throw Error('Invalid panel position!')
+          throw Error('Invalid monster position!')
         }
         const x = position[0]
         const y = position[1]
@@ -105,7 +105,7 @@ function handleParsedMap (/** @type {any} */ map, /** @type {string} */ mapFile)
         if (positionValue === undefined || positionValue === null) positionValue = '0,0'
         const position = parse2Ints(positionValue)
         if (position == null || position[0] === undefined || position[1] === undefined) {
-          throw Error('Invalid panel position!')
+          throw Error('Invalid area position!')
         }
         const x = position[0]
         const y = position[1]
@@ -124,7 +124,7 @@ function handleParsedMap (/** @type {any} */ map, /** @type {string} */ mapFile)
         if (positionValue === undefined || positionValue === null) positionValue = '0,0'
         const position = parse2Ints(positionValue)
         if (position == null || position[0] === undefined || position[1] === undefined) {
-          throw Error('Invalid panel position!')
+          throw Error('Invalid item position!')
         }
         const x = position[0]
         const y = position[1]
@@ -139,19 +139,35 @@ function handleParsedMap (/** @type {any} */ map, /** @type {string} */ mapFile)
         item.editorPath = convertResourcePath((item.getResourcePath() ?? ''))
         items.push(item)
       } else if (element._hint === 'trigger') {
-        const position = parse2Ints(element.position)
-        if (position === null || position[0] === undefined || position[1] === undefined) continue
+        let positionValue = element.position
+        if (positionValue === undefined || positionValue === null) positionValue = '0,0'
+        const position = parse2Ints(positionValue)
+        if (position == null || position[0] === undefined || position[1] === undefined) {
+          throw Error('Invalid trigger position!')
+        }
         const x = position[0]
         const y = position[1]
-        const size = parse2Ints(element.size)
+        let sizeValue = element.size
+        if (sizeValue === undefined || sizeValue === null) sizeValue = '0,0'
+        const size = parse2Ints(sizeValue)
         if (size === null || size[0] === undefined || size[1] === undefined) continue
         const width = size[0]
         const height = size[1]
-        const enabled = (element.enabled === 'true')
-        const texturePanel = element.texture_panel
-        const type = element.type
-        const activateType = (element.activate_type && element.activate_type !== '' ? element.activate_type : 'ACTIVATE_NONE').replace(/\s+/g, '').split('|')
-        const keys = (element.keys && element.keys !== '' ? element.keys : 'KEY_NONE').replace(/\s+/g, '').split('|')
+        let enabledValue = element.enabled
+        if (enabledValue === undefined || enabledValue === null) enabledValue = 'true'
+        const enabled = (enabledValue === 'true')
+        let texturePanelValue = element.texture_panel
+        if (texturePanelValue === undefined || texturePanelValue === null) texturePanelValue = null
+        const texturePanel = texturePanelValue
+        let typeValue = element.type
+        if (typeValue === undefined || typeValue === null) typeValue = 'TRIGGER_NONE'
+        const type = typeValue
+        let activateTypeValue = element.activate_type
+        if (activateTypeValue === undefined || activateTypeValue === null) activateTypeValue = 'ACTIVATE_NONE'
+        const activateType = activateTypeValue.replace(/\s+/g, '').split('|')
+        let keysValue = element.keys
+        if (keysValue === undefined || keysValue === null) keysValue = 'KEY_NONE'
+        const keys = keysValue.replace(/\s+/g, '').split('|')
         const triggerData = element.triggerdata
         const trigger = new DFTrigger(x, y, width, height, enabled, texturePanel, type, activateType, keys, triggerData)
         trigger.id = element._token.value
