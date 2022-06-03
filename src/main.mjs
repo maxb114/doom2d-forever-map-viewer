@@ -10,6 +10,7 @@ import { clamp, getFileNameWithoutExtension } from './utility.mjs'
 import Camera from './camera.mjs'
 import { CameraWrapper } from './camera-wrapper.mjs'
 import { DfMapFromBuffer } from './map-from-buffer.mjs'
+import { getFileNameWithoutExtension } from './utility.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
 const input = document.createElement('input')
