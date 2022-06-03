@@ -1,9 +1,11 @@
 import { DFArea } from './df-area.mjs'
 import { DFItem } from './df-item.mjs'
+import { DFMap } from './df-map.mjs'
 import { DFMonster } from './df-monster.mjs'
 import { DFPanel } from './df-panel.mjs'
 import { DFTexture } from './df-texture.mjs'
 import { DFTrigger } from './df-trigger.mjs'
+import { DFRenderOptions } from './render.mjs'
 import { convertResourcePath } from './utility.mjs'
 
 function mapForRender (/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ options) {
@@ -75,8 +77,8 @@ function mapForRender (/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ 
       else if (!options?.getFlag('renderwalls') && (type === 'PANEL_WALL') && !isWater) continue
       else if (!options?.getFlag('renderbackground') && (type === 'PANEL_BACK') && !isWater) continue
       else if (!options?.getFlag('renderliquids') && isWater) continue
-      else if (!options?.getFlag('renderopendoors') && (type === 'PANEL_OPENDOOR')) continue
-      else if (options?.getFlag('renderopendoors') && (type === 'PANEL_CLOSEDOOR')) continue // traps and doors should be handled differently
+      else if (!options?.getFlag('renderopendoors') && (type === 'PANEL_CLOSEDOOR')) continue
+      else if (!options?.getFlag('rendertraps') && (type === 'PANEL_OPENDOOR')) continue
 
       if (order.background.includes(type)) orderedElements.background.push(element)
       else if (order.walls.includes(type)) orderedElements.walls.push(element)
