@@ -93,6 +93,11 @@ input.onchange = function () {
       const flagsDiv = document.createElement('div')
       flagsDiv.id = flagsDivId
       const allOptions = options.all
+      let cameraX = canvas.width / 2
+      let cameraY = canvas.height / 2
+      let scale = 1
+      let zoom = 1000
+      const camera = new Camera(context)
       for (const renderOption of allOptions) {
         const object = renderOption[0]
         const set = renderOption[1]
@@ -107,6 +112,13 @@ input.onchange = function () {
         label.appendChild(document.createTextNode(object.full))
         input.onchange = () => {
           options.setFlag(input.id, input.checked)
+          const mapView = mapForRender(map, options)
+          const renderedMap = render.render1(mapView, width, height)
+          camera.zoomTo(zoom)
+          camera.moveTo(cameraX, cameraY)
+          camera.begin()
+          context.drawImage(renderedMap, 0, 0)
+          camera.end()
           // draw1(canvas, context, map, render, options)
           // const camera = new Camera(context)
         }
@@ -114,10 +126,6 @@ input.onchange = function () {
         flagsDiv.appendChild(label)
       }
       div.appendChild(flagsDiv)
-      let cameraX = canvas.width / 2
-      let cameraY = canvas.height / 2
-      let scale = 1
-      let zoom = 1000
       await prepareForMap(map, options, render)
       const width = map.size.x
       const height = map.size.y
@@ -128,11 +136,11 @@ input.onchange = function () {
         document.body.clientHeight, document.documentElement.clientHeight
       )
       canvas.height = scrollHeight
-      const camera = new Camera(context)
       cameraX = clamp(cameraX, (0 + camera.viewport.width) / 2, (width) - (camera.viewport.width) / 2)
       cameraY = clamp(cameraY, (0 + camera.viewport.height) / 2, (height) - (camera.viewport.height) / 2)
       const mapView = mapForRender(map, options)
       const renderedMap = await render.render1(mapView, width, height)
+      camera.zoomTo(zoom)
       camera.moveTo(cameraX, cameraY)
       camera.begin()
       context.drawImage(renderedMap, 0, 0)
@@ -167,12 +175,15 @@ input.onchange = function () {
             zoom -= 100
             camera.end()
             camera.zoomTo(zoom)
+            camera.begin(); camera.end()
             cameraX = clamp(cameraX, (0 + camera.viewport.width) / 2, (width) - (camera.viewport.width) / 2)
             cameraY = clamp(cameraY, (0 + camera.viewport.height) / 2, (height) - (camera.viewport.height) / 2)
             camera.moveTo(cameraX, cameraY)
-            camera.begin()
-            context.drawImage(renderedMap, 0, 0)
-            camera.end()
+            camera.begin(); camera.end()
+            // debugger
+            // camera.begin()
+            // context.drawImage(renderedMap, 0, 0)
+            // camera.end()
             return
           }
           context.drawImage(renderedMap, 0, 0)
