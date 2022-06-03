@@ -11,11 +11,13 @@ const canvas = document.createElement('canvas')
 const input = document.createElement('input')
 input.type = 'file'
 let /** @type {Database | null} */ db = null
-try {
-  db = await DatabaseFrom()
-} catch (error) {
+DatabaseFrom().then((database) => {
+  db = database
+  init()
+}).catch((error) => {
   window.alert(error)
-}
+})
+
 input.onchange = function () {
   if (input === null || input.files === null) return false
   const file = input.files[0]
@@ -207,5 +209,3 @@ async function init () {
   }
   return true
 }
-
-init()
