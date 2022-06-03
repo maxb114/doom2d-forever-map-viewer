@@ -151,6 +151,9 @@ input.onchange = function () {
           camera.drawImage(renderedMap, 0, 0)
         }
       }
+      canvas.onmouseup = function (event) {
+        canvas.onmousemove = null
+      }
       const button = document.createElement('button')
       button.innerHTML = 'Save map as an image'
       button.id = mapImageId
