@@ -125,7 +125,7 @@ function getTriggerUsedData (/** @type {String} */ trigger) {
 }
 
 class DFTrigger {
-  constructor (x = -1, y = -1, width = -1, height = -1, enabled = true, texturePanel = null, type = 'TRIGGER_NONE', activateType = ['ACTIVATE_NONE'], key = ['KEY_NONE'], /** @type {any} */ triggerData) {
+  constructor (x = -1, y = -1, width = -1, height = -1, enabled = true, /** @type {null | String} */ texturePanel = null, type = 'TRIGGER_NONE', activateType = ['ACTIVATE_NONE'], key = ['KEY_NONE'], /** @type {any} */ triggerData) {
     this.position = { x, y }
     this.size = { width, height }
     this.enabled = enabled

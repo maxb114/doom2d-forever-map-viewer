@@ -3,8 +3,9 @@ import { DFParser } from './df-parser.mjs'
 import { DFMap } from './df-map.mjs'
 import { DatabaseFrom } from './db.mjs'
 import { DFRender, DFRenderOptions } from './render.mjs'
-import { mapForRender } from './prepare-map.mjs'
+import { mapForRender } from './prepare-map-for-render.mjs'
 import { preloadWad } from './save-to-db.mjs'
+import { handleParsedMap } from './handle-parsed-map.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
 const input = document.createElement('input')
@@ -22,6 +23,7 @@ input.onchange = function () {
   const reader = new window.FileReader()
   reader.readAsArrayBuffer(file)
   reader.onload = async function (event) {
+    const mapName = file.name.toLowerCase() // lower case for now
     const selectId = 'map-select'
     const buttonId = 'load-button'
     const cacheButtonId = 'cache-button'
@@ -45,7 +47,6 @@ input.onchange = function () {
     cacheButton.innerHTML = 'Save resources'
     cacheButton.id = 'cache-button'
     cacheButton.onclick = async function () {
-      const mapName = file.name.toLowerCase() // lower case for now
       const promises = preloadWad(wad, mapName, db)
       await Promise.allSettled(promises)
       return true
@@ -85,7 +86,9 @@ input.onchange = function () {
       const resource = wad.findResourceByPath(value)
       if (resource === null) return false
       const parsed = new DFParser(resource.buffer)
-      const map = new DFMap(parsed.parsed, file.name)
+      const intermediateMap = parsed.parsed
+      const handledMap = handleParsedMap(intermediateMap, mapName)
+      const map = new DFMap(handledMap)
       console.log(map)
       console.log(map.asText())
       const options = new DFRenderOptions()
@@ -108,9 +111,6 @@ input.onchange = function () {
         input.onchange = () => {
           options.setFlag(input.id, input.checked)
           draw1(canvas, context, map, render, options)
-          // @ts-ignore
-          // const mapView = mapForRender(map, options)
-          // const test = render.render1(mapView)
         }
         flagsDiv.appendChild(input)
         flagsDiv.appendChild(label)
@@ -173,7 +173,6 @@ async function init () {
     document.body.appendChild(canvas)
   } else {
     const text = document.createTextNode('Doom 2D: Forever resources have not been found!')
-    // show preload resources
     const br = document.createElement('br')
     const button = document.createElement('button')
     button.innerHTML = 'Download game resources from doom2d.org'
