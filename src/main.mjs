@@ -96,10 +96,6 @@ input.onchange = function () {
       const allOptions = options.all
       const width = map.size.x
       const height = map.size.y
-      let cameraX = 400
-      let cameraY = 400
-      let scale = 1
-      let zoom = 1000
       // const camera = new Camera(context)
       for (const renderOption of allOptions) {
         const object = renderOption[0]
