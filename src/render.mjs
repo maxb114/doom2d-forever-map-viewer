@@ -22,8 +22,8 @@ const options = [
   new DFRenderOption('renderbackground', 'Show background'),
   new DFRenderOption('rendersky', 'Show sky'),
   new DFRenderOption('renderliquids', 'Show liquids'),
-  new DFRenderOption('renderopendoors', 'Open doors'),
-  new DFRenderOption('rendertraps', 'Open traps')
+  new DFRenderOption('renderopendoors', 'Close doors'),
+  new DFRenderOption('rendertraps', 'Activate traps')
 ]
 
 class DFRenderOptions {
