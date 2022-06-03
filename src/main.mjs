@@ -7,6 +7,7 @@ import { mapForRender } from './prepare-map-for-render.mjs'
 import { preloadWad } from './save-to-db.mjs'
 import { handleParsedMap } from './handle-parsed-map.mjs'
 import { getFileNameWithoutExtension } from './utility.mjs'
+import Camera from './camera.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
 const input = document.createElement('input')
@@ -72,7 +73,7 @@ input.onchange = function () {
     const button = document.createElement('button')
     button.innerHTML = 'Load map'
     button.id = 'load-button'
-    button.onclick = () => {
+    button.onclick = async () => {
       deleteElementById(flagsDivId)
       deleteElementById(mapImageId)
       const context = canvas.getContext('2d')
@@ -105,13 +106,26 @@ input.onchange = function () {
         label.appendChild(document.createTextNode(object.full))
         input.onchange = () => {
           options.setFlag(input.id, input.checked)
-          draw1(canvas, context, map, render, options)
+          // draw1(canvas, context, map, render, options)
+          // const camera = new Camera(context)
         }
         flagsDiv.appendChild(input)
         flagsDiv.appendChild(label)
       }
       div.appendChild(flagsDiv)
-      draw1(canvas, context, map, render, options)
+      // draw1(canvas, context, map, render, options)
+      await prepareForMap(map, options, render)
+      const width = map.size.x
+      const height = map.size.y
+      canvas.width = 800
+      canvas.height = 600
+      const mapView = mapForRender(map, options)
+      const renderedMap = await render.render1(mapView, width, height)
+      const camera = new Camera(context)
+      camera.moveTo(1000, 1500)
+      camera.begin()
+      context.drawImage(renderedMap, 0, 0)
+      camera.end()
       const button = document.createElement('button')
       button.innerHTML = 'Save map as an image'
       button.id = mapImageId
@@ -148,6 +162,13 @@ function download (/** @type {Blob} */ blob, /** @type {string} */ name) {
   a.href = URL.createObjectURL(blob)
   a.download = name
   a.click()
+}
+
+async function prepareForMap(/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ options, /** @type {DFRender} */ render) {
+  const allElements = map.allElements
+  const sky = map.sky
+  const prefix = map.fileName
+  await render.preload(allElements, db, sky, prefix)
 }
 
 async function draw1 (/** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasRenderingContext2D} */ context, /** @type {DFMap} */ map, /** @type {DFRender} */ render, /** @type {DFRenderOptions} */ options) {
