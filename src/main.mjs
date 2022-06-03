@@ -6,6 +6,7 @@ import { DFRender, DFRenderOptions } from './render.mjs'
 import { mapForRender } from './prepare-map-for-render.mjs'
 import { preloadWad } from './save-to-db.mjs'
 import { handleParsedMap } from './handle-parsed-map.mjs'
+import { getFileNameWithoutExtension } from './utility.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
 const input = document.createElement('input')
@@ -115,7 +116,7 @@ input.onchange = function () {
       button.innerHTML = 'Save map as an image'
       button.id = mapImageId
       button.onclick = () => {
-        downloadDataURL(canvas.toDataURL())
+        downloadDataURL(canvas.toDataURL(), getFileNameWithoutExtension(mapName) + '.png')
       }
       div.appendChild(button)
       return true
