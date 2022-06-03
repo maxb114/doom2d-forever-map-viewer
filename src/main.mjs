@@ -42,7 +42,6 @@ input.onchange = function () {
     if (content === null || typeof content === 'string') return false
     const view = new Uint8Array(content)
     const wad = await DfwadFrom(view)
-    const maps = wad.maps
     const cacheButton = document.createElement('button')
     cacheButton.innerHTML = 'Save resources'
     cacheButton.id = 'cache-button'
@@ -61,6 +60,7 @@ input.onchange = function () {
       download(blob, 'convert-' + file.name.toLowerCase())
     }
     div.appendChild(zipButton)
+    const maps = wad.maps.sort((a, b) => a.path.localeCompare(b.path))
     if (maps.length === 0) return true
     const select = document.createElement('select')
     select.id = selectId
