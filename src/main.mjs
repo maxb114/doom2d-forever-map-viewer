@@ -29,13 +29,10 @@ input.onchange = function () {
     const cacheButtonId = 'cache-button'
     const flagsDivId = 'flags'
     const zipButtonId = 'zip-button'
-    const deleteArray = [selectId, buttonId, cacheButtonId, flagsDivId, zipButtonId]
+    const mapImageId = 'mapimage-button'
+    const deleteArray = [selectId, buttonId, cacheButtonId, flagsDivId, zipButtonId, mapImageId]
     for (const elementid of deleteArray) {
-      const deleteElement = document.getElementById(elementid)
-      if (deleteElement !== null) {
-        deleteElement.innerHTML = ''
-        div.removeChild(deleteElement)
-      }
+      deleteElementById(elementid)
     }
     if (event.target === null) return false
     const content = event.target.result
@@ -75,11 +72,8 @@ input.onchange = function () {
     button.innerHTML = 'Load map'
     button.id = 'load-button'
     button.onclick = () => {
-      const deleteFlagsDiv = document.getElementById(flagsDivId)
-      if (deleteFlagsDiv !== null) {
-        deleteFlagsDiv.innerHTML = ''
-        div.removeChild(deleteFlagsDiv)
-      }
+      deleteElementById(flagsDivId)
+      deleteElementById(mapImageId)
       const context = canvas.getContext('2d')
       if (context === null) return false
       const value = select.value
@@ -117,12 +111,35 @@ input.onchange = function () {
       }
       div.appendChild(flagsDiv)
       draw1(canvas, context, map, render, options)
+      const button = document.createElement('button')
+      button.innerHTML = 'Save map as an image'
+      button.id = mapImageId
+      button.onclick = () => {
+        downloadDataURL(canvas.toDataURL())
+      }
+      div.appendChild(button)
       return true
     }
     div.appendChild(button)
     return true
   }
   return true
+}
+
+function deleteElementById (/** @type {string} */ elementid) {
+  const deleteElement = document.getElementById(elementid)
+  if (deleteElement !== null) {
+    deleteElement.innerHTML = ''
+    div.removeChild(deleteElement)
+  }
+  return true
+}
+
+function downloadDataURL (/** @type {string} */ dataURL, /** @type {string} */ name) {
+  const a = document.createElement('a')
+  a.href = dataURL
+  a.download = name
+  a.click()
 }
 
 function download (/** @type {Blob} */ blob, /** @type {string} */ name) {
