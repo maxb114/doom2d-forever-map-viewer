@@ -6,7 +6,7 @@ import { DFRender, DFRenderOptions } from './render.mjs'
 import { mapForRender } from './prepare-map-for-render.mjs'
 import { preloadWad } from './save-to-db.mjs'
 import { handleParsedMap } from './handle-parsed-map.mjs'
-import { getFileNameWithoutExtension } from './utility.mjs'
+import { clamp, getFileNameWithoutExtension } from './utility.mjs'
 import Camera from './camera.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
@@ -25,6 +25,7 @@ input.onchange = function () {
   const reader = new window.FileReader()
   reader.readAsArrayBuffer(file)
   reader.onload = async function (event) {
+    canvas.onmousedown = function () {}
     const mapName = file.name.toLowerCase() // lower case for now
     const selectId = 'map-select'
     const buttonId = 'load-button'
@@ -113,19 +114,87 @@ input.onchange = function () {
         flagsDiv.appendChild(label)
       }
       div.appendChild(flagsDiv)
-      // draw1(canvas, context, map, render, options)
+      let cameraX = canvas.width / 2
+      let cameraY = canvas.height / 2
+      let scale = 1
+      let zoom = 1000
       await prepareForMap(map, options, render)
       const width = map.size.x
       const height = map.size.y
-      canvas.width = 800
-      canvas.height = 600
+      canvas.width = document.body.clientWidth
+      const scrollHeight = Math.max(
+        document.body.scrollHeight, document.documentElement.scrollHeight,
+        document.body.offsetHeight, document.documentElement.offsetHeight,
+        document.body.clientHeight, document.documentElement.clientHeight
+      )
+      canvas.height = scrollHeight
+      const camera = new Camera(context)
+      cameraX = clamp(cameraX, (0 + camera.viewport.width) / 2, (width) - (camera.viewport.width) / 2)
+      cameraY = clamp(cameraY, (0 + camera.viewport.height) / 2, (height) - (camera.viewport.height) / 2)
       const mapView = mapForRender(map, options)
       const renderedMap = await render.render1(mapView, width, height)
-      const camera = new Camera(context)
-      camera.moveTo(1000, 1500)
+      camera.moveTo(cameraX, cameraY)
       camera.begin()
       context.drawImage(renderedMap, 0, 0)
       camera.end()
+      canvas.onmousedown = function (event) {
+        canvas.onmousemove = (event) => {
+          cameraX -= event.movementX
+          cameraY -= event.movementY
+          console.log(camera)
+          camera.zoomTo(zoom)
+          console.log(camera)
+          cameraX = clamp(cameraX, (0 + camera.viewport.width) / 2, (width) - (camera.viewport.width) / 2)
+          cameraY = clamp(cameraY, (0 + camera.viewport.height) / 2, (height) - (camera.viewport.height) / 2)
+          camera.moveTo(cameraX, cameraY)
+          camera.begin()
+          context.drawImage(renderedMap, 0, 0)
+          camera.end()
+        }
+      }
+      document.onkeydown = function (event) {
+        if (event.code === 'KeyR') {
+          zoom += 100
+          zoom = clamp(zoom, 100, 3000)
+          scale += 0.1
+          scale = clamp(scale, 0.1, 4)
+          camera.zoomTo(zoom)
+          cameraX = clamp(cameraX, (0 + camera.viewport.width) / 2, (width) - (camera.viewport.width) / 2)
+          cameraY = clamp(cameraY, (0 + camera.viewport.height) / 2, (height) - (camera.viewport.height) / 2)
+          camera.moveTo(cameraX, cameraY)
+          camera.begin()
+          if ((camera.viewport.left < 0) || (camera.viewport.right > (canvas.width))) {
+            zoom -= 100
+            camera.end()
+            camera.zoomTo(zoom)
+            cameraX = clamp(cameraX, (0 + camera.viewport.width) / 2, (width) - (camera.viewport.width) / 2)
+            cameraY = clamp(cameraY, (0 + camera.viewport.height) / 2, (height) - (camera.viewport.height) / 2)
+            camera.moveTo(cameraX, cameraY)
+            camera.begin()
+            context.drawImage(renderedMap, 0, 0)
+            camera.end()
+            return
+          }
+          context.drawImage(renderedMap, 0, 0)
+          camera.end()
+        }
+        if (event.code === 'KeyX') {
+          zoom -= 100
+          zoom = clamp(zoom, 100, 3000)
+          scale -= 0.1
+          scale = clamp(scale, 0.1, 4)
+          camera.zoomTo(zoom)
+          cameraX = clamp(cameraX, (0 + camera.viewport.width) / 2, (width) - (camera.viewport.width) / 2)
+          cameraY = clamp(cameraY, (0 + camera.viewport.height) / 2, (height) - (camera.viewport.height) / 2)
+          camera.moveTo(cameraX, cameraY)
+          camera.begin()
+          context.drawImage(renderedMap, 0, 0)
+          camera.end()
+        }
+      }
+      canvas.onmouseup = function (event) {
+        canvas.onmousemove = null
+      }
       const button = document.createElement('button')
       button.innerHTML = 'Save map as an image'
       button.id = mapImageId
