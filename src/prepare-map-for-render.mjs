@@ -20,15 +20,17 @@ function mapForRender (/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ 
     /** @type {DFPanel[]} */ walls: [],
     /** @type {DFMonster[]} */ monsters: [],
     /** @type {DFArea[]} */ areas: [],
+    /** @type {DFPanel[]} */ opendoors: [],
     /** @type {DFPanel[]} */ liquids: [],
     /** @type {DFPanel[]} */ foreground: [],
     /** @type {DFTrigger[]} */ triggers: []
   }
   const order = {
     background: ['PANEL_BACK'],
-    walls: ['PANEL_WALL', 'PANEL_OPENDOOR', 'PANEL_CLOSEDOOR'],
+    walls: ['PANEL_WALL', 'PANEL_CLOSEDOOR'],
     steps: ['PANEL_STEP'],
     foreground: ['PANEL_FORE'],
+    opendoors: ['PANEL_OPENDOOR'],
     liquids: ['PANEL_WATER', 'PANEL_ACID1', 'PANEL_ACID2']
   }
   if (options?.getFlag('rendersky')) { // mimic sky as a DFPanel
@@ -85,6 +87,7 @@ function mapForRender (/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ 
       else if (order.foreground.includes(type)) orderedElements.foreground.push(element)
       else if (order.liquids.includes(type)) orderedElements.liquids.push(element)
       else if (order.steps.includes(type)) orderedElements.steps.push(element)
+      else if (order.opendoors.includes(type)) orderedElements.opendoors.push(element)
     } else if (element instanceof DFTexture) {
       continue
     } else if (element instanceof DFTrigger) {
