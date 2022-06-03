@@ -186,4 +186,10 @@ function getFileNameWithoutExtension (/** @type {string} */ path) {
   return path.substring(0, path.lastIndexOf(delimiter)) || path + ''
 }
 
-export { getExtensionFromBuffer, wadToJSON, numberToChar, binaryIsBitSet, parse2Ints, readSliceByte, readSliceChar, readSliceLongWord, readSliceWord, splitPath, convertResourcePath, trimStringBySize, getFileNameWithoutExtension }
+function clamp (/** @type {number} */ value, /** @type {number} */ min, /** @type {number} */ max) {
+  if (value < min) return min
+  else if (value > max) return max
+  return value
+}
+
+export { getExtensionFromBuffer, wadToJSON, numberToChar, binaryIsBitSet, parse2Ints, readSliceByte, readSliceChar, readSliceLongWord, readSliceWord, splitPath, convertResourcePath, trimStringBySize, getFileNameWithoutExtension, clamp }
