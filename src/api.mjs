@@ -1,4 +1,4 @@
-import { getCameraWrapper, getCurrentMapAsJSON, setCurrentMapFromJSON } from './main.mjs'
+import { getCameraWrapper, getCurrentMapAsJSON, setCurrentMapFromJSON, getRenderingOptions } from './main.mjs'
 
 function moveCameraByDelta (/** @type {number} */ deltaX, /** @type {number} */ deltaY) {
   const cameraWrapper = getCameraWrapper()
@@ -33,4 +33,18 @@ function currentMapAsJSON () {
   return mapObject
 }
 
-export { moveCameraByDelta, moveCamera, currentMapAsJSON, setMapFromJSON, setZoom, changeZoom }
+function getRenderFlags () {
+  const options = getRenderingOptions()
+  if (options === null) return {}
+  const optionsObject = JSON.stringify(options)
+  return optionsObject
+}
+
+function setRenderFlag (/** @type {string} */ index, /** @type {boolean} */ value) {
+  const options = getRenderingOptions()
+  if (options === null) return false
+  options.setFlag(index, value)
+  return true
+}
+
+export { moveCameraByDelta, moveCamera, currentMapAsJSON, setMapFromJSON, setZoom, changeZoom, getRenderFlags, setRenderFlag }
