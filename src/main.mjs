@@ -22,6 +22,7 @@ document.body.style.margin = '0'
 const input = document.createElement('input')
 input.type = 'file'
 let /** @type {Database | null} */ db = null
+let /** @type {DFMap | null } */ currentMap = null
 DatabaseFrom().then((database) => {
   db = database
   init()
@@ -93,9 +94,10 @@ input.onchange = function () {
       if (resource === null) return false
       if (camera === null) return
       canvasDiv.style.display = ''
-      const map = DfMapFromBuffer(resource.buffer, mapName)
-      console.log(map)
-      console.log(map.asText())
+      const loaded = DfMapFromBuffer(resource.buffer, mapName)
+      setCurrentMap(loaded)
+      const map = getCurrentMap()
+      if (map === null) return
       const options = new DFRenderOptions()
       const render = new DFRender()
       let /** @type {CanvasImageSource | null} */ savedMap = null
@@ -135,7 +137,6 @@ input.onchange = function () {
       const mapView = mapForRender(map, options)
       savedMap = await render.render1(mapView, width, height)
       moveCamera(width / 2, height / 2)
-      camera.setZoom(1000)
       camera.setCanvasToDraw(savedMap)
       canvas.onmousedown = function () {
         canvas.onmousemove = (event) => {
@@ -290,4 +291,20 @@ function getCameraWrapper () {
   return camera
 }
 
-export { getCameraWrapper }
+function setCurrentMap (/** @type {DFMap} */ map) {
+  currentMap = map
+  return currentMap
+}
+
+function getCurrentMap () {
+  const map = currentMap
+  return map
+}
+
+function getCurrentMapAsJSON () {
+  const map = currentMap
+  const toJSON = JSON.stringify(map)
+  return toJSON
+}
+
+export { getCameraWrapper, getCurrentMapAsJSON, getCurrentMap, setCurrentMap }
