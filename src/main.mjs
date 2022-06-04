@@ -5,7 +5,7 @@ import { mapForRender } from './prepare-map-for-render.mjs'
 import { preloadWad } from './save-to-db.mjs'
 import { getFileNameWithoutExtension } from './utility.mjs'
 import { CameraWrapper } from './camera-wrapper.mjs'
-import { changeZoom, getMapsList, loadMapAndSetAsCurrent, moveCamera, moveCameraByDelta, setRenderFlag } from './api.mjs'
+import { changeZoom, getCurrentMapName, getCurrentWadName, getMapsList, loadMapAndSetAsCurrent, moveCamera, moveCameraByDelta, setRenderFlag } from './api.mjs'
 import { mapFromJson } from './map-from-json-parse.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
@@ -14,6 +14,7 @@ const context = canvas.getContext('2d')
 let /** @type {CameraWrapper | null} */ camera = null
 let /** @type {DFRenderOptions | null} */ options = null
 let /** @type {DFWad | null} */ wad = null
+let /** @type {string | null} */ mapName = null
 let screenHeight = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight)
 let screenWidth = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth)
 canvasDiv.style.display = 'none'
@@ -40,7 +41,7 @@ input.onchange = function () {
   reader.readAsArrayBuffer(file)
   reader.onload = async function (event) {
     canvas.onmousedown = function () {}
-    const mapName = file.name.toLowerCase() // lower case for now
+    mapName = file.name.toLowerCase() // lower case for now
     const selectId = 'map-select'
     const buttonId = 'load-button'
     const cacheButtonId = 'cache-button'
@@ -60,6 +61,8 @@ input.onchange = function () {
     cacheButton.innerHTML = 'Save resources'
     cacheButton.id = 'cache-button'
     cacheButton.onclick = async function () {
+      const mapName = getCurrentWadName()
+      if (mapName === null) return
       const promises = preloadWad(wad, mapName, db)
       await Promise.allSettled(promises)
       return true
@@ -92,6 +95,8 @@ input.onchange = function () {
       deleteElementById(flagsDivId)
       deleteElementById(mapImageId)
       const value = select.value
+      const mapName = getCurrentWadName()
+      if (mapName === null) return
       const result = loadMapAndSetAsCurrent(value, mapName)
       if (camera === null) return
       canvasDiv.style.display = ''
@@ -185,7 +190,10 @@ input.onchange = function () {
       button.onclick = () => {
         const mapView = mapForRender(map, options)
         const savedMap = render.render1(mapView, width, height)
-        downloadDataURL(savedMap.toDataURL(), getFileNameWithoutExtension(mapName) + '.png')
+        const mapName = getCurrentMapName()
+        const wadName = getCurrentWadName()
+        if (mapName === null || wadName === null) return
+        downloadDataURL(savedMap.toDataURL(), wadName + '-' + mapName + '.png')
       }
       div.appendChild(button)
       return true
@@ -326,4 +334,9 @@ function getCurrentWad () {
   return currentWad
 }
 
-export { getCameraWrapper, getCurrentMapAsJSON, getCurrentMap, setCurrentMap, setCurrentMapFromJSON, getRenderingOptions, getCurrentWad }
+function getCurrentWadFileName () {
+  const currentWadName = mapName
+  return currentWadName
+}
+
+export { getCameraWrapper, getCurrentMapAsJSON, getCurrentMap, setCurrentMap, setCurrentMapFromJSON, getRenderingOptions, getCurrentWad, getCurrentWadFileName }
