@@ -58,7 +58,7 @@ function mapForRender (/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ 
       if (!options?.getFlag('rendermonsters')) continue
       orderedElements.monsters.push(element)
     } else if (element instanceof DFPanel) {
-      if (element.flags.includes('PANEL_FLAG_HIDE')) {
+      if (options?.getFlag('renderhide') && element.flags.includes('PANEL_FLAG_HIDE')) {
         continue
       } else if (element.flags.includes('PANEL_FLAG_WATERTEXTURES')) {
         // continue

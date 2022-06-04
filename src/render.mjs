@@ -17,6 +17,7 @@ const options = [
   new DFRenderOption('renderdmitems', 'Show DM items'),
   new DFRenderOption('renderitems', 'Show non-DM items'),
   new DFRenderOption('rendermonsters', 'Show monsters'),
+  new DFRenderOption('renderhide', 'Hide hidden panels'),
   new DFRenderOption('renderforeground', 'Show foreground'),
   new DFRenderOption('renderwalls', 'Show walls'),
   new DFRenderOption('rendersteps', 'Show steps'),
