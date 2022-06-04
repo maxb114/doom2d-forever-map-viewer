@@ -1161,7 +1161,7 @@ const convertSpecialItem = (/** @type {string} */ e) => {
   else if (e === 'MONSTER_SKEL') return 'FRAMES_MONSTER_SKEL_SLEEP'
   else if (e === 'MONSTER_VILE') return 'FRAMES_MONSTER_VILE_SLEEP'
   else if (e === 'MONSTER_FISH') return 'FRAMES_MONSTER_FISH_SLEEP'
-  else if (e === 'MONSTER_BARREL') return 'FRAMES_MONSTER_ZOMBY_SLEEP'
+  else if (e === 'MONSTER_BARREL') return 'FRAMES_MONSTER_BARREL_SLEEP'
   else if (e === 'MONSTER_ROBO') return 'FRAMES_MONSTER_ROBO_SLEEP'
   else if (e === 'MONSTER_MAN') return 'FRAMES_MONSTER_MAN_SLEEP'
   else if (e === 'MONSTER_ZOMBIE') return 'FRAMES_MONSTER_ZOMBY_SLEEP'
