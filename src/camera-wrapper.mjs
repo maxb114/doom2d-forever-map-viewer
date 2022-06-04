@@ -32,32 +32,6 @@ class CameraWrapper {
     this.camera.distance = this.zoom
     this.camera.moveTo(this.cameraX, this.cameraY)
     this.camera.updateViewport()
-    /*
-    if (this.camera.viewport.left < 0) {
-      this.camera.begin()
-      this.context.fillStyle = this.fillColor
-      this.context.fillRect(this.camera.viewport.left, 0, Math.abs(this.camera.viewport.left), this.boundY)
-      this.camera.end()
-    }
-    if (this.camera.viewport.right > this.boundX) {
-      this.camera.begin()
-      this.context.fillStyle = this.fillColor
-      this.context.fillRect(this.boundX, 0, Math.abs(this.camera.viewport.right - this.boundX), this.boundY)
-      this.camera.end()
-    }
-    if (this.camera.viewport.top < 0) {
-      this.camera.begin()
-      this.context.fillStyle = this.fillColor
-      this.context.fillRect(this.camera.viewport.left, this.camera.viewport.top, this.camera.viewport.width, Math.abs(this.camera.viewport.top - this.boundY))
-      this.camera.end()
-    }
-    if (this.camera.viewport.bottom > this.boundY) {
-      this.camera.begin()
-      this.context.fillStyle = this.fillColor
-      this.context.fillRect(this.camera.viewport.left, this.boundY, this.camera.viewport.width, Math.abs(this.boundY - this.camera.viewport.bottom))
-      this.camera.end()
-    }
-    */
     this.context.save()
     this.context.fillStyle = this.fillColor
     this.context.fillRect(0, 0, this.canvas.width, this.canvas.height)
