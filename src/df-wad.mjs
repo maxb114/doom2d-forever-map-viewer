@@ -2,7 +2,6 @@ import { getExtensionFromBuffer, getFileNameWithoutExtension, splitPath, wadToJS
 import { inflate } from './pako.esm.mjs'
 import './jszip.js'
 import { DFParser } from './df-parser.mjs'
-import { DFMap } from './df-map.mjs'
 import { convertImage } from './image.mjs'
 import { DFAnimTextureParser } from './df-animtexture-parser.mjs'
 import { DfMapFromBuffer } from './map-from-buffer.mjs'

@@ -1,14 +1,19 @@
 import { DfwadFrom } from './df-wad.mjs'
-import { DFParser } from './df-parser.mjs'
-import { DFMap } from './df-map.mjs'
 import { DatabaseFrom } from './db.mjs'
 import { DFRender, DFRenderOptions } from './render.mjs'
 import { mapForRender } from './prepare-map-for-render.mjs'
 import { preloadWad } from './save-to-db.mjs'
-import { handleParsedMap } from './handle-parsed-map.mjs'
+import { getFileNameWithoutExtension } from './utility.mjs'
+import { CameraWrapper } from './camera-wrapper.mjs'
 import { DfMapFromBuffer } from './map-from-buffer.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
+const canvasDiv = document.createElement('div')
+canvasDiv.style.display = 'none'
+div.style.margin = '0'
+canvasDiv.style.margin = '0'
+canvasDiv.appendChild(canvas)
+document.body.style.margin = '0'
 const input = document.createElement('input')
 input.type = 'file'
 let /** @type {Database | null} */ db = null
@@ -26,19 +31,17 @@ input.onchange = function () {
   const reader = new window.FileReader()
   reader.readAsArrayBuffer(file)
   reader.onload = async function (event) {
+    canvas.onmousedown = function () {}
     const mapName = file.name.toLowerCase() // lower case for now
     const selectId = 'map-select'
     const buttonId = 'load-button'
     const cacheButtonId = 'cache-button'
     const flagsDivId = 'flags'
     const zipButtonId = 'zip-button'
-    const deleteArray = [selectId, buttonId, cacheButtonId, flagsDivId, zipButtonId]
+    const mapImageId = 'mapimage-button'
+    const deleteArray = [selectId, buttonId, cacheButtonId, flagsDivId, zipButtonId, mapImageId]
     for (const elementid of deleteArray) {
-      const deleteElement = document.getElementById(elementid)
-      if (deleteElement !== null) {
-        deleteElement.innerHTML = ''
-        div.removeChild(deleteElement)
-      }
+      deleteElementById(elementid)
     }
     if (event.target === null) return false
     const content = event.target.result
@@ -77,25 +80,27 @@ input.onchange = function () {
     const button = document.createElement('button')
     button.innerHTML = 'Load map'
     button.id = 'load-button'
-    button.onclick = () => {
-      const deleteFlagsDiv = document.getElementById(flagsDivId)
-      if (deleteFlagsDiv !== null) {
-        deleteFlagsDiv.innerHTML = ''
-        div.removeChild(deleteFlagsDiv)
-      }
+    button.onclick = async () => {
+      deleteElementById(flagsDivId)
+      deleteElementById(mapImageId)
       const context = canvas.getContext('2d')
       if (context === null) return false
       const value = select.value
       const resource = wad.findResourceByPath(value)
       if (resource === null) return false
+      canvasDiv.style.display = ''
       const map = DfMapFromBuffer(resource.buffer, mapName)
       console.log(map)
       console.log(map.asText())
       const options = new DFRenderOptions()
       const render = new DFRender()
+      let /** @type {CanvasImageSource | null} */ savedMap = null
       const flagsDiv = document.createElement('div')
       flagsDiv.id = flagsDivId
       const allOptions = options.all
+      const width = map.size.x
+      const height = map.size.y
+      // const camera = new Camera(context)
       for (const renderOption of allOptions) {
         const object = renderOption[0]
         const set = renderOption[1]
@@ -108,21 +113,80 @@ input.onchange = function () {
         const label = document.createElement('label')
         label.htmlFor = input.id
         label.appendChild(document.createTextNode(object.full))
-        input.onchange = () => {
+        input.onchange = async () => {
           options.setFlag(input.id, input.checked)
-          draw1(canvas, context, map, render, options)
+          const mapView = mapForRender(map, options)
+          savedMap = render.render1(mapView, width, height)
+          camera.drawImage(savedMap, 0, 0)
         }
         flagsDiv.appendChild(input)
         flagsDiv.appendChild(label)
       }
       div.appendChild(flagsDiv)
-      draw1(canvas, context, map, render, options)
+      await prepareForMap(map, options, render)
+      const camera = new CameraWrapper(context, width, height, canvas)
+      canvas.height = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight)
+      canvas.width = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth)
+      const mapView = mapForRender(map, options)
+      savedMap = await render.render1(mapView, width, height)
+      camera.setCameraCoords(width / 2, height / 2)
+      camera.setZoom(1000)
+      camera.drawImage(savedMap, 0, 0)
+      canvas.onmousedown = function () {
+        canvas.onmousemove = (event) => {
+          if (savedMap === null) return
+          camera.setCameraCoords(-event.movementX, -event.movementY)
+          camera.setZoom(0)
+          camera.drawImage(savedMap, 0, 0)
+        }
+      }
+      canvas.onmouseup = function () {
+        canvas.onmousemove = null
+      }
+      document.onkeydown = function (event) {
+        if (savedMap === null) return
+        if (event.code === 'KeyR') {
+          camera.setZoom(100)
+          camera.drawImage(savedMap, 0, 0)
+        } else if (event.code === 'KeyX') {
+          camera.setZoom(-100)
+          camera.drawImage(savedMap, 0, 0)
+        }
+      }
+      canvas.onmouseup = function () {
+        canvas.onmousemove = null
+      }
+      const button = document.createElement('button')
+      button.innerHTML = 'Save map as an image'
+      button.id = mapImageId
+      button.onclick = () => {
+        const mapView = mapForRender(map, options)
+        const savedMap = render.render1(mapView, width, height)
+        downloadDataURL(savedMap.toDataURL(), getFileNameWithoutExtension(mapName) + '.png')
+      }
+      div.appendChild(button)
       return true
     }
     div.appendChild(button)
     return true
   }
   return true
+}
+
+function deleteElementById (/** @type {string} */ elementid) {
+  const deleteElement = document.getElementById(elementid)
+  if (deleteElement !== null) {
+    deleteElement.innerHTML = ''
+    div.removeChild(deleteElement)
+  }
+  return true
+}
+
+function downloadDataURL (/** @type {string} */ dataURL, /** @type {string} */ name) {
+  const a = document.createElement('a')
+  a.href = dataURL
+  a.download = name
+  a.click()
 }
 
 function download (/** @type {Blob} */ blob, /** @type {string} */ name) {
@@ -132,19 +196,11 @@ function download (/** @type {Blob} */ blob, /** @type {string} */ name) {
   a.click()
 }
 
-async function draw1 (/** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasRenderingContext2D} */ context, /** @type {DFMap} */ map, /** @type {DFRender} */ render, /** @type {DFRenderOptions} */ options) {
-  const mapView = mapForRender(map, options)
+async function prepareForMap (/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ options, /** @type {DFRender} */ render) {
   const allElements = map.allElements
   const sky = map.sky
   const prefix = map.fileName
   await render.preload(allElements, db, sky, prefix)
-  const width = map.size.x
-  const height = map.size.y
-  const mapCanvas = await render.render1(mapView, width, height)
-  canvas.width = map.size.x
-  canvas.height = map.size.y
-  context.drawImage(mapCanvas, 0, 0)
-  return true
 }
 
 const resources = ['game.wad', 'standart.wad', 'shrshade.wad', 'editor.wad']
@@ -168,9 +224,9 @@ async function init () {
   }
   const check = await checkEssentialResources()
   if (check) {
+    document.body.appendChild(canvasDiv)
     div.appendChild(input)
     document.body.appendChild(div)
-    document.body.appendChild(canvas)
   } else {
     const text = document.createTextNode('Doom 2D: Forever resources have not been found!')
     const br = document.createElement('br')
@@ -196,9 +252,9 @@ async function init () {
       document.body.removeChild(text)
       document.body.removeChild(br)
       document.body.removeChild(button)
+      document.body.appendChild(canvasDiv)
       div.appendChild(input)
       document.body.appendChild(div)
-      document.body.appendChild(canvas)
       return true
     }
     document.body.appendChild(text)
