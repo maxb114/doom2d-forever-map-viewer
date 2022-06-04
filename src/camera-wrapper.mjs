@@ -64,6 +64,8 @@ class CameraWrapper {
 
   update () {
     if (this.canvasToDraw === null) return
+    this.camera.zoomTo(this.zoom)
+    this.camera.moveTo(this.cameraX, this.cameraY)
     this.drawImage(this.canvasToDraw, 0, 0)
   }
 }
