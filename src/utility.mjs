@@ -174,6 +174,15 @@ function convertResourcePath (/** @type {string} */ path, /** @type {string} */ 
   return loadPath
 }
 
+function convertedResourcePathToGame (/** @type {string} */ path) {
+  const split = path.split(':')
+  let splitPath = split.pop()
+  if (splitPath === undefined) return null
+  splitPath = splitPath.replaceAll('/', '\\')
+  splitPath = splitPath.toLowerCase() // lowercase for now
+  return splitPath
+}
+
 function trimStringBySize (/** @type {string} */ value, /** @type {number} */ size) {
   const bytes = encoder.encode(value)
   const slice = bytes.slice(0, size)
