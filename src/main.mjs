@@ -8,6 +8,12 @@ import { CameraWrapper } from './camera-wrapper.mjs'
 import { DfMapFromBuffer } from './map-from-buffer.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
+const canvasDiv = document.createElement('div')
+canvasDiv.style.display = 'none'
+div.style.margin = '0'
+canvasDiv.style.margin = '0'
+canvasDiv.appendChild(canvas)
+document.body.style.margin = '0'
 const input = document.createElement('input')
 input.type = 'file'
 let /** @type {Database | null} */ db = null
@@ -82,6 +88,7 @@ input.onchange = function () {
       const value = select.value
       const resource = wad.findResourceByPath(value)
       if (resource === null) return false
+      canvasDiv.style.display = ''
       const map = DfMapFromBuffer(resource.buffer, mapName)
       console.log(map)
       console.log(map.asText())
@@ -116,15 +123,13 @@ input.onchange = function () {
       }
       div.appendChild(flagsDiv)
       await prepareForMap(map, options, render)
-      canvas.width = width
-      canvas.height = height
       const camera = new CameraWrapper(context, width, height, canvas)
-      canvas.height = 600
-      canvas.width = 800
+      canvas.height = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight)
+      canvas.width = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth)
       const mapView = mapForRender(map, options)
       const renderedMap = await render.render1(mapView, width, height)
-      camera.setCameraCoords(700, 700)
-      camera.setZoom(4000)
+      camera.setCameraCoords(width / 2, height / 2)
+      camera.setZoom(1000)
       camera.drawImage(renderedMap, 0, 0)
       canvas.onmousedown = function () {
         canvas.onmousemove = (event) => {
@@ -216,9 +221,9 @@ async function init () {
   }
   const check = await checkEssentialResources()
   if (check) {
+    document.body.appendChild(canvasDiv)
     div.appendChild(input)
     document.body.appendChild(div)
-    document.body.appendChild(canvas)
   } else {
     const text = document.createTextNode('Doom 2D: Forever resources have not been found!')
     const br = document.createElement('br')
@@ -244,9 +249,9 @@ async function init () {
       document.body.removeChild(text)
       document.body.removeChild(br)
       document.body.removeChild(button)
+      document.body.appendChild(canvasDiv)
       div.appendChild(input)
       document.body.appendChild(div)
-      document.body.appendChild(canvas)
       return true
     }
     document.body.appendChild(text)
