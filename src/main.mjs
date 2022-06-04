@@ -152,7 +152,9 @@ input.onchange = function () {
       button.innerHTML = 'Save map as an image'
       button.id = mapImageId
       button.onclick = () => {
-        downloadDataURL(canvas.toDataURL(), getFileNameWithoutExtension(mapName) + '.png')
+        const mapView = mapForRender(map, options)
+        const renderedMap = render.render1(mapView, width, height)
+        downloadDataURL(renderedMap.toDataURL(), getFileNameWithoutExtension(mapName) + '.png')
       }
       div.appendChild(button)
       return true
