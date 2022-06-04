@@ -6,7 +6,7 @@ import { preloadWad } from './save-to-db.mjs'
 import { getFileNameWithoutExtension } from './utility.mjs'
 import { CameraWrapper } from './camera-wrapper.mjs'
 import { DfMapFromBuffer } from './map-from-buffer.mjs'
-import { moveCamera, moveCameraByDelta } from './api.mjs'
+import { changeZoom, moveCamera, moveCameraByDelta, setZoom } from './api.mjs'
 import { mapFromJson } from './map-from-json-parse.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
@@ -169,9 +169,9 @@ input.onchange = function () {
           wasmtest()
         }
         if (event.code === 'KeyR') {
-          camera.setZoom(100)
+          changeZoom(100)
         } else if (event.code === 'KeyX') {
-          camera.setZoom(-100)
+          changeZoom(-100)
         }
       }
       canvas.onmouseup = function () {
