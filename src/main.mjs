@@ -104,7 +104,6 @@ input.onchange = function () {
       const allOptions = options.all
       const width = map.size.x
       const height = map.size.y
-      // const camera = new Camera(context)
       for (const renderOption of allOptions) {
         const object = renderOption[0]
         const set = renderOption[1]
@@ -123,7 +122,6 @@ input.onchange = function () {
           const mapView = mapForRender(map, options)
           savedMap = render.render1(mapView, width, height)
           camera.setCanvasToDraw(savedMap)
-          // camera.drawImage(savedMap, 0, 0)
         }
         flagsDiv.appendChild(input)
         flagsDiv.appendChild(label)
