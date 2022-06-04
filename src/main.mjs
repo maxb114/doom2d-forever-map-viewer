@@ -9,6 +9,8 @@ import { DfMapFromBuffer } from './map-from-buffer.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
 const canvasDiv = document.createElement('div')
+const context = canvas.getContext('2d')
+let camera = null
 canvasDiv.style.display = 'none'
 div.style.margin = '0'
 canvasDiv.style.margin = '0'
@@ -83,8 +85,6 @@ input.onchange = function () {
     button.onclick = async () => {
       deleteElementById(flagsDivId)
       deleteElementById(mapImageId)
-      const context = canvas.getContext('2d')
-      if (context === null) return false
       const value = select.value
       const resource = wad.findResourceByPath(value)
       if (resource === null) return false
@@ -124,7 +124,6 @@ input.onchange = function () {
       }
       div.appendChild(flagsDiv)
       await prepareForMap(map, options, render)
-      const camera = new CameraWrapper(context, width, height, canvas)
       canvas.height = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight)
       canvas.width = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth)
       const mapView = mapForRender(map, options)
@@ -218,11 +217,12 @@ async function checkEssentialResources () {
 }
 
 async function init () {
-  if (window.indexedDB === null || db === null || canvas === null || input === null || div === null) {
+  if (window.indexedDB === null || db === null || canvas === null || context === null || input === null || div === null) {
     window.alert('Your browser lacks the required features.')
     return false
   }
   const check = await checkEssentialResources()
+  camera = new CameraWrapper(context, width, height, canvas)
   if (check) {
     document.body.appendChild(canvasDiv)
     div.appendChild(input)
