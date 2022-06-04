@@ -26,7 +26,6 @@ class CameraWrapper {
     if (oldZoom === this.zoom) return
     this.camera.updateViewport()
     this.camera.zoomTo(this.zoom)
-    console.log(this.camera.viewport.scale)
   }
 
   drawImage (/** @type {CanvasImageSource} */ image, /** @type {number} */ x, /** @type {number} */ y) {
@@ -58,6 +57,7 @@ class CameraWrapper {
       this.camera.end()
     }
     this.camera.begin()
+    this.context.imageSmoothingEnabled = false
     this.context.drawImage(image, x, y)
     this.camera.end()
   }
