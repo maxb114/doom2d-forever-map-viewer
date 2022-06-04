@@ -54,7 +54,8 @@ function setRenderFlag (/** @type {string} */ index, /** @type {boolean} */ valu
 function getMapsList () {
   const wad = getCurrentWad()
   if (wad === null) return null
-  const maps = wad.maps
+  let maps = wad.maps
+  maps = maps.sort((a, b) => a.path.localeCompare(b.path)) // sort lexicographically
   return maps
 }
 
