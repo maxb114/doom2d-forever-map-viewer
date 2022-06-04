@@ -59,4 +59,14 @@ function getMapsList () {
   return maps
 }
 
-export { moveCameraByDelta, moveCamera, currentMapAsJSON, setMap, setMapFromJSON, setZoom, changeZoom, getRenderFlags, setRenderFlag, getMapsList }
+function loadMap (/** @type {string} */ index) {
+  const wad = getCurrentWad()
+  if (wad === null) return [null, null]
+  const resource = wad.findResourceByPath(index)
+  if (resource === null) return [null, null]
+  const buffer = resource.buffer
+  const path = resource.path
+  return [buffer, path]
+}
+
+export { moveCameraByDelta, moveCamera, currentMapAsJSON, setMap, setMapFromJSON, setZoom, changeZoom, getRenderFlags, setRenderFlag, getMapsList, loadMap }
