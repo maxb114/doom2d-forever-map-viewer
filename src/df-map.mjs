@@ -1,10 +1,4 @@
-import { DFArea } from './df-area.mjs'
-import { DFItem } from './df-item.mjs'
-import { DFMonster } from './df-monster.mjs'
-import { DFPanel } from './df-panel.mjs'
-import { DFTexture } from './df-texture.mjs'
-import { DFTrigger } from './df-trigger.mjs'
-import { convertResourcePath, parse2Ints, trimStringBySize } from './utility.mjs'
+import { trimStringBySize } from './utility.mjs'
 
 class DFMap {
   // @ts-ignore

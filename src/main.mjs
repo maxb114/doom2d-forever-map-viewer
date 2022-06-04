@@ -1,15 +1,11 @@
 import { DfwadFrom } from './df-wad.mjs'
-import { DFParser } from './df-parser.mjs'
-import { DFMap } from './df-map.mjs'
 import { DatabaseFrom } from './db.mjs'
 import { DFRender, DFRenderOptions } from './render.mjs'
 import { mapForRender } from './prepare-map-for-render.mjs'
 import { preloadWad } from './save-to-db.mjs'
-import { handleParsedMap } from './handle-parsed-map.mjs'
-import { clamp, getFileNameWithoutExtension } from './utility.mjs'
+import { getFileNameWithoutExtension } from './utility.mjs'
 import { CameraWrapper } from './camera-wrapper.mjs'
 import { DfMapFromBuffer } from './map-from-buffer.mjs'
-import Camera from './camera.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
 const input = document.createElement('input')
@@ -118,11 +114,6 @@ input.onchange = function () {
       div.appendChild(flagsDiv)
       await prepareForMap(map, options, render)
       canvas.width = width
-      const scrollHeight = Math.max(
-        document.body.scrollHeight, document.documentElement.scrollHeight,
-        document.body.offsetHeight, document.documentElement.offsetHeight,
-        document.body.clientHeight, document.documentElement.clientHeight
-      )
       canvas.height = height
       const camera = new CameraWrapper(context, width, height, canvas)
       canvas.height = 600
@@ -132,14 +123,14 @@ input.onchange = function () {
       camera.setCameraCoords(700, 700)
       camera.setZoom(4000)
       camera.drawImage(renderedMap, 0, 0)
-      canvas.onmousedown = function (event) {
+      canvas.onmousedown = function () {
         canvas.onmousemove = (event) => {
           camera.setCameraCoords(-event.movementX, -event.movementY)
           camera.setZoom(0)
           camera.drawImage(renderedMap, 0, 0)
         }
       }
-      canvas.onmouseup = function (event) {
+      canvas.onmouseup = function () {
         canvas.onmousemove = null
       }
       document.onkeydown = function (event) {
@@ -151,7 +142,7 @@ input.onchange = function () {
           camera.drawImage(renderedMap, 0, 0)
         }
       }
-      canvas.onmouseup = function (event) {
+      canvas.onmouseup = function () {
         canvas.onmousemove = null
       }
       const button = document.createElement('button')
@@ -192,26 +183,11 @@ function download (/** @type {Blob} */ blob, /** @type {string} */ name) {
   a.click()
 }
 
-async function prepareForMap(/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ options, /** @type {DFRender} */ render) {
+async function prepareForMap (/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ options, /** @type {DFRender} */ render) {
   const allElements = map.allElements
   const sky = map.sky
   const prefix = map.fileName
   await render.preload(allElements, db, sky, prefix)
-}
-
-async function draw1 (/** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasRenderingContext2D} */ context, /** @type {DFMap} */ map, /** @type {DFRender} */ render, /** @type {DFRenderOptions} */ options) {
-  const mapView = mapForRender(map, options)
-  const allElements = map.allElements
-  const sky = map.sky
-  const prefix = map.fileName
-  await render.preload(allElements, db, sky, prefix)
-  const width = map.size.x
-  const height = map.size.y
-  const mapCanvas = await render.render1(mapView, width, height)
-  canvas.width = map.size.x
-  canvas.height = map.size.y
-  context.drawImage(mapCanvas, 0, 0)
-  return true
 }
 
 const resources = ['game.wad', 'standart.wad', 'shrshade.wad', 'editor.wad']
