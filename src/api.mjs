@@ -12,6 +12,19 @@ function moveCamera (/** @type {number} */ x, /** @type {number} */ y) {
   cameraWrapper.moveCameraToCoords(x, y)
 }
 
+
+function setZoom (/** @type {number} */ zoom) {
+  const cameraWrapper = getCameraWrapper()
+  if (cameraWrapper === null) return
+  cameraWrapper.setZoom(zoom)
+}
+
+function changeZoom (/** @type {number} */ zoomDelta) {
+  const cameraWrapper = getCameraWrapper()
+  if (cameraWrapper === null) return
+  cameraWrapper.changeZoom(zoomDelta)
+}
+
 function setMapFromJSON (/** @type {any} */ mapObject) {
   setCurrentMapFromJSON(mapObject)
 }
@@ -21,4 +34,4 @@ function currentMapAsJSON () {
   return mapObject
 }
 
-export { moveCameraByDelta, moveCamera, currentMapAsJSON, setMapFromJSON }
+export { moveCameraByDelta, moveCamera, currentMapAsJSON, setMapFromJSON, setZoom, changeZoom }
