@@ -7,6 +7,7 @@ import { getFileNameWithoutExtension } from './utility.mjs'
 import { CameraWrapper } from './camera-wrapper.mjs'
 import { DfMapFromBuffer } from './map-from-buffer.mjs'
 import { moveCamera, moveCameraByDelta } from './api.mjs'
+import { mapFromJson } from './map-from-json-parse.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
 const canvasDiv = document.createElement('div')
@@ -296,6 +297,11 @@ function setCurrentMap (/** @type {DFMap} */ map) {
   return currentMap
 }
 
+function setCurrentMapFromJSON (/** @type {any} */ mapObject) {
+  const map = mapFromJson(mapObject)
+  setCurrentMap(map)
+}
+
 function getCurrentMap () {
   const map = currentMap
   return map
@@ -307,4 +313,4 @@ function getCurrentMapAsJSON () {
   return toJSON
 }
 
-export { getCameraWrapper, getCurrentMapAsJSON, getCurrentMap, setCurrentMap }
+export { getCameraWrapper, getCurrentMapAsJSON, getCurrentMap, setCurrentMap, setCurrentMapFromJSON }
