@@ -156,6 +156,7 @@ input.onchange = function () {
       }
       document.onkeydown = function (event) {
         if (savedMap === null || camera === null) return
+        /*
         if (event.code === 'KeyT') {
           const wasmtest = async () => {
             try {
@@ -174,6 +175,7 @@ input.onchange = function () {
           }
           wasmtest()
         }
+        */
         if (event.code === 'KeyR') {
           changeZoom(100)
         } else if (event.code === 'KeyX') {
