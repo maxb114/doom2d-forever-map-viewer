@@ -1,4 +1,4 @@
-import { getCameraWrapper } from './main.mjs'
+import { getCameraWrapper, getCurrentMapAsJSON } from './main.mjs'
 
 function moveCameraByDelta (/** @type {number} */ deltaX, /** @type {number} */ deltaY) {
   const cameraWrapper = getCameraWrapper()
@@ -12,4 +12,9 @@ function moveCamera (/** @type {number} */ x, /** @type {number} */ y) {
   cameraWrapper.moveCameraToCoords(x, y)
 }
 
-export { moveCameraByDelta, moveCamera }
+function currentMapAsJSON () {
+  const /** @type {any} */ mapObject = getCurrentMapAsJSON()
+  return mapObject
+}
+
+export { moveCameraByDelta, moveCamera, currentMapAsJSON }
