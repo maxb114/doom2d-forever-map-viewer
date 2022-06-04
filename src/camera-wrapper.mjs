@@ -20,13 +20,15 @@ class CameraWrapper {
     this.fillColor = '#182430'
   }
 
-  setZoom (/** @type {number} */ number) {
-    const oldZoom = this.zoom
+  changeZoom (/** @type {number} */ number) {
     this.zoom += number
     this.zoom = clamp(this.zoom, minZoom, maxZoom)
-    if (oldZoom === this.zoom) return
-    this.camera.updateViewport()
-    this.camera.zoomTo(this.zoom)
+    this.update()
+  }
+
+  setZoom (/** @type {number} */ zoom) {
+    this.zoom = zoom
+    this.zoom = clamp(this.zoom, minZoom, maxZoom)
     this.update()
   }
 
