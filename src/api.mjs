@@ -1,4 +1,5 @@
 import { getCameraWrapper, getCurrentMapAsJSON, setCurrentMapFromJSON, getRenderingOptions, setCurrentMap, getCurrentWad } from './main.mjs'
+import { DfMapFromBuffer } from './map-from-buffer.mjs'
 
 function moveCameraByDelta (/** @type {number} */ deltaX, /** @type {number} */ deltaY) {
   const cameraWrapper = getCameraWrapper()
@@ -69,4 +70,12 @@ function loadMap (/** @type {string} */ index) {
   return [buffer, path]
 }
 
-export { moveCameraByDelta, moveCamera, currentMapAsJSON, setMap, setMapFromJSON, setZoom, changeZoom, getRenderFlags, setRenderFlag, getMapsList, loadMap }
+function loadMapAndSetAsCurrent (/** @type {string} */ index) {
+  const [buffer, path] = loadMap(index)
+  if (buffer === undefined || typeof buffer === 'string' || buffer === null || path === null || path === undefined || typeof path === 'object') return false
+  const loaded = DfMapFromBuffer(buffer, path)
+  setMap(loaded)
+  return true
+}
+
+export { moveCameraByDelta, moveCamera, currentMapAsJSON, setMap, setMapFromJSON, setZoom, changeZoom, getRenderFlags, setRenderFlag, getMapsList, loadMap, loadMapAndSetAsCurrent }
