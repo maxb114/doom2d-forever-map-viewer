@@ -105,8 +105,11 @@ input.onchange = function () {
         const label = document.createElement('label')
         label.htmlFor = input.id
         label.appendChild(document.createTextNode(object.full))
-        input.onchange = () => {
+        input.onchange = async () => {
           options.setFlag(input.id, input.checked)
+          const mapView = mapForRender(map, options)
+          const renderedMap = render.render1(mapView, width, height)
+          camera.drawImage(renderedMap, 0, 0)
         }
         flagsDiv.appendChild(input)
         flagsDiv.appendChild(label)
