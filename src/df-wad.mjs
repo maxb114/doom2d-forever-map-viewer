@@ -5,6 +5,7 @@ import { DFParser } from './df-parser.mjs'
 import { DFMap } from './df-map.mjs'
 import { convertImage } from './image.mjs'
 import { DFAnimTextureParser } from './df-animtexture-parser.mjs'
+import { DfMapFromBuffer } from './map-from-buffer.mjs'
 class WadStruct {
   constructor (/** @type {any} */ structObject) {
     if (structObject !== undefined) {
@@ -59,9 +60,8 @@ class DFWad {
     const zip = new JSZip()
     const promises = []
     for (const map of this.maps) {
-      const parser = new DFParser(map.buffer)
-      const parsed = new DFMap(parser.parsed, map.path)
-      const text = parsed.asText()
+      const dfmap = DfMapFromBuffer(map.buffer, map.path)
+      const text = dfmap.asText()
       const view = text
       promises.push(this.saveToZip(zip, map.path, view))
     }
@@ -120,6 +120,8 @@ class DFWad {
               reject(error)
             })
             return true
+          }).catch((error) => {
+            reject(error)
           })
         })
         promises.push(promise)
@@ -128,7 +130,7 @@ class DFWad {
         promises.push(this.saveToZip(zip, resource.path, view))
       }
     }
-    await Promise.allSettled(promises)
+    await Promise.all(promises)
     return zip
   }
 
@@ -144,8 +146,9 @@ class DFWad {
     path = path.toLowerCase() // ignore case for now
     for (const file of this.files) {
       if (ignoreExtension) {
-        const extensionless = getFileNameWithoutExtension(path)
-        if (extensionless === file.path) return file
+        const extensionlessSource = getFileNameWithoutExtension(path)
+        const extensionlessTarget = getFileNameWithoutExtension(file.path)
+        if (extensionlessSource === extensionlessTarget) return file
       } else {
         if (path === file.path) return file
       }
