@@ -1,12 +1,11 @@
-import { DFWad, DfwadFrom } from './df-wad.mjs'
+import { DfwadFrom } from './df-wad.mjs'
 import { DatabaseFrom } from './db.mjs'
 import { DFRender, DFRenderOptions } from './render.mjs'
 import { mapForRender } from './prepare-map-for-render.mjs'
 import { preloadWad } from './save-to-db.mjs'
 import { getFileNameWithoutExtension } from './utility.mjs'
 import { CameraWrapper } from './camera-wrapper.mjs'
-import { DfMapFromBuffer } from './map-from-buffer.mjs'
-import { changeZoom, getMapsList, loadMap, moveCamera, moveCameraByDelta, setRenderFlag } from './api.mjs'
+import { changeZoom, getMapsList, loadMapAndSetAsCurrent, moveCamera, moveCameraByDelta, setRenderFlag } from './api.mjs'
 import { mapFromJson } from './map-from-json-parse.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
@@ -93,12 +92,10 @@ input.onchange = function () {
       deleteElementById(flagsDivId)
       deleteElementById(mapImageId)
       const value = select.value
-      const [buffer, prefix] = loadMap(value)
-      if (buffer === null || buffer === undefined || typeof buffer === 'string' || prefix === null) return false
+      const result = loadMapAndSetAsCurrent(value)
       if (camera === null) return
       canvasDiv.style.display = ''
-      const loaded = DfMapFromBuffer(buffer, mapName)
-      setCurrentMap(loaded)
+      if (result !== true) return
       const map = getCurrentMap()
       if (map === null) return
       const render = new DFRender()
