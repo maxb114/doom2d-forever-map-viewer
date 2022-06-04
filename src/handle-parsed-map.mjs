@@ -74,7 +74,7 @@ function handleParsedMap (/** @type {any} */ map, /** @type {string} */ mapFile)
         if (alphaValue === undefined || alphaValue === null || alphaValue > 255 || alphaValue < -1) alphaValue = -1
         const alpha = alphaValue
         let flagsValue = element.flags
-        if (flagsValue === null || flagsValue === null || flagsValue === '') flagsValue = 'PANEL_FLAG_NONE'
+        if (flagsValue === null || flagsValue === undefined || flagsValue === '') flagsValue = 'PANEL_FLAG_NONE'
         const flags = flagsValue.replace(/\s+/g, '').split('|')
         const blending = flags.includes('PANEL_FLAG_BLENDING')
         const panel = new DFPanel(x, y, width, height, textureId, type, alpha, flags, undefined, undefined, blending, undefined)
