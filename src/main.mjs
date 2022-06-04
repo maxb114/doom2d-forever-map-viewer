@@ -94,6 +94,7 @@ input.onchange = function () {
       console.log(map.asText())
       const options = new DFRenderOptions()
       const render = new DFRender()
+      let /** @type {CanvasImageSource | null} */ savedMap = null
       const flagsDiv = document.createElement('div')
       flagsDiv.id = flagsDivId
       const allOptions = options.all
@@ -115,8 +116,8 @@ input.onchange = function () {
         input.onchange = async () => {
           options.setFlag(input.id, input.checked)
           const mapView = mapForRender(map, options)
-          const renderedMap = render.render1(mapView, width, height)
-          camera.drawImage(renderedMap, 0, 0)
+          savedMap = render.render1(mapView, width, height)
+          camera.drawImage(savedMap, 0, 0)
         }
         flagsDiv.appendChild(input)
         flagsDiv.appendChild(label)
@@ -127,27 +128,29 @@ input.onchange = function () {
       canvas.height = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight)
       canvas.width = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth)
       const mapView = mapForRender(map, options)
-      const renderedMap = await render.render1(mapView, width, height)
+      savedMap = await render.render1(mapView, width, height)
       camera.setCameraCoords(width / 2, height / 2)
       camera.setZoom(1000)
-      camera.drawImage(renderedMap, 0, 0)
+      camera.drawImage(savedMap, 0, 0)
       canvas.onmousedown = function () {
         canvas.onmousemove = (event) => {
+          if (savedMap === null) return
           camera.setCameraCoords(-event.movementX, -event.movementY)
           camera.setZoom(0)
-          camera.drawImage(renderedMap, 0, 0)
+          camera.drawImage(savedMap, 0, 0)
         }
       }
       canvas.onmouseup = function () {
         canvas.onmousemove = null
       }
       document.onkeydown = function (event) {
+        if (savedMap === null) return
         if (event.code === 'KeyR') {
           camera.setZoom(100)
-          camera.drawImage(renderedMap, 0, 0)
+          camera.drawImage(savedMap, 0, 0)
         } else if (event.code === 'KeyX') {
           camera.setZoom(-100)
-          camera.drawImage(renderedMap, 0, 0)
+          camera.drawImage(savedMap, 0, 0)
         }
       }
       canvas.onmouseup = function () {
@@ -158,8 +161,8 @@ input.onchange = function () {
       button.id = mapImageId
       button.onclick = () => {
         const mapView = mapForRender(map, options)
-        const renderedMap = render.render1(mapView, width, height)
-        downloadDataURL(renderedMap.toDataURL(), getFileNameWithoutExtension(mapName) + '.png')
+        const savedMap = render.render1(mapView, width, height)
+        downloadDataURL(savedMap.toDataURL(), getFileNameWithoutExtension(mapName) + '.png')
       }
       div.appendChild(button)
       return true
