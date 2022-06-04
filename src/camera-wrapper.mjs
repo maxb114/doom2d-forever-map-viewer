@@ -59,7 +59,7 @@ class CameraWrapper {
     }
     */
     this.context.save()
-    this.context.fillStyle = '#FFFFFF'
+    this.context.fillStyle = this.fillColor
     this.context.fillRect(0, 0, this.canvas.width, this.canvas.height)
     this.context.restore()
     this.camera.begin()
