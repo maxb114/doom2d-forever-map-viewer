@@ -1,4 +1,4 @@
-import { DfwadFrom } from './df-wad.mjs'
+import { DFWad, DfwadFrom } from './df-wad.mjs'
 import { DatabaseFrom } from './db.mjs'
 import { DFRender, DFRenderOptions } from './render.mjs'
 import { mapForRender } from './prepare-map-for-render.mjs'
@@ -14,6 +14,7 @@ const canvasDiv = document.createElement('div')
 const context = canvas.getContext('2d')
 let /** @type {CameraWrapper | null} */ camera = null
 let /** @type {DFRenderOptions | null} */ options = null
+let /** @type {DFWad | null} */ wad = null
 let screenHeight = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight)
 let screenWidth = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth)
 canvasDiv.style.display = 'none'
@@ -323,4 +324,9 @@ function getRenderingOptions () {
   return renderingOptions
 }
 
-export { getCameraWrapper, getCurrentMapAsJSON, getCurrentMap, setCurrentMap, setCurrentMapFromJSON, getRenderingOptions }
+function getCurrentWad () {
+  const currentWad = wad
+  return currentWad
+}
+
+export { getCameraWrapper, getCurrentMapAsJSON, getCurrentMap, setCurrentMap, setCurrentMapFromJSON, getRenderingOptions, getCurrentWad }
