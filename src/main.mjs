@@ -6,13 +6,14 @@ import { preloadWad } from './save-to-db.mjs'
 import { getFileNameWithoutExtension } from './utility.mjs'
 import { CameraWrapper } from './camera-wrapper.mjs'
 import { DfMapFromBuffer } from './map-from-buffer.mjs'
-import { changeZoom, moveCamera, moveCameraByDelta, setZoom } from './api.mjs'
+import { changeZoom, moveCamera, moveCameraByDelta } from './api.mjs'
 import { mapFromJson } from './map-from-json-parse.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
 const canvasDiv = document.createElement('div')
 const context = canvas.getContext('2d')
 let /** @type {CameraWrapper | null} */ camera = null
+let /** @type {DFRenderOptions | null} */ options = null
 let screenHeight = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight)
 let screenWidth = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth)
 canvasDiv.style.display = 'none'
@@ -99,11 +100,11 @@ input.onchange = function () {
       setCurrentMap(loaded)
       const map = getCurrentMap()
       if (map === null) return
-      const options = new DFRenderOptions()
       const render = new DFRender()
       let /** @type {CanvasImageSource | null} */ savedMap = null
       const flagsDiv = document.createElement('div')
       flagsDiv.id = flagsDivId
+      if (options === null) return
       const allOptions = options.all
       const width = map.size.x
       const height = map.size.y
@@ -120,6 +121,7 @@ input.onchange = function () {
         label.htmlFor = input.id
         label.appendChild(document.createTextNode(object.full))
         input.onchange = async () => {
+          if (options === null) return
           options.setFlag(input.id, input.checked)
           if (camera === null) return
           const mapView = mapForRender(map, options)
@@ -245,6 +247,7 @@ async function init () {
   }
   const check = await checkEssentialResources()
   camera = new CameraWrapper(context, screenWidth, screenHeight, canvas, null)
+  options = new DFRenderOptions()
   if (check) {
     document.body.appendChild(canvasDiv)
     div.appendChild(input)
@@ -313,4 +316,9 @@ function getCurrentMapAsJSON () {
   return toJSON
 }
 
-export { getCameraWrapper, getCurrentMapAsJSON, getCurrentMap, setCurrentMap, setCurrentMapFromJSON }
+function getRenderingOptions () {
+  const renderingOptions = options
+  return renderingOptions
+}
+
+export { getCameraWrapper, getCurrentMapAsJSON, getCurrentMap, setCurrentMap, setCurrentMapFromJSON, getRenderingOptions }
