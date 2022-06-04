@@ -6,6 +6,7 @@ import { preloadWad } from './save-to-db.mjs'
 import { CameraWrapper } from './camera-wrapper.mjs'
 import { changeZoom, getCurrentMapName, getCurrentWadName, getMapsList, loadMapAndSetAsCurrent, moveCamera, moveCameraByDelta, setRenderFlag } from './api.mjs'
 import { mapFromJson } from './map-from-json-parse.mjs'
+import { getFileNameWithoutExtension } from './utility.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
 const canvasDiv = document.createElement('div')
@@ -73,7 +74,9 @@ input.onchange = function () {
     zipButton.onclick = async function () {
       const zip = await wad.saveAsZip()
       const blob = await zip.generateAsync({ type: 'blob' })
-      download(blob, 'convert-' + file.name.toLowerCase())
+      const fileName = getCurrentWadName()
+      if (fileName === null) return
+      download(blob, 'convert-' + getFileNameWithoutExtension(fileName) + '.dfz')
     }
     div.appendChild(zipButton)
     const maps = getMapsList()
@@ -143,7 +146,7 @@ input.onchange = function () {
       camera.boundY = height
       const mapView = mapForRender(map, options)
       savedMap = await render.render1(mapView, width, height)
-      moveCamera(width / 2, height / 2)
+      moveCamera(0, 0)
       camera.setCanvasToDraw(savedMap)
       canvas.onmousedown = function () {
         canvas.onmousemove = (event) => {
