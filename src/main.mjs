@@ -6,7 +6,7 @@ import { preloadWad } from './save-to-db.mjs'
 import { getFileNameWithoutExtension } from './utility.mjs'
 import { CameraWrapper } from './camera-wrapper.mjs'
 import { DfMapFromBuffer } from './map-from-buffer.mjs'
-import { moveCameraByDelta } from './api.mjs'
+import { moveCamera, moveCameraByDelta } from './api.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
 const canvasDiv = document.createElement('div')
@@ -134,13 +134,13 @@ input.onchange = function () {
       camera.boundY = height
       const mapView = mapForRender(map, options)
       savedMap = await render.render1(mapView, width, height)
-      camera.setCameraCoords(width / 2, height / 2)
+      moveCamera(width / 2, height / 2)
       camera.setZoom(1000)
       camera.setCanvasToDraw(savedMap)
       canvas.onmousedown = function () {
         canvas.onmousemove = (event) => {
           if (savedMap === null || camera === null) return
-          camera.setCameraCoords(-event.movementX, -event.movementY)
+          moveCameraByDelta(-event.movementX, -event.movementY)
         }
       }
       canvas.onmouseup = function () {
