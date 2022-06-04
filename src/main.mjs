@@ -55,15 +55,17 @@ input.onchange = function () {
     if (event.target === null) return false
     const content = event.target.result
     if (content === null || typeof content === 'string') return false
+    const wadName = getCurrentWadName()
+    if (wadName === null) return
     const view = new Uint8Array(content)
-    wad = await DfwadFrom(view)
+    wad = await DfwadFrom(view, wadName)
     const cacheButton = document.createElement('button')
     cacheButton.innerHTML = 'Save resources'
     cacheButton.id = 'cache-button'
     cacheButton.onclick = async function () {
-      const mapName = getCurrentWadName()
-      if (mapName === null) return
-      const promises = preloadWad(wad, mapName, db)
+      const wadName = getCurrentWadName()
+      if (wadName === null) return
+      const promises = preloadWad(wad, wadName, db)
       await Promise.allSettled(promises)
       return true
     }

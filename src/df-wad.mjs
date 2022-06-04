@@ -31,12 +31,13 @@ function isMap (/** @type {Uint8Array} */ buffer) {
 }
 
 class DFWad {
-  constructor (/** @type {Uint8Array} */ buffer) {
+  constructor (/** @type {Uint8Array} */ buffer, /** @type {string} */ fileName = '') {
     this.buffer = buffer
     /** @type {Resource[]} */ this.files = []
     /** @type {WadStruct[]} */ this.structs = []
     /** @type {Resource[]} */ this._maps = []
     /** @type {Resource[]} */ this._resources = []
+    this.fileName = fileName
   }
 
   addResource (/** @type Resource */ resource) {
@@ -58,12 +59,7 @@ class DFWad {
   async saveAsZip () {
     const zip = new JSZip()
     const promises = []
-    for (const map of this.maps) {
-      const dfmap = DfMapFromBuffer(map.buffer, map.path)
-      const text = dfmap.asText()
-      const view = text
-      promises.push(this.saveToZip(zip, map.path, view))
-    }
+    const /** @type {string[]} */ convertedImages = []
     for (const resource of this.resources) {
       const buffer = resource.buffer
       const type = getExtensionFromBuffer(buffer)
@@ -72,7 +68,12 @@ class DFWad {
         const promise = new Promise((resolve, reject) => {
           convertImage(buffer, type, 'png').then((arrayBuffer) => {
             const view = new Uint8Array(arrayBuffer)
-            this.saveToZip(zip, resource.path, view).then(() => resolve(true)).catch((error) => reject(error))
+            const extensionless = getFileNameWithoutExtension(resource.path)
+            const newPath = extensionless + '.png'
+            this.saveToZip(zip, newPath, view).then(() => {
+              convertedImages.push(resource.path)
+              resolve(true)
+            }).catch((error) => reject(error))
           }).catch((error) => reject(error))
         })
         promises.push(promise)
@@ -130,6 +131,19 @@ class DFWad {
       }
     }
     await Promise.all(promises)
+    const mapPromises = []
+    for (const map of this.maps) {
+      const dfmap = DfMapFromBuffer(map.buffer, this.fileName)
+      for (const path of convertedImages) { // this should be in the DFMap class
+        const extensionless = getFileNameWithoutExtension(path)
+        const newPath = this.fileName + ':' + extensionless + '.png'
+        dfmap.changeTexturePath(this.fileName + ':' + path, newPath)
+      }
+      const text = dfmap.asText()
+      const view = text
+      mapPromises.push(this.saveToZip(zip, map.path, view))
+    }
+    await Promise.all(mapPromises)
     return zip
   }
 
@@ -156,8 +170,8 @@ class DFWad {
   }
 }
 
-function DfwadFrom (/** @type {Uint8Array} */ buffer) {
-  const Dfwad = new DFWad(buffer)
+function DfwadFrom (/** @type {Uint8Array} */ buffer, /** @type {string} */ name) {
+  const Dfwad = new DFWad(buffer, name)
   const type = getExtensionFromBuffer(buffer)
   if (type === 'dfwad') {
     const /** @type {Promise<DFWad>} */ promise = new Promise((resolve) => {
