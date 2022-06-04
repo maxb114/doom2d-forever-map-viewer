@@ -12,7 +12,6 @@ function moveCamera (/** @type {number} */ x, /** @type {number} */ y) {
   cameraWrapper.moveCameraToCoords(x, y)
 }
 
-
 function setZoom (/** @type {number} */ zoom) {
   const cameraWrapper = getCameraWrapper()
   if (cameraWrapper === null) return
