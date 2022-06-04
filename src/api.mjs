@@ -70,10 +70,10 @@ function loadMap (/** @type {string} */ index) {
   return [buffer, path]
 }
 
-function loadMapAndSetAsCurrent (/** @type {string} */ index) {
+function loadMapAndSetAsCurrent (/** @type {string} */ index, /** @type {string} */ fileName) {
   const [buffer, path] = loadMap(index)
   if (buffer === undefined || typeof buffer === 'string' || buffer === null || path === null || path === undefined || typeof path === 'object') return false
-  const loaded = DfMapFromBuffer(buffer, path)
+  const loaded = DfMapFromBuffer(buffer, fileName)
   setMap(loaded)
   return true
 }

@@ -92,7 +92,7 @@ input.onchange = function () {
       deleteElementById(flagsDivId)
       deleteElementById(mapImageId)
       const value = select.value
-      const result = loadMapAndSetAsCurrent(value)
+      const result = loadMapAndSetAsCurrent(value, mapName)
       if (camera === null) return
       canvasDiv.style.display = ''
       if (result !== true) return
