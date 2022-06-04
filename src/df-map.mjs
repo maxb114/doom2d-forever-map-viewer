@@ -1,4 +1,4 @@
-import { trimStringBySize } from './utility.mjs'
+import { convertedResourcePathToGame, convertResourcePath, trimStringBySize } from './utility.mjs'
 
 class DFMap {
   // @ts-ignore
@@ -16,6 +16,7 @@ class DFMap {
     this.sky = sky
     this.size = { x: width, y: height }
     this.fileName = prefix
+    this.mapTexturePathsToPanels()
   }
 
   get allElements () {
@@ -23,6 +24,33 @@ class DFMap {
     const toPush = [this.areas, this.items, this.monsters, this.panels, this.textures, this.triggers]
     for (const i of toPush) items.push(...i)
     return items
+  }
+
+  mapTexturePathsToPanels () {
+    for (const panel of this.panels) { // map textures to panels
+      const texture = panel.texture
+      const textureObject = this.textures.find((element) => {
+        if (element.id === texture) return true
+        return false
+      })
+      const fullPath = textureObject?.path ?? ''
+      panel.texturePath = fullPath
+      panel.editorPath = textureObject?.editorPath ?? ''
+    }
+  }
+
+  changeTexturePath (/** @type {string} */ oldPath, /** @type {string} */ newPath) {
+    const texturesToChange = this.textures.filter((element) => {
+      console.log(element.editorPath)
+      if (element.editorPath === oldPath) return true
+      return false
+    })
+    console.log(texturesToChange, oldPath, newPath)
+    for (const texture of texturesToChange) {
+      texture.path = convertedResourcePathToGame(newPath)
+      texture.editorPath = convertResourcePath(texture.path)
+    }
+    this.mapTexturePathsToPanels()
   }
 
   getTexturePath = (/** @type {String} */ arg) => {

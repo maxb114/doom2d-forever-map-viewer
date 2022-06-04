@@ -176,16 +176,6 @@ function handleParsedMap (/** @type {any} */ map, /** @type {string} */ mapFile)
       }
     }
   }
-  for (const panel of panels) { // map textures to panels
-    const texture = panel.texture
-    const textureObject = textures.find((element) => {
-      if (element.id === texture) return true
-      return false
-    })
-    const fullPath = textureObject?.path ?? ''
-    panel.texturePath = fullPath
-    panel.editorPath = textureObject?.editorPath ?? ''
-  }
   return {
     width, height, name, author, description, music, sky, prefix, textures, panels, areas, items, monsters, triggers
   }
