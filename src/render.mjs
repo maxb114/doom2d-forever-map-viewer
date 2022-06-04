@@ -19,6 +19,7 @@ const options = [
   new DFRenderOption('rendermonsters', 'Show monsters'),
   new DFRenderOption('renderforeground', 'Show foreground'),
   new DFRenderOption('renderwalls', 'Show walls'),
+  new DFRenderOption('rendersteps', 'Show steps'),
   new DFRenderOption('renderbackground', 'Show background'),
   new DFRenderOption('rendersky', 'Show sky'),
   new DFRenderOption('renderliquids', 'Show liquids'),

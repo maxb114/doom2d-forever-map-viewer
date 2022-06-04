@@ -75,6 +75,7 @@ function mapForRender (/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ 
       const isWater = order.liquids.includes(type)
       if (!options?.getFlag('renderforeground') && (type === 'PANEL_FORE') && !isWater) continue
       else if (!options?.getFlag('renderwalls') && (type === 'PANEL_WALL') && !isWater) continue
+      else if (!options?.getFlag('rendersteps') && (type === 'PANEL_STEP') && !isWater) continue
       else if (!options?.getFlag('renderbackground') && (type === 'PANEL_BACK') && !isWater) continue
       else if (!options?.getFlag('renderliquids') && isWater) continue
       else if (!options?.getFlag('renderopendoors') && (type === 'PANEL_CLOSEDOOR')) continue
