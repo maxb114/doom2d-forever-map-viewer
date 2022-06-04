@@ -6,7 +6,7 @@ import { preloadWad } from './save-to-db.mjs'
 import { getFileNameWithoutExtension } from './utility.mjs'
 import { CameraWrapper } from './camera-wrapper.mjs'
 import { DfMapFromBuffer } from './map-from-buffer.mjs'
-import { changeZoom, moveCamera, moveCameraByDelta } from './api.mjs'
+import { changeZoom, moveCamera, moveCameraByDelta, setRenderFlag } from './api.mjs'
 import { mapFromJson } from './map-from-json-parse.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
@@ -104,6 +104,7 @@ input.onchange = function () {
       let /** @type {CanvasImageSource | null} */ savedMap = null
       const flagsDiv = document.createElement('div')
       flagsDiv.id = flagsDivId
+      const options = getRenderingOptions()
       if (options === null) return
       const allOptions = options.all
       const width = map.size.x
@@ -121,9 +122,10 @@ input.onchange = function () {
         label.htmlFor = input.id
         label.appendChild(document.createTextNode(object.full))
         input.onchange = async () => {
-          if (options === null) return
-          options.setFlag(input.id, input.checked)
+          setRenderFlag(input.id, input.checked)
           if (camera === null) return
+          const options = getRenderingOptions()
+          if (options === null) return
           const mapView = mapForRender(map, options)
           savedMap = render.render1(mapView, width, height)
           camera.setCanvasToDraw(savedMap)
