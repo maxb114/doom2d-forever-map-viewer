@@ -182,8 +182,10 @@ function trimStringBySize (/** @type {string} */ value, /** @type {number} */ si
 }
 
 function getFileNameWithoutExtension (/** @type {string} */ path) {
-  const delimiter = '.'
-  return path.substring(0, path.lastIndexOf(delimiter)) || path + ''
+  const match = /^(.*)\.([0-9a-z]+)?$/
+  const matches = path.match(match)
+  if (matches === null) return path
+  else return matches[1]
 }
 
 function clamp (/** @type {number} */ value, /** @type {number} */ min, /** @type {number} */ max) {
@@ -192,4 +194,4 @@ function clamp (/** @type {number} */ value, /** @type {number} */ min, /** @typ
   return value
 }
 
-export { getExtensionFromBuffer, wadToJSON, numberToChar, binaryIsBitSet, parse2Ints, readSliceByte, readSliceChar, readSliceLongWord, readSliceWord, splitPath, convertResourcePath, trimStringBySize, getFileNameWithoutExtension, clamp }
+export { getExtensionFromBuffer, wadToJSON, numberToChar, binaryIsBitSet, parse2Ints, readSliceByte, readSliceChar, readSliceLongWord, readSliceWord, splitPath, convertResourcePath, trimStringBySize, getFileNameWithoutExtension, clamp, convertedResourcePathToGame }
