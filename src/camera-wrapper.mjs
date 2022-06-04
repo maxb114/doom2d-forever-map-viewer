@@ -16,7 +16,7 @@ class CameraWrapper {
     this.camera.fieldOfView = Math.PI / 4
     this.camera.zoomTo(this.zoom)
     this.canvas = canvas
-    this.fillColor = '#FFA500'
+    this.fillColor = '#182430'
   }
 
   setZoom (/** @type {number} */ number) {
