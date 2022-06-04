@@ -6,11 +6,14 @@ import { preloadWad } from './save-to-db.mjs'
 import { getFileNameWithoutExtension } from './utility.mjs'
 import { CameraWrapper } from './camera-wrapper.mjs'
 import { DfMapFromBuffer } from './map-from-buffer.mjs'
+import { moveCameraByDelta } from './api.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
 const canvasDiv = document.createElement('div')
 const context = canvas.getContext('2d')
-let camera = null
+let /** @type {CameraWrapper | null} */ camera = null
+let screenHeight = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight)
+let screenWidth = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth)
 canvasDiv.style.display = 'none'
 div.style.margin = '0'
 canvasDiv.style.margin = '0'
@@ -88,6 +91,7 @@ input.onchange = function () {
       const value = select.value
       const resource = wad.findResourceByPath(value)
       if (resource === null) return false
+      if (camera === null) return
       canvasDiv.style.display = ''
       const map = DfMapFromBuffer(resource.buffer, mapName)
       console.log(map)
@@ -115,41 +119,59 @@ input.onchange = function () {
         label.appendChild(document.createTextNode(object.full))
         input.onchange = async () => {
           options.setFlag(input.id, input.checked)
+          if (camera === null) return
           const mapView = mapForRender(map, options)
           savedMap = render.render1(mapView, width, height)
-          camera.drawImage(savedMap, 0, 0)
+          camera.setCanvasToDraw(savedMap)
+          // camera.drawImage(savedMap, 0, 0)
         }
         flagsDiv.appendChild(input)
         flagsDiv.appendChild(label)
       }
       div.appendChild(flagsDiv)
       await prepareForMap(map, options, render)
-      canvas.height = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight)
-      canvas.width = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth)
+      canvas.height = screenHeight
+      canvas.width = screenWidth
+      camera.boundX = width
+      camera.boundY = height
       const mapView = mapForRender(map, options)
       savedMap = await render.render1(mapView, width, height)
       camera.setCameraCoords(width / 2, height / 2)
       camera.setZoom(1000)
-      camera.drawImage(savedMap, 0, 0)
+      camera.setCanvasToDraw(savedMap)
       canvas.onmousedown = function () {
         canvas.onmousemove = (event) => {
-          if (savedMap === null) return
+          if (savedMap === null || camera === null) return
           camera.setCameraCoords(-event.movementX, -event.movementY)
-          camera.setZoom(0)
-          camera.drawImage(savedMap, 0, 0)
         }
       }
       canvas.onmouseup = function () {
         canvas.onmousemove = null
       }
       document.onkeydown = function (event) {
-        if (savedMap === null) return
+        if (savedMap === null || camera === null) return
+        if (event.code === 'KeyT') {
+          const wasmtest = async () => {
+            try {
+              const response = await fetch('./test_1.wasm')
+              const wasm = await window.WebAssembly.instantiateStreaming(response, {
+                nice: {
+                  dick: moveCameraByDelta
+                }
+              })
+              for (let i = 0; i <= 10; ++i) {
+                wasm.instance.exports.main()
+              }
+            } catch (error) {
+              return false
+            }
+          }
+          wasmtest()
+        }
         if (event.code === 'KeyR') {
           camera.setZoom(100)
-          camera.drawImage(savedMap, 0, 0)
         } else if (event.code === 'KeyX') {
           camera.setZoom(-100)
-          camera.drawImage(savedMap, 0, 0)
         }
       }
       canvas.onmouseup = function () {
@@ -222,7 +244,7 @@ async function init () {
     return false
   }
   const check = await checkEssentialResources()
-  camera = new CameraWrapper(context, width, height, canvas)
+  camera = new CameraWrapper(context, screenWidth, screenHeight, canvas, null)
   if (check) {
     document.body.appendChild(canvasDiv)
     div.appendChild(input)
@@ -263,3 +285,11 @@ async function init () {
   }
   return true
 }
+
+// exported
+
+function getCameraWrapper () {
+  return camera
+}
+
+export { getCameraWrapper }
