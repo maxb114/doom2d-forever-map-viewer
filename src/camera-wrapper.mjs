@@ -63,8 +63,9 @@ class CameraWrapper {
   }
 
   setCameraCoords (/** @type {number} */ x, /** @type {number} */ y) {
-    this.cameraX += x
-    this.cameraY += y
+    const sensitivity = (this.zoom * 0.001)
+    this.cameraX += x * sensitivity
+    this.cameraY += y * sensitivity
   }
 }
 
