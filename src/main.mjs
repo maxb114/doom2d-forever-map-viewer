@@ -4,7 +4,7 @@ import { DFRender, DFRenderOptions } from './render.mjs'
 import { mapForRender } from './prepare-map-for-render.mjs'
 import { preloadWad } from './save-to-db.mjs'
 import { CameraWrapper } from './camera-wrapper.mjs'
-import { changeZoom, getCurrentWadName, getMapsList, loadMapAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, setRenderFlag } from './api.mjs'
+import { changeZoom, getCurrentWadName, getMapsList, getRenderFlags, getRenderFlagsList, loadMapAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, setRenderFlag } from './api.mjs'
 import { mapFromJson } from './map-from-json-parse.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
@@ -107,9 +107,8 @@ input.onchange = function () {
       let /** @type {CanvasImageSource | null} */ savedMap = null
       const flagsDiv = document.createElement('div')
       flagsDiv.id = flagsDivId
-      const options = getRenderingOptions()
-      if (options === null) return
-      const allOptions = options.all
+      const allOptions = getRenderFlagsList()
+      if (allOptions === null) return
       const width = map.size.x
       const height = map.size.y
       for (const renderOption of allOptions) {
