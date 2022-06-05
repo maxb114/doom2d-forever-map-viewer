@@ -109,7 +109,8 @@ async function loadMapAndSetAsCurrent (/** @type {string} */ index) {
   const prefix = getCurrentWadName()
   if (prefix === null) return false
   await render.preload(allElements, db, sky, prefix)
-  return updateMapRender()
+  updateMapRender()
+  fireChange('onmapload')
 }
 
 function setCurrentWadName (/** @type {string} */ newWadName) {
@@ -272,4 +273,48 @@ async function saveEssentialResources () {
   return Promise.allSettled(promises)
 }
 
-export { moveCameraByDelta, moveCamera, currentMap, currentMapAsJSON, setMap, setMapFromJSON, setZoom, changeZoom, getRenderFlags, setRenderFlag, getMapsList, loadMap, loadMapAndSetAsCurrent, getCurrentWadName, getCurrentMapName, saveCurrentWad, getRenderFlagsAsObject, saveCurrentMapOverview, getRenderFlagsList, setWad, loadBufferAsWad, setCurrentWadName, updateMapRender, saveCurrentWadResources, saveWadResources, setActiveCanvas, getDatabaseObject, checkEssentialResources, saveEssentialResources }
+const events = { } // 'event': handlers[]
+
+async function addEvent (/** @type {string} */ index) {
+  if (index === undefined || index === null || typeof index !== 'string') return false
+  events[index] = {
+    callbacks: []
+  }
+  return true
+}
+
+async function addCallback (/** @type {string} */ index, /** @type {function} */ callback) {
+  if (index === undefined || index === null || typeof index !== 'string') return false
+  if (callback === undefined || callback === null || typeof callback !== 'function') return false
+  const event = events[index]
+  if (event === undefined || event === null) return false
+  if (!Array.isArray(event.callbacks)) return false
+  event.callbacks.push(callback)
+  return true
+}
+
+async function removeCallback (/** @type {string} */ index, /** @type {function} */ callback) {
+  if (index === undefined || index === null || typeof index !== 'string') return false
+  if (callback === undefined || callback === null || typeof callback !== 'function') return false
+  const event = events[index]
+  if (event === undefined || event === null) return false
+  let callbacks = event.callbacks
+  if (callbacks === undefined || callbacks === null || !Array.isArray(callbacks)) return false
+  callbacks = callbacks.filter(item => item !== callback)
+}
+
+async function fireChange (/** @type {string} */ index) {
+  const /** @type {any} */ event = events[index]
+  if (event === undefined) return false
+  const callbacks = event.callbacks
+  if (callbacks === undefined || callbacks === null || !Array.isArray(callbacks)) return false
+  for (const callback of callbacks) {
+    if (typeof callback !== 'function') continue
+    callback()
+  }
+  return true
+}
+
+addEvent('onmapload')
+
+export { moveCameraByDelta, moveCamera, currentMap, currentMapAsJSON, setMap, setMapFromJSON, setZoom, changeZoom, getRenderFlags, setRenderFlag, getMapsList, loadMap, loadMapAndSetAsCurrent, getCurrentWadName, getCurrentMapName, saveCurrentWad, getRenderFlagsAsObject, saveCurrentMapOverview, getRenderFlagsList, setWad, loadBufferAsWad, setCurrentWadName, updateMapRender, saveCurrentWadResources, saveWadResources, setActiveCanvas, getDatabaseObject, checkEssentialResources, saveEssentialResources, addCallback, removeCallback }
