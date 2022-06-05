@@ -1,7 +1,8 @@
 import { DFWad } from './df-wad.mjs'
-import { getCameraWrapper, getCurrentMapAsJSON, setCurrentMapFromJSON, getRenderingOptions, setCurrentMap, getCurrentWad, getCurrentWadFileName, getCurrentMap } from './main.mjs'
+import { getCameraWrapper, getCurrentMapAsJSON, setCurrentMapFromJSON, getRenderingOptions, setCurrentMap, getCurrentWad, getCurrentWadFileName, getCurrentMap, getCurrentRenderInstance } from './main.mjs'
 import { DfMapFromBuffer } from './map-from-buffer.mjs'
-import { download, getFileNameWithoutExtension } from './utility.mjs'
+import { mapForRender } from './prepare-map-for-render.mjs'
+import { download, downloadDataURL, getFileNameWithoutExtension } from './utility.mjs'
 
 function moveCameraByDelta (/** @type {number} */ deltaX, /** @type {number} */ deltaY) {
   const cameraWrapper = getCameraWrapper()
@@ -45,6 +46,11 @@ function currentMapAsJSON () {
   return mapObject
 }
 
+function getRenderFlagsAsObject () {
+  const options = getRenderingOptions()
+  return options
+}
+
 function getRenderFlags () {
   const options = getRenderingOptions()
   if (options === null) return {}
@@ -63,7 +69,7 @@ function getMapsList () {
   const wad = getCurrentWad()
   if (wad === null) return null
   let maps = wad.maps
-  maps = maps.sort((a, b) => a.path.localeCompare(b.path)) // sort lexicographically
+  maps = maps.sort((/** @type {DFMap} */ a, /** @type {DFMap} */ b) => a.path.localeCompare(b.path)) // sort lexicographically
   return maps
 }
 
@@ -96,21 +102,49 @@ function getCurrentMapName () {
   return name
 }
 
-function saveCurrentMap () {
+function saveCurrentWad () {
   const /** @type {DFWad} */ currentWad = getCurrentWad()
   if (currentWad === undefined || currentWad === null) return false
   currentWad.saveAsZip().then((zip) => {
-    zip.generateAsync({ type: 'blob' }).then((blob) => {
+    zip.generateAsync({ type: 'blob' }).then((/** @type {Blob} */ blob) => {
       const fileName = getCurrentWadName()
       if (fileName === null) return false
       download(blob, getFileNameWithoutExtension(fileName) + '.dfz')
       return true
-    }).catch((_error) => {
+    }).catch(() => {
       return false
     })
-  }).catch((_error) => {
+  }).catch(() => {
     return false
   })
+  return true
 }
 
-export { moveCameraByDelta, moveCamera, currentMap, currentMapAsJSON, setMap, setMapFromJSON, setZoom, changeZoom, getRenderFlags, setRenderFlag, getMapsList, loadMap, loadMapAndSetAsCurrent, getCurrentWadName, getCurrentMapName, saveCurrentMap }
+function getCurrentMapOverviewCanvas () {
+  const /** @type {DFMap} */ currentMap = getCurrentMap()
+  const /** @type {DFRenderOptions | null} */ currentOptions = getRenderFlagsAsObject()
+  if (currentOptions === null) return null
+  const mapView = mapForRender(currentMap, currentOptions)
+  const width = currentMap.size.x
+  const height = currentMap.size.y
+  const render = getCurrentRenderInstance()
+  if (render === null) return null
+  const savedMap = render.render1(mapView, width, height)
+  return savedMap
+}
+
+function saveCurrentMapOverview (/** @type {string | undefined} */ savePath) {
+  const overview = getCurrentMapOverviewCanvas()
+  if (overview === null) return false
+  const dataURL = overview.toDataURL()
+  if (savePath === undefined) {
+    const mapName = getCurrentMapName()
+    const wadName = getCurrentWadName()
+    if (mapName === null || wadName === null) return false
+    savePath = wadName + '-' + mapName + '.png'
+  }
+  downloadDataURL(dataURL, savePath)
+  return true
+}
+
+export { moveCameraByDelta, moveCamera, currentMap, currentMapAsJSON, setMap, setMapFromJSON, setZoom, changeZoom, getRenderFlags, setRenderFlag, getMapsList, loadMap, loadMapAndSetAsCurrent, getCurrentWadName, getCurrentMapName, saveCurrentWad, getRenderFlagsAsObject, saveCurrentMapOverview }

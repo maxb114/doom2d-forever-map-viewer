@@ -4,9 +4,8 @@ import { DFRender, DFRenderOptions } from './render.mjs'
 import { mapForRender } from './prepare-map-for-render.mjs'
 import { preloadWad } from './save-to-db.mjs'
 import { CameraWrapper } from './camera-wrapper.mjs'
-import { changeZoom, getCurrentMapName, getCurrentWadName, getMapsList, loadMapAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMap, setRenderFlag } from './api.mjs'
+import { changeZoom, getCurrentWadName, getMapsList, loadMapAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, setRenderFlag } from './api.mjs'
 import { mapFromJson } from './map-from-json-parse.mjs'
-import { getFileNameWithoutExtension } from './utility.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
 const canvasDiv = document.createElement('div')
@@ -15,6 +14,7 @@ let /** @type {CameraWrapper | null} */ camera = null
 let /** @type {DFRenderOptions | null} */ options = null
 let /** @type {DFWad | null} */ wad = null
 let /** @type {string | null} */ mapName = null
+let /** @type {DFRender | null} */ render = null
 let screenHeight = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight)
 let screenWidth = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth)
 canvasDiv.style.display = 'none'
@@ -74,7 +74,7 @@ input.onchange = function () {
     zipButton.innerHTML = 'Convert to .dfz and .txt'
     zipButton.id = zipButtonId
     zipButton.onclick = async function () {
-      saveCurrentMap()
+      saveCurrentWad()
     }
     div.appendChild(zipButton)
     const maps = getMapsList()
@@ -103,7 +103,7 @@ input.onchange = function () {
       if (result !== true) return
       const map = getCurrentMap()
       if (map === null) return
-      const render = new DFRender()
+      render = new DFRender()
       let /** @type {CanvasImageSource | null} */ savedMap = null
       const flagsDiv = document.createElement('div')
       flagsDiv.id = flagsDivId
@@ -130,6 +130,7 @@ input.onchange = function () {
           const options = getRenderingOptions()
           if (options === null) return
           const mapView = mapForRender(map, options)
+          if (render === null) return
           savedMap = render.render1(mapView, width, height)
           camera.setCanvasToDraw(savedMap)
         }
@@ -190,12 +191,7 @@ input.onchange = function () {
       button.innerHTML = 'Save map as an image'
       button.id = mapImageId
       button.onclick = () => {
-        const mapView = mapForRender(map, options)
-        const savedMap = render.render1(mapView, width, height)
-        const mapName = getCurrentMapName()
-        const wadName = getCurrentWadName()
-        if (mapName === null || wadName === null) return
-        downloadDataURL(savedMap.toDataURL(), wadName + '-' + mapName + '.png')
+        saveCurrentMapOverview()
       }
       div.appendChild(button)
       return true
@@ -213,20 +209,6 @@ function deleteElementById (/** @type {string} */ elementid) {
     div.removeChild(deleteElement)
   }
   return true
-}
-
-function downloadDataURL (/** @type {string} */ dataURL, /** @type {string} */ name) {
-  const a = document.createElement('a')
-  a.href = dataURL
-  a.download = name
-  a.click()
-}
-
-function download (/** @type {Blob} */ blob, /** @type {string} */ name) {
-  const a = document.createElement('a')
-  a.href = URL.createObjectURL(blob)
-  a.download = name
-  a.click()
 }
 
 async function prepareForMap (/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ options, /** @type {DFRender} */ render) {
@@ -341,4 +323,9 @@ function getCurrentWadFileName () {
   return currentWadName
 }
 
-export { getCameraWrapper, getCurrentMapAsJSON, getCurrentMap, setCurrentMap, setCurrentMapFromJSON, getRenderingOptions, getCurrentWad, getCurrentWadFileName }
+function getCurrentRenderInstance () {
+  const currentRender = render
+  return currentRender
+}
+
+export { getCameraWrapper, getCurrentMapAsJSON, getCurrentMap, setCurrentMap, setCurrentMapFromJSON, getRenderingOptions, getCurrentWad, getCurrentWadFileName, getCurrentRenderInstance }
