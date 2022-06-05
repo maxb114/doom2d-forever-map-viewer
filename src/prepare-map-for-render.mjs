@@ -39,7 +39,7 @@ function mapForRender (/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ 
     const defaultSky = 'Standart.wad:D2DSKY\\RSKY1'
     const prefix = map.fileName
     const path = convertResourcePath(map.sky ?? defaultSky, prefix)
-    const panel = new DFPanel(0, 0, width, height, undefined, undefined, undefined, undefined, undefined, path, undefined, { tile: false })
+    const panel = new DFPanel(0, 0, width, height, undefined, undefined, undefined, undefined, undefined, path, undefined, { tile: false, scale: true })
     panel.editorPath = convertResourcePath(path)
     orderedElements.sky.push(panel)
   }

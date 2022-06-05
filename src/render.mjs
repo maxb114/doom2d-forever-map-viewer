@@ -133,12 +133,14 @@ class DFRender {
       const image = getImage(path) ?? new window.Image()
       if (options.width === 0) options.width = image.width
       if (options.height === 0) options.height = image.height
+      options.specialOptions.naturalWidth = image.naturalWidth
+      options.specialOptions.naturalHeight = image.naturalHeight
       this.drawPattern2(image, canvas, context, options)
     }
     return canvas
   }
 
-  drawPattern2 (/** @type {HTMLImageElement} */ image, /** @type {HTMLCanvasElement} */ _canvas, /** @type {CanvasRenderingContext2D} */ context, /** @type {any} */ options) {
+  drawPattern2 (/** @type {HTMLImageElement} */ image, /** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasRenderingContext2D} */ context, /** @type {any} */ options) {
     if (options.x === undefined || options.y === undefined || options.width === undefined || options.height === undefined) return false
     if (options.specialOptions === undefined) options.specialOptions = {}
     context.save()
@@ -159,7 +161,14 @@ class DFRender {
     }
 
     if ((options.drawImage || options.specialOptions.tile === false) && (options.specialOptions.fillColor === undefined)) {
-      context.drawImage(image, options.x, options.y, options.width, options.height)
+      if (options.specialOptions.scale === true && options.specialOptions.naturalWidth !== undefined && options.specialOptions.naturalHeight !== undefined) {
+        const ratioWidth = options.width / options.specialOptions.naturalWidth
+        const ratioHeight = options.height / options.specialOptions.naturalHeight
+        const ratio = Math.max(ratioWidth, ratioHeight)
+        context.drawImage(image, options.x, options.y, options.specialOptions.naturalWidth * ratio, options.specialOptions.naturalHeight * ratio)
+      } else {
+        context.drawImage(image, options.x, options.y, options.width, options.height)
+      }
     } else if ((options.specialOptions.tile === true || options.specialOptions.tile === undefined) && (options.specialOptions.fillColor === undefined)) {
       const pattern = context.createPattern(image, mode)
       if (pattern === null || pattern === undefined) return false
