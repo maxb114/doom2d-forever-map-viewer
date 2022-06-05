@@ -3,6 +3,7 @@ const Tokenizr = tokenizr.wrapExport()
 class DFAnimTextureParser {
   constructor (/** @type {string} */ content) {
     this.content = content
+    this.content = this.content.toLowerCase() // lower case for now
     const lexer = new Tokenizr()
     lexer.rule(/[+-]?[0-9]+/, (/** @type {any} */ ctx, /** @type {any} */ match) => {
       ctx.accept('number', parseInt(match[0]))
@@ -47,10 +48,24 @@ class DFAnimTextureParser {
       }
     }
     this.parsed = {
-      /** @type {string} */ resource: parsedObject.resource ?? '',
-      /** @type {number} */ frameWidth: parsedObject.framewidth ?? 0,
-      /** @type {number} */ frameHeight: parsedObject.frameheight ?? 0
+      /** @type {string} */ resource: parsedObject.resource ?? null,
+      /** @type {number} */ frameCount: parsedObject.framecount ?? null,
+      /** @type {number} */ frameWidth: parsedObject.framewidth ?? null,
+      /** @type {number} */ frameHeight: parsedObject.frameheight ?? null,
+      /** @type {number} */ waitCount: parsedObject.waitcount ?? null,
+      /** @type {number} */ backAnimation: parsedObject.backanimation ?? null
     }
+  }
+
+  asText () {
+    let msg = ''
+    for (const property in this.parsed) {
+      const value = this.parsed[property]
+      if (value === undefined || value === null) continue
+      msg = msg + property.toLowerCase() + '=' + value + '\r' + '\n'
+    }
+    msg = msg.trimEnd()
+    return msg
   }
 }
 
