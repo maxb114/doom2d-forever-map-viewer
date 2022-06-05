@@ -157,7 +157,8 @@ class DFWad {
       }
       const text = dfmap.asText()
       const view = text
-      mapPromises.push(this.saveToZip(zip, map.path, view))
+      const newMapPath = getFileNameWithoutExtension(map.path) + '.txt'
+      mapPromises.push(this.saveToZip(zip, newMapPath, view))
     }
     await Promise.all(mapPromises)
     return zip
