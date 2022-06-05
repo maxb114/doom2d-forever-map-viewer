@@ -29,51 +29,54 @@ input.onchange = function () {
   const reader = new window.FileReader()
   reader.readAsArrayBuffer(file)
   reader.onload = async function (event) {
-    canvas.onmousedown = function () {}
-    setCurrentWadName(file.name.toLowerCase())
-    const deleteArray = [selectId, buttonId, cacheButtonId, zipButtonId, mapImageId]
-    for (const elementid of deleteArray) {
-      deleteElementById(elementid)
-    }
     if (event.target === null) return false
     const content = event.target.result
     if (content === null || typeof content === 'string') return false
+    setCurrentWadName(file.name.toLowerCase())
     setWad(await loadBufferAsWad(content))
-    const cacheButton = document.createElement('button')
-    cacheButton.innerHTML = 'Save resources'
-    cacheButton.id = 'cache-button'
-    cacheButton.onclick = async function () {
-      await saveCurrentWadResources()
-    }
-    div.appendChild(cacheButton)
-    const zipButton = document.createElement('button')
-    zipButton.innerHTML = 'Convert to .dfz and .txt'
-    zipButton.id = zipButtonId
-    zipButton.onclick = async function () {
-      await saveCurrentWad()
-    }
-    div.appendChild(zipButton)
-    const maps = getMapsList()
-    if (maps === null) return true
-    const select = document.createElement('select')
-    select.id = selectId
-    div.appendChild(select)
-    for (const map of maps) {
-      const option = document.createElement('option')
-      option.value = map.path
-      option.text = map.path
-      select.appendChild(option)
-    }
-    const button = document.createElement('button')
-    button.innerHTML = 'Load map'
-    button.id = 'load-button'
-    button.onclick = async () => {
-      const value = select.value
-      await loadMapAndSetAsCurrent(value)
-    }
-    div.appendChild(button)
-    return true
   }
+  return true
+}
+
+async function onWadLoad () {
+  // canvas.onmousedown = function () {}
+  const deleteArray = [selectId, buttonId, cacheButtonId, zipButtonId, mapImageId]
+  for (const elementid of deleteArray) {
+    deleteElementById(elementid)
+  }
+  const cacheButton = document.createElement('button')
+  cacheButton.innerHTML = 'Save resources'
+  cacheButton.id = 'cache-button'
+  cacheButton.onclick = async function () {
+    await saveCurrentWadResources()
+  }
+  div.appendChild(cacheButton)
+  const zipButton = document.createElement('button')
+  zipButton.innerHTML = 'Convert to .dfz and .txt'
+  zipButton.id = zipButtonId
+  zipButton.onclick = async function () {
+    await saveCurrentWad()
+  }
+  div.appendChild(zipButton)
+  const maps = getMapsList()
+  if (maps === null) return true
+  const select = document.createElement('select')
+  select.id = selectId
+  div.appendChild(select)
+  for (const map of maps) {
+    const option = document.createElement('option')
+    option.value = map.path
+    option.text = map.path
+    select.appendChild(option)
+  }
+  const button = document.createElement('button')
+  button.innerHTML = 'Load map'
+  button.id = 'load-button'
+  button.onclick = async () => {
+    const value = select.value
+    await loadMapAndSetAsCurrent(value)
+  }
+  div.appendChild(button)
   return true
 }
 
@@ -130,6 +133,7 @@ async function onMapLoad () {
 }
 
 addCallback('onmapload', onMapLoad)
+addCallback('onwadload', onWadLoad)
 
 function deleteElementById (/** @type {string} */ elementid) {
   const deleteElement = document.getElementById(elementid)
