@@ -1,4 +1,5 @@
 import { addCallback, changeZoom, checkEssentialResources, getDatabaseObject, getMapsList, getRenderFlagsList, loadBufferAsWad, loadMapAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, saveCurrentWadResources, saveEssentialResources, saveWadResources, setActiveCanvas, setCurrentWadName, setRenderFlag, setWad, updateMapRender } from './api.mjs'
+import { getCameraWrapper } from './core.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
 const canvasDiv = document.createElement('div')
@@ -83,7 +84,7 @@ async function onWadLoad () {
 async function onMapLoad () {
   deleteElementById(mapImageId)
   canvasDiv.style.display = ''
-  moveCamera(0, 0)
+  moveCamera(666, 666)
   canvas.onmousedown = function () {
     canvas.onmousemove = (event) => {
       moveCameraByDelta(-event.movementX, -event.movementY)
