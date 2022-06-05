@@ -135,6 +135,14 @@ async function onMapLoad () {
 addCallback('onmapload', onMapLoad)
 addCallback('onwadload', onWadLoad)
 
+window.onresize = async function () {
+  const screenHeight = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight)
+  const screenWidth = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth)
+  canvas.height = screenHeight
+  canvas.width = screenWidth
+  setActiveCanvas(canvas)
+}
+
 function deleteElementById (/** @type {string} */ elementid) {
   const deleteElement = document.getElementById(elementid)
   if (deleteElement !== null) {
