@@ -4,7 +4,7 @@ import { DFRender, DFRenderOptions } from './render.mjs'
 import { mapForRender } from './prepare-map-for-render.mjs'
 import { preloadWad } from './save-to-db.mjs'
 import { CameraWrapper } from './camera-wrapper.mjs'
-import { changeZoom, getCurrentWadName, getMapsList, getRenderFlags, getRenderFlagsList, loadMapAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, setRenderFlag } from './api.mjs'
+import { changeZoom, getCurrentWadName, getMapsList, getRenderFlagsList, loadBufferAsWad, loadMapAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, setRenderFlag } from './api.mjs'
 import { mapFromJson } from './map-from-json-parse.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
@@ -57,8 +57,7 @@ input.onchange = function () {
     if (content === null || typeof content === 'string') return false
     const wadName = getCurrentWadName()
     if (wadName === null) return
-    const view = new Uint8Array(content)
-    wad = await DfwadFrom(view, wadName)
+    await loadBufferAsWad(content)
     const cacheButton = document.createElement('button')
     cacheButton.innerHTML = 'Save resources'
     cacheButton.id = 'cache-button'
@@ -317,6 +316,11 @@ function getCurrentWad () {
   return currentWad
 }
 
+function setCurrentWad (/** @type {DFWad} */ newWad) {
+  wad = newWad
+  return true
+}
+
 function getCurrentWadFileName () {
   const currentWadName = mapName
   return currentWadName
@@ -327,4 +331,4 @@ function getCurrentRenderInstance () {
   return currentRender
 }
 
-export { getCameraWrapper, getCurrentMapAsJSON, getCurrentMap, setCurrentMap, setCurrentMapFromJSON, getRenderingOptions, getCurrentWad, getCurrentWadFileName, getCurrentRenderInstance }
+export { getCameraWrapper, getCurrentMapAsJSON, getCurrentMap, setCurrentMap, setCurrentMapFromJSON, getRenderingOptions, getCurrentWad, getCurrentWadFileName, getCurrentRenderInstance, setCurrentWad }

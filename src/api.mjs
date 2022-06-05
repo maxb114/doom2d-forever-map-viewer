@@ -1,5 +1,5 @@
-import { DFWad } from './df-wad.mjs'
-import { getCameraWrapper, getCurrentMapAsJSON, setCurrentMapFromJSON, getRenderingOptions, setCurrentMap, getCurrentWad, getCurrentWadFileName, getCurrentMap, getCurrentRenderInstance } from './main.mjs'
+import { DFWad, DfwadFrom } from './df-wad.mjs'
+import { getCameraWrapper, getCurrentMapAsJSON, setCurrentMapFromJSON, getRenderingOptions, setCurrentMap, getCurrentWad, getCurrentWadFileName, getCurrentMap, getCurrentRenderInstance, setCurrentWad } from './main.mjs'
 import { DfMapFromBuffer } from './map-from-buffer.mjs'
 import { mapForRender } from './prepare-map-for-render.mjs'
 import { download, downloadDataURL, getFileNameWithoutExtension } from './utility.mjs'
@@ -109,22 +109,49 @@ function getCurrentMapName () {
   return name
 }
 
+function loadBufferAsWad (/** @type {ArrayBuffer} */ buffer) {
+  const view = new Uint8Array(buffer)
+  const wadName = getCurrentWadName()
+  if (wadName === null) return false
+  const promise = new Promise((resolve, reject) => {
+    DfwadFrom(view, wadName).then((wad) => {
+      setWad(wad)
+      resolve(true)
+      return true
+    }).catch((error) => {
+      reject(error)
+      return false
+    })
+  })
+  return promise
+}
+
+function setWad (/** @type {DFWad} */ wad) {
+  setCurrentWad(wad)
+  return true
+}
+
 function saveCurrentWad () {
   const /** @type {DFWad} */ currentWad = getCurrentWad()
   if (currentWad === undefined || currentWad === null) return false
-  currentWad.saveAsZip().then((zip) => {
-    zip.generateAsync({ type: 'blob' }).then((/** @type {Blob} */ blob) => {
-      const fileName = getCurrentWadName()
-      if (fileName === null) return false
-      download(blob, getFileNameWithoutExtension(fileName) + '.dfz')
-      return true
-    }).catch(() => {
+  const promise = new Promise((resolve, reject) => {
+    currentWad.saveAsZip().then((zip) => {
+      zip.generateAsync({ type: 'blob' }).then((/** @type {Blob} */ blob) => {
+        const fileName = getCurrentWadName()
+        if (fileName === null) return false
+        download(blob, getFileNameWithoutExtension(fileName) + '.dfz')
+        resolve(true)
+        return true
+      }).catch((/** @type {Error} */ error) => {
+        reject(error)
+        return false
+      })
+    }).catch((/** @type {Error} */ error) => {
+      reject(error)
       return false
     })
-  }).catch(() => {
-    return false
   })
-  return true
+  return promise
 }
 
 function getCurrentMapOverviewCanvas () {
@@ -154,4 +181,4 @@ function saveCurrentMapOverview (/** @type {string | undefined} */ savePath) {
   return true
 }
 
-export { moveCameraByDelta, moveCamera, currentMap, currentMapAsJSON, setMap, setMapFromJSON, setZoom, changeZoom, getRenderFlags, setRenderFlag, getMapsList, loadMap, loadMapAndSetAsCurrent, getCurrentWadName, getCurrentMapName, saveCurrentWad, getRenderFlagsAsObject, saveCurrentMapOverview, getRenderFlagsList }
+export { moveCameraByDelta, moveCamera, currentMap, currentMapAsJSON, setMap, setMapFromJSON, setZoom, changeZoom, getRenderFlags, setRenderFlag, getMapsList, loadMap, loadMapAndSetAsCurrent, getCurrentWadName, getCurrentMapName, saveCurrentWad, getRenderFlagsAsObject, saveCurrentMapOverview, getRenderFlagsList, setWad, loadBufferAsWad }
