@@ -1,5 +1,7 @@
+import { DFWad } from './df-wad.mjs'
 import { getCameraWrapper, getCurrentMapAsJSON, setCurrentMapFromJSON, getRenderingOptions, setCurrentMap, getCurrentWad, getCurrentWadFileName, getCurrentMap } from './main.mjs'
 import { DfMapFromBuffer } from './map-from-buffer.mjs'
+import { download, getFileNameWithoutExtension } from './utility.mjs'
 
 function moveCameraByDelta (/** @type {number} */ deltaX, /** @type {number} */ deltaY) {
   const cameraWrapper = getCameraWrapper()
@@ -94,4 +96,21 @@ function getCurrentMapName () {
   return name
 }
 
-export { moveCameraByDelta, moveCamera, currentMap, currentMapAsJSON, setMap, setMapFromJSON, setZoom, changeZoom, getRenderFlags, setRenderFlag, getMapsList, loadMap, loadMapAndSetAsCurrent, getCurrentWadName, getCurrentMapName }
+function saveCurrentMap () {
+  const /** @type {DFWad} */ currentWad = getCurrentWad()
+  if (currentWad === undefined || currentWad === null) return false
+  currentWad.saveAsZip().then((zip) => {
+    zip.generateAsync({ type: 'blob' }).then((blob) => {
+      const fileName = getCurrentWadName()
+      if (fileName === null) return false
+      download(blob, getFileNameWithoutExtension(fileName) + '.dfz')
+      return true
+    }).catch((_error) => {
+      return false
+    })
+  }).catch((_error) => {
+    return false
+  })
+}
+
+export { moveCameraByDelta, moveCamera, currentMap, currentMapAsJSON, setMap, setMapFromJSON, setZoom, changeZoom, getRenderFlags, setRenderFlag, getMapsList, loadMap, loadMapAndSetAsCurrent, getCurrentWadName, getCurrentMapName, saveCurrentMap }
