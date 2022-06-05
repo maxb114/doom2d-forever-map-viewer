@@ -192,8 +192,10 @@ async function saveCurrentWadResources () {
 function saveCurrentWad () {
   const /** @type {DFWad} */ currentWad = getCurrentWad()
   if (currentWad === undefined || currentWad === null) return false
+  const db = getDatabaseObject()
+  if (db === null || db === undefined) return false
   const promise = new Promise((resolve, reject) => {
-    currentWad.saveAsZip().then((zip) => {
+    currentWad.saveAsZip(db).then((zip) => {
       zip.generateAsync({ type: 'blob' }).then((/** @type {Blob} */ blob) => {
         const fileName = getCurrentWadName()
         if (fileName === null) return false
