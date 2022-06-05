@@ -77,7 +77,50 @@ function handleParsedMap (/** @type {any} */ map, /** @type {string} */ mapFile)
         if (flagsValue === null || flagsValue === undefined || flagsValue === '') flagsValue = 'PANEL_FLAG_NONE'
         const flags = flagsValue.replace(/\s+/g, '').split('|')
         const blending = flags.includes('PANEL_FLAG_BLENDING')
-        const panel = new DFPanel(x, y, width, height, textureId, type, alpha, flags, undefined, undefined, blending, undefined)
+        let moveSpeedValue = element.move_speed
+        if (moveSpeedValue === undefined || moveSpeedValue === '') moveSpeedValue = '0,0'
+        const moveSpeed = parse2Ints(moveSpeedValue)
+        if (moveSpeed === null || moveSpeed[0] === undefined || moveSpeed[1] === undefined) continue
+        let sizeSpeedValue = element.size_speed
+        if (sizeSpeedValue === undefined || sizeSpeedValue === '') sizeSpeedValue = '0,0'
+        const sizeSpeed = parse2Ints(sizeSpeedValue)
+        if (sizeSpeed === null || sizeSpeed[0] === undefined || sizeSpeed[1] === undefined) continue
+        let moveStartValue = element.move_start
+        if (moveStartValue === undefined || moveStartValue === '') moveStartValue = '0,0'
+        const moveStart = parse2Ints(moveStartValue)
+        if (moveStart === null || moveStart[0] === undefined || moveStart[1] === undefined) continue
+        let moveEndValue = element.move_end
+        if (moveEndValue === undefined || moveEndValue === '') moveEndValue = '0,0'
+        const moveEnd = parse2Ints(moveEndValue)
+        if (moveEnd === null || moveEnd[0] === undefined || moveEnd[1] === undefined) continue
+        let sizeEndValue = element.size_end
+        if (sizeEndValue === undefined || sizeEndValue === '') sizeEndValue = '0,0'
+        const sizeEnd = parse2Ints(sizeEndValue)
+        if (sizeEnd === null || sizeEnd[0] === undefined || sizeEnd[1] === undefined) continue
+        let moveActiveValue = element.move_active
+        if (moveActiveValue === undefined || moveActiveValue === null) moveActiveValue = 'false'
+        const moveActive = /true/i.test(moveActiveValue)
+        let moveOnceValue = element.move_once
+        if (moveOnceValue === undefined || moveOnceValue === null) moveOnceValue = 'false'
+        const moveOnce = /true/i.test(moveOnceValue)
+        let endPosTriggerValue = element.end_pos_trigger
+        if (endPosTriggerValue === undefined || endPosTriggerValue === null) endPosTriggerValue = null
+        const endPosTrigger = endPosTriggerValue
+        let endSizeTriggerValue = element.end_size_trigger
+        if (endSizeTriggerValue === undefined || endSizeTriggerValue === null) endSizeTriggerValue = null
+        const endSizeTrigger = endSizeTriggerValue
+        const platformOptions = {
+          moveSpeed,
+          sizeSpeed,
+          moveStart,
+          moveEnd,
+          sizeEnd,
+          moveActive,
+          moveOnce,
+          endPosTrigger,
+          endSizeTrigger
+        }
+        const panel = new DFPanel(x, y, width, height, textureId, type, alpha, flags, platformOptions, undefined, blending, undefined)
         // we map textures to panels later
         panel.id = element._token.value
         panels.push(panel)

@@ -1,43 +1,6 @@
-class DFPlatformOptions {
-  /**
-   * @param {number} [moveSpeedX]
-   * @param {number} [moveSpeedY]
-   * @param {number} [sizeSpeedWidth]
-   * @param {number} [sizeSpeedHeight]
-   * @param {number} [moveStartX]
-   * @param {number} [moveStartY]
-   * @param {number} [moveEndX]
-   * @param {number} [moveEndY]
-   * @param {boolean} [moveActive]
-   * @param {boolean} [moveOnce]
-   * @param {number} [endPosTrigger]
-   * @param {number} [endSizeTrigger]
-   */
-  constructor (moveSpeedX = -1, moveSpeedY = -1, sizeSpeedWidth = -1, sizeSpeedHeight = -1,
-    moveStartX = -1, moveStartY = -1, moveEndX = -1, moveEndY = -1, moveActive = false, moveOnce = false, endPosTrigger = -1, endSizeTrigger = -1) {
-    this.moveSpeed = { x: 0, y: 0 }
-    this.sizeSpeed = { width: 0, height: 0 }
-    this.moveStart = { x: 0, y: 0 }
-    this.moveEnd = { x: 0, y: 0 }
-    this.sizeEnd = { width: 0, height: 0 }
-    this.moveSpeed.x = moveSpeedX
-    this.moveSpeed.y = moveSpeedY
-    this.sizeSpeed.width = sizeSpeedWidth
-    this.sizeSpeed.height = sizeSpeedHeight
-    this.moveStart.x = moveStartX
-    this.moveStart.y = moveStartY
-    this.moveEnd.x = moveEndX
-    this.moveEnd.y = moveEndY
-    this.moveActive = moveActive
-    this.moveOnce = moveOnce
-    this.endPosTrigger = endPosTrigger
-    this.endSizeTrigger = endSizeTrigger
-  }
-}
-
 class DFPanel {
   constructor (x = 0, y = 0, width = 0, height = 0, texture = '', type = ['PANEL_NONE'],
-    alpha = -1, flags = ['PANEL_FLAG_NONE'], platformOptions = new DFPlatformOptions(), texturePath = '', blending = false, specialOptions = {}) {
+    alpha = -1, flags = ['PANEL_FLAG_NONE'], /** @type {any} */ platformOptions = undefined, texturePath = '', blending = false, specialOptions = {}) {
     this.pos = { x: 0, y: 0 }
     this.size = { width: 0, height: 0 }
     this.pos.x = x
@@ -48,7 +11,18 @@ class DFPanel {
     this.type = type
     this.alpha = alpha
     this.flags = flags
-    this.platform = platformOptions
+    // this.platform = platformOptions
+    if (platformOptions !== undefined) {
+      this.moveSpeed = { x: platformOptions.moveSpeed[0], y: platformOptions.moveSpeed[1] }
+      this.sizeSpeed = { x: platformOptions.sizeSpeed[0], y: platformOptions.sizeSpeed[1] }
+      this.moveStart = { x: platformOptions.moveStart[0], y: platformOptions.moveStart[1] }
+      this.moveEnd = { x: platformOptions.moveEnd[0], y: platformOptions.moveEnd[1] }
+      this.sizeEnd = { x: platformOptions.sizeEnd[0], y: platformOptions.sizeEnd[1] }
+      this.moveActive = platformOptions.moveActive
+      this.moveOnce = platformOptions.moveOnce
+      this.endPosTrigger = platformOptions.endPosTrigger
+      this.endSizeTrigger = platformOptions.endSizeTrigger
+    }
     this.texturePath = texturePath
     this.id = 'default'
     this.editorPath = ''
@@ -98,6 +72,15 @@ class DFPanel {
     msg = msg + ' '.repeat(4) + 'type' + ' ' + this.type[0] + ';' + '\n'
     msg = msg + ' '.repeat(4) + 'alpha' + ' ' + (this.alpha === -1 ? 0 : this.alpha) + ';' + '\n'
     msg = msg + ' '.repeat(4) + 'flags' + ' ' + this.flags.join(' | ') + ';' + '\n'
+    if (this.moveSpeed !== undefined) msg = msg + ' '.repeat(4) + 'move_speed' + ' ' + '(' + (this.moveSpeed.x).toString(10) + ' ' + (this.moveSpeed.y).toString(10) + ')' + ';' + '\n'
+    if (this.sizeSpeed !== undefined) msg = msg + ' '.repeat(4) + 'size_speed' + ' ' + '(' + (this.sizeSpeed.x).toString(10) + ' ' + (this.sizeSpeed.y).toString(10) + ')' + ';' + '\n'
+    if (this.moveStart !== undefined) msg = msg + ' '.repeat(4) + 'move_start' + ' ' + '(' + (this.moveStart.x).toString(10) + ' ' + (this.moveStart.y).toString(10) + ')' + ';' + '\n'
+    if (this.moveEnd !== undefined) msg = msg + ' '.repeat(4) + 'move_end' + ' ' + '(' + (this.moveEnd.x).toString(10) + ' ' + (this.moveEnd.y).toString(10) + ')' + ';' + '\n'
+    if (this.sizeEnd !== undefined) msg = msg + ' '.repeat(4) + 'size_end' + ' ' + '(' + (this.sizeEnd.x).toString(10) + ' ' + (this.sizeEnd.y).toString(10) + ')' + ';' + '\n'
+    if (this.moveActive !== undefined) msg = msg + ' '.repeat(4) + 'move_active' + ' ' + this.moveActive.toString() + ';' + '\n'
+    if (this.moveOnce !== undefined) msg = msg + ' '.repeat(4) + 'move_once' + ' ' + this.moveOnce.toString() + ';' + '\n'
+    if (this.endPosTrigger !== undefined) msg = msg + ' '.repeat(4) + 'end_pos_trigger' + ' ' + (this.endPosTrigger ?? 'null') + ';' + '\n'
+    if (this.endSizeTrigger !== undefined) msg = msg + ' '.repeat(4) + 'end_size_trigger' + ' ' + (this.endSizeTrigger ?? 'null') + ';' + '\n'
     msg = msg + ' '.repeat(2) + '}' + '\n'
     return msg
   }
@@ -119,4 +102,4 @@ class DFPanel {
   }
 }
 
-export { DFPanel, DFPlatformOptions }
+export { DFPanel }
