@@ -13,7 +13,9 @@ const input = document.createElement('input')
 input.type = 'file'
 init()
 
-
+setActiveCanvas(canvas)
+canvas.height = screenHeight
+canvas.width = screenWidth
 const selectId = 'map-select'
 const buttonId = 'load-button'
 const cacheButtonId = 'cache-button'
@@ -29,7 +31,7 @@ input.onchange = function () {
   reader.onload = async function (event) {
     canvas.onmousedown = function () {}
     setCurrentWadName(file.name.toLowerCase())
-    const deleteArray = [selectId, buttonId, cacheButtonId, flagsDivId, zipButtonId, mapImageId]
+    const deleteArray = [selectId, buttonId, cacheButtonId, zipButtonId, mapImageId]
     for (const elementid of deleteArray) {
       deleteElementById(elementid)
     }
@@ -76,37 +78,8 @@ input.onchange = function () {
 }
 
 async function onMapLoad () {
-  deleteElementById(flagsDivId)
   deleteElementById(mapImageId)
   canvasDiv.style.display = ''
-  const flagsDiv = document.createElement('div')
-  flagsDiv.id = flagsDivId
-  const allOptions = getRenderFlagsList()
-  if (allOptions === null) return
-  for (const renderOption of allOptions) {
-    const object = renderOption[0]
-    const set = renderOption[1]
-    const input = document.createElement('input')
-    input.type = 'checkbox'
-    input.name = object.id
-    input.id = object.id
-    input.value = ''
-    input.checked = set
-    const label = document.createElement('label')
-    label.htmlFor = input.id
-    label.appendChild(document.createTextNode(object.full))
-    input.onchange = async () => {
-      setRenderFlag(input.id, input.checked)
-      updateMapRender()
-    }
-    flagsDiv.appendChild(input)
-    flagsDiv.appendChild(label)
-  }
-  div.appendChild(flagsDiv)
-  canvas.height = screenHeight
-  canvas.width = screenWidth
-  setActiveCanvas(canvas)
-  updateMapRender()
   moveCamera(0, 0)
   canvas.onmousedown = function () {
     canvas.onmousemove = (event) => {
@@ -177,6 +150,30 @@ async function init () {
     document.body.appendChild(canvasDiv)
     div.appendChild(input)
     document.body.appendChild(div)
+    const flagsDiv = document.createElement('div')
+    flagsDiv.id = flagsDivId
+    const allOptions = getRenderFlagsList()
+    if (allOptions === null) return
+    for (const renderOption of allOptions) {
+      const object = renderOption[0]
+      const set = renderOption[1]
+      const input = document.createElement('input')
+      input.type = 'checkbox'
+      input.name = object.id
+      input.id = object.id
+      input.value = ''
+      input.checked = set
+      const label = document.createElement('label')
+      label.htmlFor = input.id
+      label.appendChild(document.createTextNode(object.full))
+      input.onchange = async () => {
+        setRenderFlag(input.id, input.checked)
+        updateMapRender()
+      }
+      flagsDiv.appendChild(input)
+      flagsDiv.appendChild(label)
+    }
+    div.appendChild(flagsDiv)
   } else {
     const text = document.createTextNode('Doom 2D: Forever resources have not been found!')
     const br = document.createElement('br')
@@ -191,6 +188,30 @@ async function init () {
       document.body.appendChild(canvasDiv)
       div.appendChild(input)
       document.body.appendChild(div)
+      const flagsDiv = document.createElement('div')
+      flagsDiv.id = flagsDivId
+      const allOptions = getRenderFlagsList()
+      if (allOptions === null) return
+      for (const renderOption of allOptions) {
+        const object = renderOption[0]
+        const set = renderOption[1]
+        const input = document.createElement('input')
+        input.type = 'checkbox'
+        input.name = object.id
+        input.id = object.id
+        input.value = ''
+        input.checked = set
+        const label = document.createElement('label')
+        label.htmlFor = input.id
+        label.appendChild(document.createTextNode(object.full))
+        input.onchange = async () => {
+          setRenderFlag(input.id, input.checked)
+          updateMapRender()
+        }
+        flagsDiv.appendChild(input)
+        flagsDiv.appendChild(label)
+      }
+      div.appendChild(flagsDiv)
       return true
     }
     document.body.appendChild(text)
