@@ -1,4 +1,7 @@
 import { addCallback, changeZoom, checkEssentialResources, getDatabaseObject, getMapsList, getRenderFlagsList, loadBufferAsWad, loadMapFromThisWadAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, saveCurrentWadResources, saveEssentialResources, setActiveCanvas, setCurrentWadName, setRenderFlag, setWad, updateMapRender } from './api.mjs'
+import * as rivium from './rivium.js'
+await rivium.default()
+rivium.set_panic_hook()
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
 const canvasDiv = document.createElement('div')
@@ -112,6 +115,9 @@ async function onMapLoad () {
   }
 
   document.onkeydown = function (event) {
+    if (event.code === 'KeyT') {
+      rivium.main()
+    }
     /*
     if (event.code === 'KeyT') {
       const wasmtest = async () => {
