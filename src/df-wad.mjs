@@ -56,6 +56,71 @@ class DFWad {
     return true
   }
 
+  saveImageToZip (/** @type {Uint8Array} */ buffer, /** @type {String} */ type, /** @type {string} */ targetExtension, /** @type {string} */ path, /** @type {any} */ zip) {
+    const promise = new Promise((resolve, reject) => {
+      convertImage(buffer, type, targetExtension).then((arrayBuffer) => {
+        const view = new Uint8Array(arrayBuffer)
+        const extensionless = getFileNameWithoutExtension(path)
+        const newPath = extensionless + '.' + targetExtension
+        this.saveToZip(zip, newPath, view).then(() => {
+          resolve(true)
+        }).catch((/** @type {Error} */ error) => reject(error))
+      }).catch((error) => reject(error))
+    })
+    return promise
+  }
+
+  saveAnimatedTextureToZip (/** @type {Uint8Array} */ buffer, /** @type {string} */ targetExtension, /** @type {string} */ resourcePath, /** @type {any} */ zip) {
+    const promise = new Promise((resolve, reject) => {
+      DfwadFrom(buffer).then((dfwad) => {
+        const animPath = 'TEXT/ANIM'
+        const animDescription = dfwad.findResourceByPath(animPath, true)
+        if (animDescription === null) {
+          reject(Error('File is a WAD, but not an animated texture!'))
+          return false
+        }
+        const decoder = new TextDecoder('utf-8')
+        const animView = decoder.decode(animDescription?.buffer)
+        const parser = new DFAnimTextureParser(animView)
+        const path = 'TEXTURES' + '/' + parser.parsed.resource
+        const textureResource = dfwad.findResourceByPath(path, true)
+        if (textureResource === null) {
+          reject(Error('File is a WAD, but not an animated texture!'))
+          return false
+        }
+        const buffer = textureResource.buffer
+        const filetype = getExtensionFromBuffer(buffer)
+        if (filetype === 'unknown') {
+          reject(Error('Unknown image format!'))
+          return false
+        }
+        const newPath = getFileNameWithoutExtension(parser.parsed.resource) + '.' + targetExtension
+        const newFullPath = getFileNameWithoutExtension(path) + '.' + targetExtension
+        if (newFullPath === undefined || newPath === undefined) {
+          reject(Error('Error converting animated texture!'))
+          return false
+        }
+        parser.parsed.resource = newPath
+        const animZip = new JSZip()
+        const imagePromise = this.saveImageToZip(buffer, filetype, targetExtension, newFullPath, animZip)
+        const descriptionPromise = this.saveToZip(animZip, animPath, parser.asText())
+        Promise.all([imagePromise, descriptionPromise]).then(() => {
+          animZip.generateAsync({
+            type: 'arrayBuffer'
+          }).then((/** @type {ArrayBuffer} */ buffer) => {
+            const extensionless = getFileNameWithoutExtension(resourcePath)
+            const newPath = extensionless + '.zip'
+            const view = new Uint8Array(buffer)
+            this.saveToZip(zip, newPath, view).then(() => resolve(true)).catch((error) => reject(error))
+          })
+        })
+      }).catch((error) => {
+        reject(error)
+      })
+    })
+    return promise
+  }
+
   async saveAsZip () {
     const zip = new JSZip()
     const promises = []
@@ -66,75 +131,12 @@ class DFWad {
       const type = getExtensionFromBuffer(buffer)
       const images = ['png', 'gif', 'psd', 'bmp', 'jpg', 'tga']
       if (images.includes(type)) {
-        const promise = new Promise((resolve, reject) => {
-          convertImage(buffer, type, 'png').then((arrayBuffer) => {
-            const view = new Uint8Array(arrayBuffer)
-            const extensionless = getFileNameWithoutExtension(resource.path)
-            const newPath = extensionless + '.png'
-            this.saveToZip(zip, newPath, view).then(() => {
-              convertedImages.push(resource.path)
-              resolve(true)
-            }).catch((error) => reject(error))
-          }).catch((error) => reject(error))
-        })
+        const promise = this.saveImageToZip(buffer, type, 'png', resource.path, zip)
+        convertedImages.push(resource.path)
         promises.push(promise)
       } else if (type === 'dfwad' || type === 'dfzip') { // animtexture?
-        const promise = new Promise((resolve, reject) => {
-          DfwadFrom(buffer).then((dfwad) => {
-            const animPath = 'TEXT/ANIM'
-            const animDescription = dfwad.findResourceByPath(animPath, true)
-            if (animDescription === null) {
-              reject(Error('File is a WAD, but not an animated texture!'))
-              return false
-            }
-            const decoder = new TextDecoder('utf-8')
-            const animView = decoder.decode(animDescription?.buffer)
-            const parser = new DFAnimTextureParser(animView)
-            const path = 'TEXTURES' + '/' + parser.parsed.resource
-            const textureResource = dfwad.findResourceByPath(path, true)
-            if (textureResource === null) {
-              reject(Error('File is a WAD, but not an animated texture!'))
-              return false
-            }
-            const buffer = textureResource.buffer
-            const filetype = getExtensionFromBuffer(buffer)
-            if (filetype === 'unknown') {
-              reject(Error('Unknown image format!'))
-              return false
-            }
-            const newPath = getFileNameWithoutExtension(parser.parsed.resource) + '.png'
-            const newFullPath = getFileNameWithoutExtension(path) + '.png'
-            if (newFullPath === undefined || newPath === undefined) {
-              reject(Error('Error converting animated texture!'))
-              return false
-            }
-            parser.parsed.resource = newPath
-            convertImage(buffer, filetype, 'png').then((arrayBuffer) => {
-              const view = new Uint8Array(arrayBuffer)
-              const animZip = new JSZip()
-              const anim = this.saveToZip(animZip, animPath, parser.asText())
-              const texture = this.saveToZip(animZip, newFullPath, view)
-              Promise.all([anim, texture]).then(() => {
-                animZip.generateAsync({
-                  type: 'arrayBuffer'
-                }).then((/** @type {ArrayBuffer} */ buffer) => {
-                  const extensionless = getFileNameWithoutExtension(resource.path)
-                  const newPath = extensionless + '.zip'
-                  convertedAnims.push(resource.path)
-                  const view = new Uint8Array(buffer)
-                  this.saveToZip(zip, newPath, view).then(() => resolve(true)).catch((error) => reject(error))
-                })
-              }).catch((error) => {
-                reject(error)
-              })
-            }).catch((error) => {
-              reject(error)
-            })
-            return true
-          }).catch((error) => {
-            reject(error)
-          })
-        })
+        const promise = this.saveAnimatedTextureToZip(buffer, 'png', resource.path, zip)
+        convertedAnims.push(resource.path)
         promises.push(promise)
       } else {
         const view = buffer
