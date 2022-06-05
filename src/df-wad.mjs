@@ -1,4 +1,4 @@
-import { getExtensionFromBuffer, getFileNameWithoutExtension, splitPath, wadToJSON } from './utility.mjs'
+import { convertedResourcePathToGame, convertResourcePath, getExtensionFromBuffer, getFileNameWithoutExtension, isExternalResource, splitPath, wadToJSON } from './utility.mjs'
 import { inflate } from './pako.esm.mjs'
 import './jszip.js'
 import { DFParser } from './df-parser.mjs'
@@ -121,7 +121,35 @@ class DFWad {
     return promise
   }
 
-  async saveAsZip () {
+  saveResourceFromExternalWad (/** @type {string} */ resourcePath, /** @type {Database} */ db, /** @type {any} */ zip, /** @type {string} */ targetExtension) {
+    const promise = new Promise((resolve, reject) => {
+      const path = convertResourcePath(resourcePath)
+      db.loadByPath(path).then((/** @type {ArrayBuffer} */ arrayBuffer) => {
+        const view = new Uint8Array(arrayBuffer)
+        const type = getExtensionFromBuffer(view)
+        const split = path.split(':')
+        const withoutSource = split.pop()
+        if (withoutSource === undefined) {
+          reject(Error('Error converting resource from external WAD!'))
+          return false
+        }
+        const newPath = getFileNameWithoutExtension(withoutSource) + '.' + targetExtension
+        const imageTypes = ['png', 'gif', 'psd', 'bmp', 'jpg', 'tga']
+        if (imageTypes.includes(type)) {
+          this.saveImageToZip(view, type, targetExtension, newPath, zip).then(() => {
+            resolve(true)
+          }).catch((/** @type {Error} */ error) => reject(error))
+        } else {
+          this.saveToZip(zip, withoutSource, view).then(() => {
+            resolve(true)
+          }).catch((/** @type {Error} */ error) => reject(error))
+        }
+      }).catch((/** @type {Error} */ error) => reject(error))
+    })
+    return promise
+  }
+
+  async saveAsZip (/** @type {Database | undefined} */ db) {
     const zip = new JSZip()
     const promises = []
     const /** @type {string[]} */ convertedImages = []
@@ -156,6 +184,104 @@ class DFWad {
         const extensionless = getFileNameWithoutExtension(path)
         const newPath = this.fileName + ':' + extensionless + '.zip'
         dfmap.changeTexturePath(this.fileName + ':' + path, newPath)
+      }
+      if (db !== undefined) {
+        const /** @type {Promise<any>[]} */ externalPromises = []
+        const externalWadTextures = dfmap.textures.map(texture => texture.editorPath).filter((/** @type {string} */ value) => {
+          return isExternalResource(value)
+        })
+        for (const i in externalWadTextures) {
+          const texturePath = externalWadTextures[i]
+          const promise = new Promise((resolve, reject) => {
+            const path = convertResourcePath(texturePath)
+            const split = path.split(':')
+            const withoutSource = split.pop()
+            if (withoutSource === undefined) {
+              reject(Error('Error converting resource from external WAD!'))
+              return false
+            }
+            db.loadByPath(path).then((arrayBuffer) => {
+              const view = new Uint8Array(arrayBuffer)
+              const type = getExtensionFromBuffer(view)
+              const images = ['png', 'gif', 'psd', 'bmp', 'jpg', 'tga']
+              if (images.includes(type)) {
+                db.loadByPath(':' + 'info' + ':' + path).then((/** @type {string | null | undefined} */ anim) => {
+                  if (anim === null || anim === undefined) { // just an image
+                    this.saveToZip(zip, getFileNameWithoutExtension(withoutSource), view).then(() => {
+                      resolve(true)
+                    }).catch((/** @type {Error} */ error) => reject(error))
+                  } else {
+                    db.loadByPath(':' + 'full' + ':' + path).then((arrayBuffer) => {
+                      const view = new Uint8Array(arrayBuffer)
+                      const targetExtension = 'zip'
+                      const animZip = new JSZip()
+                      const parser = new DFAnimTextureParser(anim)
+                      const newPath = getFileNameWithoutExtension(parser.parsed.resource) + '.' + 'png'
+                      const newFullPath = getFileNameWithoutExtension(withoutSource) + '.' + 'zip'
+                      const imagePromise = this.saveImageToZip(view, type, 'png', 'TEXTURES' + '/' + newPath, animZip)
+                      const animPromise = this.saveToZip(animZip, 'TEXT/ANIM', anim)
+                      const converted = convertedResourcePathToGame(':' + newFullPath)
+                      if (converted === null) {
+                        reject(Error('Error converting animated texture from external WAD!'))
+                        return false
+                      }
+                      Promise.all([imagePromise, animPromise]).then(() => {
+                        animZip.generateAsync({ type: 'arrayBuffer' }).then((arrayBuffer) => {
+                          const view = new Uint8Array(arrayBuffer)
+                          this.saveToZip(zip, newFullPath, view).then(() => {
+                            // console.log(newFullPath)
+                            dfmap.changeTexturePath(texturePath, converted)
+                            resolve(true)
+                          }).catch((/** @type {Error} */ error) => reject(error))
+                        }).catch((/** @type {Error} */ error) => reject(error))
+                      }).catch((/** @type {Error} */ error) => reject(error))
+                    }).catch((/** @type {Error} */ error) => reject(error))
+                  }
+                }).catch((/** @type {Error} */ error) => reject(error))
+              }
+            }).catch((/** @type {Error} */ error) => reject(error))
+          })
+          externalPromises.push(promise)
+        }
+        const sky = dfmap.sky
+        const isExternalSky = isExternalResource(sky)
+        if (isExternalSky === true) {
+          const skyPromise = new Promise((resolve, reject) => {
+            this.saveResourceFromExternalWad(sky, db, zip, 'png').then(() => {
+              const path = convertResourcePath(sky)
+              const split = path.split(':')
+              const withoutSource = split.pop()
+              if (withoutSource === undefined) {
+                reject(Error('Error converting sky from external WAD!'))
+                return false
+              }
+              const newPath = getFileNameWithoutExtension(withoutSource) + '.' + 'png'
+              dfmap.sky = ':' + newPath
+              resolve(true)
+            }).catch((/** @type {Error} */ error) => reject(error))
+          })
+          externalPromises.push(skyPromise)
+        }
+        const music = dfmap.music
+        const isExternalMusic = isExternalResource(music)
+        if (isExternalMusic === true) {
+          const musicPromise = new Promise((resolve, reject) => {
+            this.saveResourceFromExternalWad(music, db, zip, '').then(() => {
+              const path = convertResourcePath(music)
+              const split = path.split(':')
+              const withoutSource = split.pop()
+              if (withoutSource === undefined) {
+                reject(Error('Error converting sky from external WAD!'))
+                return false
+              }
+              const newPath = withoutSource
+              dfmap.music = ':' + newPath
+              resolve(true)
+            }).catch((/** @type {Error} */ error) => reject(error))
+          })
+          externalPromises.push(musicPromise)
+        }
+        await Promise.all(externalPromises)
       }
       const text = dfmap.asText()
       const view = text
