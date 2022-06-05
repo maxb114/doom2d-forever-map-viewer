@@ -3,7 +3,7 @@ import { DFTextParser } from './df-textmap-parser.mjs'
 import { numberToChar } from './utility.mjs'
 
 class DFParser {
-  constructor (/** @type {Uint8Array} */ buffer) {
+  constructor (/** @type {Uint8Array} */ buffer, checkValid = false) {
     this.type = 'unknown'
     this.valid = false
     this.buffer = buffer
@@ -23,6 +23,7 @@ class DFParser {
       if (!onlyPrintable) {
         return
       }
+      if (checkValid) return
       const parsed = new DFTextParser(view)
       if (parsed.valid !== true) {
         return
