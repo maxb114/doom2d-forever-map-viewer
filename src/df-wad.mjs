@@ -60,6 +60,7 @@ class DFWad {
     const zip = new JSZip()
     const promises = []
     const /** @type {string[]} */ convertedImages = []
+    const /** @type {string[]} */ convertedAnims = []
     for (const resource of this.resources) {
       const buffer = resource.buffer
       const type = getExtensionFromBuffer(buffer)
@@ -101,17 +102,27 @@ class DFWad {
               reject(Error('Unknown image format!'))
               return false
             }
+            const newPath = getFileNameWithoutExtension(parser.parsed.resource) + '.png'
+            const newFullPath = getFileNameWithoutExtension(path) + '.png'
+            if (newFullPath === undefined || newPath === undefined) {
+              reject(Error('Error converting animated texture!'))
+              return false
+            }
+            parser.parsed.resource = newPath
             convertImage(buffer, filetype, 'png').then((arrayBuffer) => {
               const view = new Uint8Array(arrayBuffer)
               const animZip = new JSZip()
-              const anim = this.saveToZip(animZip, animDescription.path, animView)
-              const texture = this.saveToZip(animZip, textureResource.path, view)
+              const anim = this.saveToZip(animZip, animPath, parser.asText())
+              const texture = this.saveToZip(animZip, newFullPath, view)
               Promise.all([anim, texture]).then(() => {
                 animZip.generateAsync({
                   type: 'arrayBuffer'
                 }).then((/** @type {ArrayBuffer} */ buffer) => {
+                  const extensionless = getFileNameWithoutExtension(resource.path)
+                  const newPath = extensionless + '.zip'
+                  convertedAnims.push(resource.path)
                   const view = new Uint8Array(buffer)
-                  this.saveToZip(zip, resource.path, view).then(() => resolve(true)).catch((error) => reject(error))
+                  this.saveToZip(zip, newPath, view).then(() => resolve(true)).catch((error) => reject(error))
                 })
               }).catch((error) => {
                 reject(error)
@@ -134,9 +145,14 @@ class DFWad {
     const mapPromises = []
     for (const map of this.maps) {
       const dfmap = DfMapFromBuffer(map.buffer, this.fileName)
-      for (const path of convertedImages) { // this should be in the DFMap class
+      for (const path of convertedImages) {
         const extensionless = getFileNameWithoutExtension(path)
         const newPath = this.fileName + ':' + extensionless + '.png'
+        dfmap.changeTexturePath(this.fileName + ':' + path, newPath)
+      }
+      for (const path of convertedAnims) {
+        const extensionless = getFileNameWithoutExtension(path)
+        const newPath = this.fileName + ':' + extensionless + '.zip'
         dfmap.changeTexturePath(this.fileName + ':' + path, newPath)
       }
       const text = dfmap.asText()
