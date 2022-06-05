@@ -1,7 +1,8 @@
 import { DFWad, DfwadFrom } from './df-wad.mjs'
-import { getCameraWrapper, getCurrentMapAsJSON, setCurrentMapFromJSON, getRenderingOptions, setCurrentMap, getCurrentWad, getCurrentWadFileName, getCurrentMap, getCurrentRenderInstance, setCurrentWad, setCurrentWadFileName } from './main.mjs'
+import { getCameraWrapper, getCurrentMapAsJSON, setCurrentMapFromJSON, getRenderingOptions, setCurrentMap, getCurrentWad, getCurrentWadFileName, getCurrentMap, getCurrentRenderInstance, setCurrentWad, setCurrentWadFileName, getCurrentDatabaseInstance } from './main.mjs'
 import { DfMapFromBuffer } from './map-from-buffer.mjs'
 import { mapForRender } from './prepare-map-for-render.mjs'
+import { preloadWad } from './save-to-db.mjs'
 import { download, downloadDataURL, getFileNameWithoutExtension } from './utility.mjs'
 
 function moveCameraByDelta (/** @type {number} */ deltaX, /** @type {number} */ deltaY) {
@@ -90,16 +91,34 @@ function loadMap (/** @type {string} */ index) {
   return [buffer, path]
 }
 
-function loadMapAndSetAsCurrent (/** @type {string} */ index, /** @type {string} */ fileName) {
+async function loadMapAndSetAsCurrent (/** @type {string} */ index) {
+  const fileName = getCurrentWadName()
+  if (fileName === null) return
   const [buffer, path] = loadMap(index)
   if (buffer === undefined || typeof buffer === 'string' || buffer === null || path === null || path === undefined || typeof path === 'object') return false
   const loaded = DfMapFromBuffer(buffer, fileName)
   setMap(loaded)
-  return true
+  const options = getRenderFlagsAsObject()
+  if (options === null) return false
+  const render = getCurrentRenderInstance()
+  if (render === null) return false
+  const allElements = loaded.allElements
+  const db = getDatabaseObject()
+  if (db === null) return false
+  const sky = loaded.sky
+  const prefix = getCurrentWadName()
+  if (prefix === null) return false
+  await render.preload(allElements, db, sky, prefix)
+  return updateMapRender()
 }
 
 function setCurrentWadName (/** @type {string} */ newWadName) {
   setCurrentWadFileName(newWadName)
+}
+
+function getDatabaseObject () {
+  const db = getCurrentDatabaseInstance()
+  return db
 }
 
 function getCurrentWadName () {
@@ -114,13 +133,11 @@ function getCurrentMapName () {
 }
 
 function loadBufferAsWad (/** @type {ArrayBuffer} */ buffer) {
-  const view = new Uint8Array(buffer)
-  const wadName = getCurrentWadName()
-  if (wadName === null) return false
   const promise = new Promise((resolve, reject) => {
+    const view = new Uint8Array(buffer)
+    const wadName = getCurrentWadName() ?? ''
     DfwadFrom(view, wadName).then((wad) => {
-      setWad(wad)
-      resolve(true)
+      resolve(wad)
       return true
     }).catch((error) => {
       reject(error)
@@ -132,6 +149,26 @@ function loadBufferAsWad (/** @type {ArrayBuffer} */ buffer) {
 
 function setWad (/** @type {DFWad} */ wad) {
   setCurrentWad(wad)
+  return true
+}
+
+async function saveWadResources (/** @type {DFWad} */ wad, /** @type {string} */ name) {
+  const db = getCurrentDatabaseInstance()
+  if (db === null) return false
+  const promises = preloadWad(wad, name, db)
+  await Promise.allSettled(promises)
+  return true
+}
+
+async function saveCurrentWadResources () {
+  const wadName = getCurrentWadName()
+  if (wadName === null) return false
+  const wad = getCurrentWad()
+  if (wad === null) return false
+  const db = getCurrentDatabaseInstance()
+  if (db === null) return false
+  const promises = preloadWad(wad, wadName, db)
+  await Promise.allSettled(promises)
   return true
 }
 
@@ -156,6 +193,18 @@ function saveCurrentWad () {
     })
   })
   return promise
+}
+
+function updateMapRender () {
+  const mapCanvas = getCurrentMapOverviewCanvas()
+  const cameraWrapper = getCameraWrapper()
+  if (mapCanvas === null || cameraWrapper === null) return null
+  const width = mapCanvas.width
+  const height = mapCanvas.height
+  cameraWrapper.setCanvasToDraw(mapCanvas)
+  cameraWrapper.boundX = width
+  cameraWrapper.boundY = height
+  return mapCanvas
 }
 
 function getCurrentMapOverviewCanvas () {
@@ -185,4 +234,4 @@ function saveCurrentMapOverview (/** @type {string | undefined} */ savePath) {
   return true
 }
 
-export { moveCameraByDelta, moveCamera, currentMap, currentMapAsJSON, setMap, setMapFromJSON, setZoom, changeZoom, getRenderFlags, setRenderFlag, getMapsList, loadMap, loadMapAndSetAsCurrent, getCurrentWadName, getCurrentMapName, saveCurrentWad, getRenderFlagsAsObject, saveCurrentMapOverview, getRenderFlagsList, setWad, loadBufferAsWad, setCurrentWadName }
+export { moveCameraByDelta, moveCamera, currentMap, currentMapAsJSON, setMap, setMapFromJSON, setZoom, changeZoom, getRenderFlags, setRenderFlag, getMapsList, loadMap, loadMapAndSetAsCurrent, getCurrentWadName, getCurrentMapName, saveCurrentWad, getRenderFlagsAsObject, saveCurrentMapOverview, getRenderFlagsList, setWad, loadBufferAsWad, setCurrentWadName, updateMapRender, saveCurrentWadResources, saveWadResources }

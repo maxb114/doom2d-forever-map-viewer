@@ -1,10 +1,9 @@
 import { DfwadFrom } from './df-wad.mjs'
 import { DatabaseFrom } from './db.mjs'
 import { DFRender, DFRenderOptions } from './render.mjs'
-import { mapForRender } from './prepare-map-for-render.mjs'
 import { preloadWad } from './save-to-db.mjs'
 import { CameraWrapper } from './camera-wrapper.mjs'
-import { changeZoom, getCurrentWadName, getMapsList, getRenderFlagsList, loadBufferAsWad, loadMapAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, setCurrentWadName, setRenderFlag } from './api.mjs'
+import { changeZoom, getCurrentWadName, getMapsList, getRenderFlagsList, loadBufferAsWad, loadMapAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, saveCurrentWadResources, saveWadResources, setCurrentWadName, setRenderFlag, setWad, updateMapRender } from './api.mjs'
 import { mapFromJson } from './map-from-json-parse.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
@@ -55,25 +54,19 @@ input.onchange = function () {
     if (event.target === null) return false
     const content = event.target.result
     if (content === null || typeof content === 'string') return false
-    const wadName = getCurrentWadName()
-    if (wadName === null) return
-    await loadBufferAsWad(content)
+    setWad(await loadBufferAsWad(content))
     const cacheButton = document.createElement('button')
     cacheButton.innerHTML = 'Save resources'
     cacheButton.id = 'cache-button'
     cacheButton.onclick = async function () {
-      const wadName = getCurrentWadName()
-      if (wadName === null) return
-      const promises = preloadWad(wad, wadName, db)
-      await Promise.allSettled(promises)
-      return true
+      await saveCurrentWadResources()
     }
     div.appendChild(cacheButton)
     const zipButton = document.createElement('button')
     zipButton.innerHTML = 'Convert to .dfz and .txt'
     zipButton.id = zipButtonId
     zipButton.onclick = async function () {
-      saveCurrentWad()
+      await saveCurrentWad()
     }
     div.appendChild(zipButton)
     const maps = getMapsList()
@@ -94,22 +87,14 @@ input.onchange = function () {
       deleteElementById(flagsDivId)
       deleteElementById(mapImageId)
       const value = select.value
-      const mapName = getCurrentWadName()
-      if (mapName === null) return
-      const result = loadMapAndSetAsCurrent(value, mapName)
+      const result = await loadMapAndSetAsCurrent(value)
       if (camera === null) return
       canvasDiv.style.display = ''
-      if (result !== true) return
-      const map = getCurrentMap()
-      if (map === null) return
-      render = new DFRender()
-      let /** @type {CanvasImageSource | null} */ savedMap = null
+      if (result === null) return
       const flagsDiv = document.createElement('div')
       flagsDiv.id = flagsDivId
       const allOptions = getRenderFlagsList()
       if (allOptions === null) return
-      const width = map.size.x
-      const height = map.size.y
       for (const renderOption of allOptions) {
         const object = renderOption[0]
         const set = renderOption[1]
@@ -124,30 +109,17 @@ input.onchange = function () {
         label.appendChild(document.createTextNode(object.full))
         input.onchange = async () => {
           setRenderFlag(input.id, input.checked)
-          if (camera === null) return
-          const options = getRenderingOptions()
-          if (options === null) return
-          const mapView = mapForRender(map, options)
-          if (render === null) return
-          savedMap = render.render1(mapView, width, height)
-          camera.setCanvasToDraw(savedMap)
+          updateMapRender()
         }
         flagsDiv.appendChild(input)
         flagsDiv.appendChild(label)
       }
       div.appendChild(flagsDiv)
-      await prepareForMap(map, options, render)
       canvas.height = screenHeight
       canvas.width = screenWidth
-      camera.boundX = width
-      camera.boundY = height
-      const mapView = mapForRender(map, options)
-      savedMap = await render.render1(mapView, width, height)
       moveCamera(0, 0)
-      camera.setCanvasToDraw(savedMap)
       canvas.onmousedown = function () {
         canvas.onmousemove = (event) => {
-          if (savedMap === null || camera === null) return
           moveCameraByDelta(-event.movementX, -event.movementY)
         }
       }
@@ -155,7 +127,6 @@ input.onchange = function () {
         canvas.onmousemove = null
       }
       document.onkeydown = function (event) {
-        if (savedMap === null || camera === null) return
         /*
         if (event.code === 'KeyT') {
           const wasmtest = async () => {
@@ -209,13 +180,6 @@ function deleteElementById (/** @type {string} */ elementid) {
   return true
 }
 
-async function prepareForMap (/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ options, /** @type {DFRender} */ render) {
-  const allElements = map.allElements
-  const sky = map.sky
-  const prefix = map.fileName
-  await render.preload(allElements, db, sky, prefix)
-}
-
 const resources = ['game.wad', 'standart.wad', 'shrshade.wad', 'editor.wad']
 
 async function checkEssentialResources () {
@@ -238,6 +202,7 @@ async function init () {
   const check = await checkEssentialResources()
   camera = new CameraWrapper(context, screenWidth, screenHeight, canvas, null)
   options = new DFRenderOptions()
+  render = new DFRender()
   if (check) {
     document.body.appendChild(canvasDiv)
     div.appendChild(input)
@@ -251,19 +216,33 @@ async function init () {
     button.onclick = async () => {
       const baseLink = 'https://doom2d.org/doom2d_forever/mapview/'
       // const baseLink = './assets/'
+      const /** @type {Promise<any>[]} */ promises = []
       for (const resource of resources) {
         const link = baseLink + resource
         try {
           const response = await fetch(link)
           const buffer = await response.arrayBuffer()
-          const view = new Uint8Array(buffer)
-          const wad = await DfwadFrom(view)
-          await Promise.all(preloadWad(wad, resource, db))
+          const promise = new Promise((resolve, reject) => {
+            loadBufferAsWad(buffer).then((wad) => {
+              saveWadResources(wad, resource).then(() => {
+                resolve(true)
+                return true
+              }).catch((error) => {
+                reject(error)
+                return false
+              })
+            }).catch((/** @type {Error} */ error) => {
+              reject(error)
+              return false
+            })
+          })
+          promises.push(promise)
         } catch (error) {
           window.alert(error)
           return false
         }
       }
+      await Promise.all(promises)
       document.body.removeChild(text)
       document.body.removeChild(br)
       document.body.removeChild(button)
@@ -336,4 +315,9 @@ function getCurrentRenderInstance () {
   return currentRender
 }
 
-export { getCameraWrapper, getCurrentMapAsJSON, getCurrentMap, setCurrentMap, setCurrentMapFromJSON, getRenderingOptions, getCurrentWad, getCurrentWadFileName, getCurrentRenderInstance, setCurrentWad, setCurrentWadFileName }
+function getCurrentDatabaseInstance () {
+  const currentDb = db
+  return currentDb
+}
+
+export { getCameraWrapper, getCurrentMapAsJSON, getCurrentMap, setCurrentMap, setCurrentMapFromJSON, getRenderingOptions, getCurrentWad, getCurrentWadFileName, getCurrentRenderInstance, setCurrentWad, setCurrentWadFileName, getCurrentDatabaseInstance }
