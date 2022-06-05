@@ -125,7 +125,7 @@ async function loadMapFromThisWadAndSetAsCurrent (/** @type {string} */ index) {
 
 function loadMapFromJSONAndSetAsCurrent (/** @type {any} */ mapObject) {
   const map = mapFromJson(mapObject)
-  loadMapAndSetAsCurrent(map)
+  loadMap(map)
 }
 
 function setCurrentWadName (/** @type {string} */ newWadName) {
