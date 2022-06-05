@@ -1,9 +1,10 @@
 import { DFWad, DfwadFrom } from './df-wad.mjs'
-import { getCameraWrapper, getCurrentMapAsJSON, setCurrentMapFromJSON, getRenderingOptions, setCurrentMap, getCurrentWad, getCurrentWadFileName, getCurrentMap, getCurrentRenderInstance, setCurrentWad, setCurrentWadFileName, getCurrentDatabaseInstance } from './core.mjs'
+import { getCameraWrapper, getRenderingOptions, setCurrentMap, getCurrentWad, getCurrentWadFileName, getCurrentMap, getCurrentRenderInstance, setCurrentWad, setCurrentWadFileName, getCurrentDatabaseInstance } from './core.mjs'
 import { DfMapFromBuffer } from './map-from-buffer.mjs'
 import { mapForRender } from './prepare-map-for-render.mjs'
 import { preloadWad } from './save-to-db.mjs'
 import { download, downloadDataURL, getFileNameWithoutExtension } from './utility.mjs'
+import { mapFromJson } from './map-from-json-parse.mjs'
 
 function moveCameraByDelta (/** @type {number} */ deltaX, /** @type {number} */ deltaY) {
   const cameraWrapper = getCameraWrapper()
@@ -33,18 +34,16 @@ function setMap (/** @type {DFMap} */ map) {
   setCurrentMap(map)
 }
 
-function setMapFromJSON (/** @type {any} */ mapObject) {
-  setCurrentMapFromJSON(mapObject)
-}
-
 function currentMap () {
   const /** @type {DFMap} */ map = getCurrentMap()
   return map
 }
 
 function currentMapAsJSON () {
-  const /** @type {any} */ mapObject = getCurrentMapAsJSON()
-  return mapObject
+  const /** @type {any} */ mapObject = currentMap()
+  if (mapObject === null) return null
+  const toJSON = JSON.stringify(mapObject)
+  return toJSON
 }
 
 function getRenderFlagsAsObject () {
@@ -81,7 +80,7 @@ function getMapsList () {
   return maps
 }
 
-function loadMap (/** @type {string} */ index) {
+function loadMapFromThisWadAsBuffer (/** @type {string} */ index) {
   const wad = getCurrentWad()
   if (wad === null) return [null, null]
   const resource = wad.findResourceByPath(index)
@@ -91,26 +90,42 @@ function loadMap (/** @type {string} */ index) {
   return [buffer, path]
 }
 
-async function loadMapAndSetAsCurrent (/** @type {string} */ index) {
-  const fileName = getCurrentWadName()
-  if (fileName === null) return
-  const [buffer, path] = loadMap(index)
-  if (buffer === undefined || typeof buffer === 'string' || buffer === null || path === null || path === undefined || typeof path === 'object') return false
-  const loaded = DfMapFromBuffer(buffer, fileName)
-  setMap(loaded)
+async function loadMap (/** @type {DFMap} */ map) {
+  setMap(map)
   const options = getRenderFlagsAsObject()
   if (options === null) return false
   const render = getCurrentRenderInstance()
   if (render === null) return false
-  const allElements = loaded.allElements
+  const allElements = map.allElements
   const db = getDatabaseObject()
   if (db === null) return false
-  const sky = loaded.sky
+  const sky = map.sky
   const prefix = getCurrentWadName()
   if (prefix === null) return false
   await render.preload(allElements, db, sky, prefix)
   updateMapRender()
   fireChange('onmapload')
+  return true
+}
+
+async function loadMapAndSetAsCurrent (/** @type {DFMap} */ map) {
+  await loadMap(map)
+  return true
+}
+
+async function loadMapFromThisWadAndSetAsCurrent (/** @type {string} */ index) {
+  const fileName = getCurrentWadName()
+  if (fileName === null) return
+  const [buffer, path] = loadMapFromThisWadAsBuffer(index)
+  if (buffer === undefined || typeof buffer === 'string' || buffer === null || path === null || path === undefined || typeof path === 'object') return false
+  const loaded = DfMapFromBuffer(buffer, fileName)
+  await loadMap(loaded)
+  return true
+}
+
+function loadMapFromJSONAndSetAsCurrent (/** @type {any} */ mapObject) {
+  const map = mapFromJson(mapObject)
+  loadMapAndSetAsCurrent(map)
 }
 
 function setCurrentWadName (/** @type {string} */ newWadName) {
@@ -209,6 +224,7 @@ function setActiveCanvas (/** @type {HTMLCanvasElement} */ canvas) {
   const cameraWrapper = getCameraWrapper()
   if (cameraWrapper === null) return null
   cameraWrapper.setActiveCanvas(canvas)
+  return true
 }
 
 function getCurrentMapOverviewCanvas () {
@@ -319,4 +335,4 @@ async function fireChange (/** @type {string} */ index) {
 addEvent('onmapload')
 addEvent('onwadload')
 
-export { moveCameraByDelta, moveCamera, currentMap, currentMapAsJSON, setMap, setMapFromJSON, setZoom, changeZoom, getRenderFlags, setRenderFlag, getMapsList, loadMap, loadMapAndSetAsCurrent, getCurrentWadName, getCurrentMapName, saveCurrentWad, getRenderFlagsAsObject, saveCurrentMapOverview, getRenderFlagsList, setWad, loadBufferAsWad, setCurrentWadName, updateMapRender, saveCurrentWadResources, saveWadResources, setActiveCanvas, getDatabaseObject, checkEssentialResources, saveEssentialResources, addCallback, removeCallback }
+export { moveCameraByDelta, moveCamera, currentMap, currentMapAsJSON, setMap, loadMapFromJSONAndSetAsCurrent, setZoom, changeZoom, getRenderFlags, setRenderFlag, getMapsList, loadMap, loadMapAndSetAsCurrent, getCurrentWadName, getCurrentMapName, saveCurrentWad, getRenderFlagsAsObject, saveCurrentMapOverview, getRenderFlagsList, setWad, loadBufferAsWad, setCurrentWadName, updateMapRender, saveCurrentWadResources, saveWadResources, setActiveCanvas, getDatabaseObject, checkEssentialResources, saveEssentialResources, addCallback, removeCallback, loadMapFromThisWadAndSetAsCurrent }

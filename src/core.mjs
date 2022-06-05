@@ -1,6 +1,5 @@
 import { CameraWrapper } from './camera-wrapper.mjs'
 import { DatabaseFrom } from './db.mjs'
-import { mapFromJson } from './map-from-json-parse.mjs'
 import { DFRender, DFRenderOptions } from './render.mjs'
 
 class Core {
@@ -45,20 +44,9 @@ function setCurrentMap (/** @type {DFMap} */ map) {
   return core.currentMap
 }
 
-function setCurrentMapFromJSON (/** @type {any} */ mapObject) {
-  const map = mapFromJson(mapObject)
-  core.setCurrentMap(map)
-}
-
 function getCurrentMap () {
   const map = core.currentMap
   return map
-}
-
-function getCurrentMapAsJSON () {
-  const map = core.currentMap
-  const toJSON = JSON.stringify(map)
-  return toJSON
 }
 
 function getRenderingOptions () {
@@ -96,4 +84,4 @@ function getCurrentDatabaseInstance () {
   return currentDb
 }
 
-export { coreFrom, getCameraWrapper, getCurrentMapAsJSON, getCurrentMap, setCurrentMap, setCurrentMapFromJSON, getRenderingOptions, getCurrentWad, getCurrentWadFileName, getCurrentRenderInstance, setCurrentWad, setCurrentWadFileName, getCurrentDatabaseInstance }
+export { coreFrom, getCameraWrapper, getCurrentMap, setCurrentMap, getRenderingOptions, getCurrentWad, getCurrentWadFileName, getCurrentRenderInstance, setCurrentWad, setCurrentWadFileName, getCurrentDatabaseInstance }

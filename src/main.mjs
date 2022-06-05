@@ -1,5 +1,4 @@
-import { addCallback, changeZoom, checkEssentialResources, getDatabaseObject, getMapsList, getRenderFlagsList, loadBufferAsWad, loadMapAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, saveCurrentWadResources, saveEssentialResources, saveWadResources, setActiveCanvas, setCurrentWadName, setRenderFlag, setWad, updateMapRender } from './api.mjs'
-import { getCameraWrapper } from './core.mjs'
+import { addCallback, changeZoom, checkEssentialResources, getDatabaseObject, getMapsList, getRenderFlagsList, loadBufferAsWad, loadMapFromThisWadAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, saveCurrentWadResources, saveEssentialResources, setActiveCanvas, setCurrentWadName, setRenderFlag, setWad, updateMapRender } from './api.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
 const canvasDiv = document.createElement('div')
@@ -75,7 +74,7 @@ async function onWadLoad () {
   button.id = 'load-button'
   button.onclick = async () => {
     const value = select.value
-    await loadMapAndSetAsCurrent(value)
+    await loadMapFromThisWadAndSetAsCurrent(value)
   }
   div.appendChild(button)
   return true
