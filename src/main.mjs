@@ -60,23 +60,25 @@ async function onWadLoad () {
   div.appendChild(zipButton)
   const maps = getMapsList()
   if (maps === null) return true
-  const select = document.createElement('select')
-  select.id = selectId
-  div.appendChild(select)
-  for (const map of maps) {
-    const option = document.createElement('option')
-    option.value = map.path
-    option.text = map.path
-    select.appendChild(option)
+  if (maps.length > 0) {
+    const select = document.createElement('select')
+    select.id = selectId
+    div.appendChild(select)
+    for (const map of maps) {
+      const option = document.createElement('option')
+      option.value = map.path
+      option.text = map.path
+      select.appendChild(option)
+    }
+    const button = document.createElement('button')
+    button.innerHTML = 'Load map'
+    button.id = 'load-button'
+    button.onclick = async () => {
+      const value = select.value
+      await loadMapFromThisWadAndSetAsCurrent(value)
+    }
+    div.appendChild(button)
   }
-  const button = document.createElement('button')
-  button.innerHTML = 'Load map'
-  button.id = 'load-button'
-  button.onclick = async () => {
-    const value = select.value
-    await loadMapFromThisWadAndSetAsCurrent(value)
-  }
-  div.appendChild(button)
   return true
 }
 
