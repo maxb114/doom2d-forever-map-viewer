@@ -203,4 +203,18 @@ function clamp (/** @type {number} */ value, /** @type {number} */ min, /** @typ
   return value
 }
 
-export { getExtensionFromBuffer, wadToJSON, numberToChar, binaryIsBitSet, parse2Ints, readSliceByte, readSliceChar, readSliceLongWord, readSliceWord, splitPath, convertResourcePath, trimStringBySize, getFileNameWithoutExtension, clamp, convertedResourcePathToGame }
+function downloadDataURL (/** @type {string} */ dataURL, /** @type {string} */ name) {
+  const a = document.createElement('a')
+  a.href = dataURL
+  a.download = name
+  a.click()
+}
+
+function download (/** @type {Blob} */ blob, /** @type {string} */ name) {
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(blob)
+  a.download = name
+  a.click()
+}
+
+export { getExtensionFromBuffer, wadToJSON, numberToChar, binaryIsBitSet, parse2Ints, readSliceByte, readSliceChar, readSliceLongWord, readSliceWord, splitPath, convertResourcePath, trimStringBySize, getFileNameWithoutExtension, clamp, convertedResourcePathToGame, download, downloadDataURL }
