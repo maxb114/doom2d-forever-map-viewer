@@ -150,6 +150,7 @@ function loadBufferAsWad (/** @type {ArrayBuffer} */ buffer) {
 
 function setWad (/** @type {DFWad} */ wad) {
   setCurrentWad(wad)
+  fireChange('onwadload')
   return true
 }
 
@@ -316,5 +317,6 @@ async function fireChange (/** @type {string} */ index) {
 }
 
 addEvent('onmapload')
+addEvent('onwadload')
 
 export { moveCameraByDelta, moveCamera, currentMap, currentMapAsJSON, setMap, setMapFromJSON, setZoom, changeZoom, getRenderFlags, setRenderFlag, getMapsList, loadMap, loadMapAndSetAsCurrent, getCurrentWadName, getCurrentMapName, saveCurrentWad, getRenderFlagsAsObject, saveCurrentMapOverview, getRenderFlagsList, setWad, loadBufferAsWad, setCurrentWadName, updateMapRender, saveCurrentWadResources, saveWadResources, setActiveCanvas, getDatabaseObject, checkEssentialResources, saveEssentialResources, addCallback, removeCallback }
