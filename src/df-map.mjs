@@ -61,11 +61,11 @@ class DFMap {
   asText () {
     const start = 'map' + ' {'
     let body = '\n'
-    const name = trimStringBySize(this.name.replaceAll("'", '"'), 31)
-    const author = trimStringBySize(this.author.replaceAll("'", '"'), 31)
-    const description = trimStringBySize(this.description.replaceAll("'", '"'), 255)
-    const music = trimStringBySize(this.music.replaceAll("'", '"'), 63)
-    const sky = trimStringBySize(this.sky.replaceAll("'", '"'), 63)
+    const name = trimStringBySize(this.name.replaceAll("'", '"'), 30)
+    const author = trimStringBySize(this.author.replaceAll("'", '"'), 30)
+    const description = trimStringBySize(this.description.replaceAll("'", '"'), 254)
+    const music = trimStringBySize(this.music.replaceAll("'", '"'), 62)
+    const sky = trimStringBySize(this.sky.replaceAll("'", '"'), 62)
     const x = this.size.x.toString(10)
     const y = this.size.y.toString(10)
     body = body + ' '.repeat(2) + 'name' + ' ' + "'" + name + "'" + ';' + '\n'
