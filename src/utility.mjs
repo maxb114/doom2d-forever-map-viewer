@@ -193,7 +193,7 @@ function trimStringBySize (/** @type {string} */ value, /** @type {number} */ si
 function getFileNameWithoutExtension (/** @type {string} */ path) {
   const match = /^(.*)\.([0-9a-z]+)?$/
   const matches = path.match(match)
-  if (matches === null) return path
+  if (matches === null || matches[1] === undefined) return path
   else return matches[1]
 }
 
@@ -217,4 +217,10 @@ function download (/** @type {Blob} */ blob, /** @type {string} */ name) {
   a.click()
 }
 
-export { getExtensionFromBuffer, wadToJSON, numberToChar, binaryIsBitSet, parse2Ints, readSliceByte, readSliceChar, readSliceLongWord, readSliceWord, splitPath, convertResourcePath, trimStringBySize, getFileNameWithoutExtension, clamp, convertedResourcePathToGame, download, downloadDataURL }
+function isExternalResource (/** @type {string} */ resourcePath) {
+  const path = convertResourcePath(resourcePath)
+  const split = path.split(':')
+  return split.length > 1 && split[0] !== 'game.wad' && split[0] !== 'editor.wad' && split[0] !== 'standart.wad' && split[0] !== 'shrshade.wad'
+}
+
+export { getExtensionFromBuffer, wadToJSON, numberToChar, binaryIsBitSet, parse2Ints, readSliceByte, readSliceChar, readSliceLongWord, readSliceWord, splitPath, convertResourcePath, trimStringBySize, getFileNameWithoutExtension, clamp, convertedResourcePathToGame, download, downloadDataURL, isExternalResource }
