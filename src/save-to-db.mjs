@@ -7,8 +7,15 @@ function preloadWad (/** @type {DFWad} */ wad, /** @type {String} */ mapName, /*
   const promises = []
   for (const file of wad.resources) {
     const type = getExtensionFromBuffer(file.buffer)
-    if (type === 'unknown') continue // probably music
-    if (type === 'dfwad' || type === 'dfzip') { // animated
+    if (type === 'unknown') {
+      const promise = new Promise((resolve, reject) => {
+        const path = convertResourcePath(mapName + ':' + file.path)
+        db.saveByPath(file.buffer.buffer, path).then(() => {
+          resolve(true)
+        }).catch((error) => reject(error))
+      })
+      promises.push(promise)
+    } else if (type === 'dfwad' || type === 'dfzip') { // animated
       const promise = preloadAnimated(file, mapName, db)
       promises.push(promise)
     } else if (type === 'bmp' || type === 'gif' || type === 'jpg' || type === 'png' || type === 'psd' || type === 'tga') { // just an image
@@ -52,7 +59,13 @@ function preloadAnimated (/** @type {Resource} */ file, /** @type {String} */ ma
       convertImage(buffer, type, 'png').then((arrayBuffer) => {
         const view = new Uint8Array(arrayBuffer)
         cropImage(view, 'png', width, height).then((finalBuffer) => {
-          db.saveByPath(finalBuffer, mapName + ':' + file.path).then(() => resolve(true)).catch((/** @type {Error} */ error) => reject(error))
+          db.saveByPath(finalBuffer, mapName + ':' + file.path).then(() => {
+            db.saveByPath(parser.asText(), ':' + 'info' + ':' + mapName + ':' + file.path).then(() => {
+              db.saveByPath(arrayBuffer, ':' + 'full' + ':' + mapName + ':' + file.path).then(() => {
+                resolve(true)
+              })
+            }).catch((/** @type {Error} */ error) => reject(error))
+          }).catch((/** @type {Error} */ error) => reject(error))
         }).catch((error) => reject(error))
       }).catch((error) => reject(error))
       return true
