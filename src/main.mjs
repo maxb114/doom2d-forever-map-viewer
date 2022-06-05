@@ -1,4 +1,4 @@
-import { changeZoom, checkEssentialResources, getDatabaseObject, getMapsList, getRenderFlagsList, loadBufferAsWad, loadMapAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, saveCurrentWadResources, saveEssentialResources, saveWadResources, setActiveCanvas, setCurrentWadName, setRenderFlag, setWad, updateMapRender } from './api.mjs'
+import { addCallback, changeZoom, checkEssentialResources, getDatabaseObject, getMapsList, getRenderFlagsList, loadBufferAsWad, loadMapAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, saveCurrentWadResources, saveEssentialResources, saveWadResources, setActiveCanvas, setCurrentWadName, setRenderFlag, setWad, updateMapRender } from './api.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
 const canvasDiv = document.createElement('div')
@@ -13,6 +13,13 @@ const input = document.createElement('input')
 input.type = 'file'
 init()
 
+
+const selectId = 'map-select'
+const buttonId = 'load-button'
+const cacheButtonId = 'cache-button'
+const flagsDivId = 'flags'
+const zipButtonId = 'zip-button'
+const mapImageId = 'mapimage-button'
 input.onchange = function () {
   if (input === null || input.files === null) return false
   const file = input.files[0]
@@ -22,12 +29,6 @@ input.onchange = function () {
   reader.onload = async function (event) {
     canvas.onmousedown = function () {}
     setCurrentWadName(file.name.toLowerCase())
-    const selectId = 'map-select'
-    const buttonId = 'load-button'
-    const cacheButtonId = 'cache-button'
-    const flagsDivId = 'flags'
-    const zipButtonId = 'zip-button'
-    const mapImageId = 'mapimage-button'
     const deleteArray = [selectId, buttonId, cacheButtonId, flagsDivId, zipButtonId, mapImageId]
     for (const elementid of deleteArray) {
       deleteElementById(elementid)
@@ -65,93 +66,97 @@ input.onchange = function () {
     button.innerHTML = 'Load map'
     button.id = 'load-button'
     button.onclick = async () => {
-      deleteElementById(flagsDivId)
-      deleteElementById(mapImageId)
       const value = select.value
-      const result = await loadMapAndSetAsCurrent(value)
-      if (result === null) return
-      canvasDiv.style.display = ''
-      const flagsDiv = document.createElement('div')
-      flagsDiv.id = flagsDivId
-      const allOptions = getRenderFlagsList()
-      if (allOptions === null) return
-      for (const renderOption of allOptions) {
-        const object = renderOption[0]
-        const set = renderOption[1]
-        const input = document.createElement('input')
-        input.type = 'checkbox'
-        input.name = object.id
-        input.id = object.id
-        input.value = ''
-        input.checked = set
-        const label = document.createElement('label')
-        label.htmlFor = input.id
-        label.appendChild(document.createTextNode(object.full))
-        input.onchange = async () => {
-          setRenderFlag(input.id, input.checked)
-          updateMapRender()
-        }
-        flagsDiv.appendChild(input)
-        flagsDiv.appendChild(label)
-      }
-      div.appendChild(flagsDiv)
-      canvas.height = screenHeight
-      canvas.width = screenWidth
-      setActiveCanvas(canvas)
-      updateMapRender()
-      moveCamera(0, 0)
-      canvas.onmousedown = function () {
-        canvas.onmousemove = (event) => {
-          moveCameraByDelta(-event.movementX, -event.movementY)
-        }
-      }
-      canvas.onmouseup = function () {
-        canvas.onmousemove = null
-      }
-      document.onkeydown = function (event) {
-        /*
-        if (event.code === 'KeyT') {
-          const wasmtest = async () => {
-            try {
-              const response = await fetch('./test_1.wasm')
-              const wasm = await window.WebAssembly.instantiateStreaming(response, {
-                nice: {
-                  dick: moveCameraByDelta
-                }
-              })
-              for (let i = 0; i <= 10; ++i) {
-                wasm.instance.exports.main()
-              }
-            } catch (error) {
-              return false
-            }
-          }
-          wasmtest()
-        }
-        */
-        if (event.code === 'KeyR') {
-          changeZoom(100)
-        } else if (event.code === 'KeyX') {
-          changeZoom(-100)
-        }
-      }
-      canvas.onmouseup = function () {
-        canvas.onmousemove = null
-      }
-      const button = document.createElement('button')
-      button.innerHTML = 'Save map as an image'
-      button.id = mapImageId
-      button.onclick = () => {
-        saveCurrentMapOverview()
-      }
-      div.appendChild(button)
-      return true
+      await loadMapAndSetAsCurrent(value)
     }
     div.appendChild(button)
     return true
   }
   return true
 }
+
+async function onMapLoad () {
+  deleteElementById(flagsDivId)
+  deleteElementById(mapImageId)
+  canvasDiv.style.display = ''
+  const flagsDiv = document.createElement('div')
+  flagsDiv.id = flagsDivId
+  const allOptions = getRenderFlagsList()
+  if (allOptions === null) return
+  for (const renderOption of allOptions) {
+    const object = renderOption[0]
+    const set = renderOption[1]
+    const input = document.createElement('input')
+    input.type = 'checkbox'
+    input.name = object.id
+    input.id = object.id
+    input.value = ''
+    input.checked = set
+    const label = document.createElement('label')
+    label.htmlFor = input.id
+    label.appendChild(document.createTextNode(object.full))
+    input.onchange = async () => {
+      setRenderFlag(input.id, input.checked)
+      updateMapRender()
+    }
+    flagsDiv.appendChild(input)
+    flagsDiv.appendChild(label)
+  }
+  div.appendChild(flagsDiv)
+  canvas.height = screenHeight
+  canvas.width = screenWidth
+  setActiveCanvas(canvas)
+  updateMapRender()
+  moveCamera(0, 0)
+  canvas.onmousedown = function () {
+    canvas.onmousemove = (event) => {
+      moveCameraByDelta(-event.movementX, -event.movementY)
+    }
+  }
+  canvas.onmouseup = function () {
+    canvas.onmousemove = null
+  }
+  document.onkeydown = function (event) {
+    /*
+    if (event.code === 'KeyT') {
+      const wasmtest = async () => {
+        try {
+          const response = await fetch('./test_1.wasm')
+          const wasm = await window.WebAssembly.instantiateStreaming(response, {
+            nice: {
+              dick: moveCameraByDelta
+            }
+          })
+          for (let i = 0; i <= 10; ++i) {
+            wasm.instance.exports.main()
+          }
+        } catch (error) {
+          return false
+        }
+      }
+      wasmtest()
+    }
+    */
+    if (event.code === 'KeyR') {
+      changeZoom(100)
+    } else if (event.code === 'KeyX') {
+      changeZoom(-100)
+    }
+  }
+  canvas.onmouseup = function () {
+    canvas.onmousemove = null
+  }
+  const button = document.createElement('button')
+  button.innerHTML = 'Save map as an image'
+  button.id = mapImageId
+  button.onclick = () => {
+    saveCurrentMapOverview()
+  }
+  div.appendChild(button)
+  return true
+}
+
+addCallback('onmapload', onMapLoad)
 
 function deleteElementById (/** @type {string} */ elementid) {
   const deleteElement = document.getElementById(elementid)
