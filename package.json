@@ -2,7 +2,7 @@
     "name": "doom2d-forever-map-viewer",
     "license": "UNLICENSE",
     "repository": "REPO",
-    "version": "0.1.0-prototype.1",
+    "version": "1.0.0",
     "devDependencies": {
         "standard": "^17.0.0",
         "typescript": "^4.8.0-dev.20220526"
