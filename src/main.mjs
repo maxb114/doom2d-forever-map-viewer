@@ -1,4 +1,4 @@
-import { changeZoom, getMapsList, getRenderFlagsList, loadBufferAsWad, loadMapAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, saveCurrentWadResources, saveWadResources, setActiveCanvas, setCurrentWadName, setRenderFlag, setWad, updateMapRender } from './api.mjs'
+import { changeZoom, checkEssentialResources, getDatabaseObject, getMapsList, getRenderFlagsList, loadBufferAsWad, loadMapAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, saveCurrentWadResources, saveEssentialResources, saveWadResources, setActiveCanvas, setCurrentWadName, setRenderFlag, setWad, updateMapRender } from './api.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
 const canvasDiv = document.createElement('div')
@@ -162,27 +162,12 @@ function deleteElementById (/** @type {string} */ elementid) {
   return true
 }
 
-const resources = ['game.wad', 'standart.wad', 'shrshade.wad', 'editor.wad']
-
-async function checkEssentialResources () {
-  try {
-    const all = await db.getAll()
-    for (const resource of resources) {
-      if (!all.some((/** @type {string} */ element) => element.includes(resource))) return false
-    }
-    return true
-  } catch (e) {
-    return false
-  }
-}
-
 async function init () {
-  if (window.indexedDB === null) {
-    /* || db === null || canvas === null || context === null || input === null || div === null */
+  if (window.indexedDB === null || getDatabaseObject() === null || canvas === null || div === null) {
     window.alert('Your browser lacks the required features.')
     return false
   }
-  const check = await checkEssentialResources() || true
+  const check = await checkEssentialResources()
   if (check) {
     document.body.appendChild(canvasDiv)
     div.appendChild(input)
@@ -194,35 +179,7 @@ async function init () {
     button.innerHTML = 'Download game resources from doom2d.org'
     button.id = 'download-button'
     button.onclick = async () => {
-      const baseLink = 'https://doom2d.org/doom2d_forever/mapview/'
-      // const baseLink = './assets/'
-      const /** @type {Promise<any>[]} */ promises = []
-      for (const resource of resources) {
-        const link = baseLink + resource
-        try {
-          const response = await fetch(link)
-          const buffer = await response.arrayBuffer()
-          const promise = new Promise((resolve, reject) => {
-            loadBufferAsWad(buffer).then((wad) => {
-              saveWadResources(wad, resource).then(() => {
-                resolve(true)
-                return true
-              }).catch((error) => {
-                reject(error)
-                return false
-              })
-            }).catch((/** @type {Error} */ error) => {
-              reject(error)
-              return false
-            })
-          })
-          promises.push(promise)
-        } catch (error) {
-          window.alert(error)
-          return false
-        }
-      }
-      await Promise.all(promises)
+      await saveEssentialResources()
       document.body.removeChild(text)
       document.body.removeChild(br)
       document.body.removeChild(button)

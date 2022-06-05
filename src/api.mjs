@@ -236,4 +236,40 @@ function saveCurrentMapOverview (/** @type {string | undefined} */ savePath) {
   return true
 }
 
-export { moveCameraByDelta, moveCamera, currentMap, currentMapAsJSON, setMap, setMapFromJSON, setZoom, changeZoom, getRenderFlags, setRenderFlag, getMapsList, loadMap, loadMapAndSetAsCurrent, getCurrentWadName, getCurrentMapName, saveCurrentWad, getRenderFlagsAsObject, saveCurrentMapOverview, getRenderFlagsList, setWad, loadBufferAsWad, setCurrentWadName, updateMapRender, saveCurrentWadResources, saveWadResources, setActiveCanvas }
+async function checkEssentialResources () {
+  const resources = ['game.wad', 'standart.wad', 'shrshade.wad', 'editor.wad']
+  const db = getDatabaseObject()
+  try {
+    const all = await db.getAll()
+    for (const resource of resources) {
+      if (!all.some((/** @type {string} */ element) => element.includes(resource))) return false
+    }
+    return true
+  } catch (error) {
+    return false
+  }
+}
+
+async function saveEssentialResources () {
+  const /** @type {Promise<any>[]} */ promises = []
+  const baseLink = 'https://doom2d.org/doom2d_forever/mapview/'
+  const resources = ['game.wad', 'standart.wad', 'shrshade.wad', 'editor.wad']
+  for (const resource of resources) {
+    const promise = new Promise((resolve, reject) => {
+      const link = baseLink + resource
+      fetch(link).then((response) => {
+        response.arrayBuffer().then((buffer) => {
+          loadBufferAsWad(buffer).then((wad) => {
+            saveWadResources(wad, resource).then(() => {
+              resolve(true)
+            }).catch((error) => reject(error))
+          }).catch((error) => reject(error))
+        }).catch((error) => reject(error))
+      }).catch((error) => reject(error))
+    })
+    promises.push(promise)
+  }
+  return Promise.allSettled(promises)
+}
+
+export { moveCameraByDelta, moveCamera, currentMap, currentMapAsJSON, setMap, setMapFromJSON, setZoom, changeZoom, getRenderFlags, setRenderFlag, getMapsList, loadMap, loadMapAndSetAsCurrent, getCurrentWadName, getCurrentMapName, saveCurrentWad, getRenderFlagsAsObject, saveCurrentMapOverview, getRenderFlagsList, setWad, loadBufferAsWad, setCurrentWadName, updateMapRender, saveCurrentWadResources, saveWadResources, setActiveCanvas, getDatabaseObject, checkEssentialResources, saveEssentialResources }
