@@ -1,7 +1,7 @@
 import Camera from './camera.mjs'
 import { clamp } from './utility.mjs'
 
-const minZoom = 100
+const minZoom = 1
 const maxZoom = 10000
 
 class CameraWrapper {
