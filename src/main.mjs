@@ -1,19 +1,7 @@
-import { DfwadFrom } from './df-wad.mjs'
-import { DatabaseFrom } from './db.mjs'
-import { DFRender, DFRenderOptions } from './render.mjs'
-import { preloadWad } from './save-to-db.mjs'
-import { CameraWrapper } from './camera-wrapper.mjs'
-import { changeZoom, getCurrentWadName, getMapsList, getRenderFlagsList, loadBufferAsWad, loadMapAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, saveCurrentWadResources, saveWadResources, setCurrentWadName, setRenderFlag, setWad, updateMapRender } from './api.mjs'
-import { mapFromJson } from './map-from-json-parse.mjs'
+import { changeZoom, getMapsList, getRenderFlagsList, loadBufferAsWad, loadMapAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, saveCurrentWadResources, saveWadResources, setActiveCanvas, setCurrentWadName, setRenderFlag, setWad, updateMapRender } from './api.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
 const canvasDiv = document.createElement('div')
-const context = canvas.getContext('2d')
-let /** @type {CameraWrapper | null} */ camera = null
-let /** @type {DFRenderOptions | null} */ options = null
-let /** @type {DFWad | null} */ wad = null
-let /** @type {string | null} */ mapName = null
-let /** @type {DFRender | null} */ render = null
 let screenHeight = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight)
 let screenWidth = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth)
 canvasDiv.style.display = 'none'
@@ -23,14 +11,7 @@ canvasDiv.appendChild(canvas)
 document.body.style.margin = '0'
 const input = document.createElement('input')
 input.type = 'file'
-let /** @type {Database | null} */ db = null
-let /** @type {DFMap | null } */ currentMap = null
-DatabaseFrom().then((database) => {
-  db = database
-  init()
-}).catch((error) => {
-  window.alert(error)
-})
+init()
 
 input.onchange = function () {
   if (input === null || input.files === null) return false
@@ -88,9 +69,8 @@ input.onchange = function () {
       deleteElementById(mapImageId)
       const value = select.value
       const result = await loadMapAndSetAsCurrent(value)
-      if (camera === null) return
-      canvasDiv.style.display = ''
       if (result === null) return
+      canvasDiv.style.display = ''
       const flagsDiv = document.createElement('div')
       flagsDiv.id = flagsDivId
       const allOptions = getRenderFlagsList()
@@ -117,6 +97,8 @@ input.onchange = function () {
       div.appendChild(flagsDiv)
       canvas.height = screenHeight
       canvas.width = screenWidth
+      setActiveCanvas(canvas)
+      updateMapRender()
       moveCamera(0, 0)
       canvas.onmousedown = function () {
         canvas.onmousemove = (event) => {
@@ -195,14 +177,12 @@ async function checkEssentialResources () {
 }
 
 async function init () {
-  if (window.indexedDB === null || db === null || canvas === null || context === null || input === null || div === null) {
+  if (window.indexedDB === null) {
+    /* || db === null || canvas === null || context === null || input === null || div === null */
     window.alert('Your browser lacks the required features.')
     return false
   }
-  const check = await checkEssentialResources()
-  camera = new CameraWrapper(context, screenWidth, screenHeight, canvas, null)
-  options = new DFRenderOptions()
-  render = new DFRender()
+  const check = await checkEssentialResources() || true
   if (check) {
     document.body.appendChild(canvasDiv)
     div.appendChild(input)
@@ -257,67 +237,3 @@ async function init () {
   }
   return true
 }
-
-// exported
-
-function getCameraWrapper () {
-  return camera
-}
-
-function setCurrentMap (/** @type {DFMap} */ map) {
-  currentMap = map
-  return currentMap
-}
-
-function setCurrentMapFromJSON (/** @type {any} */ mapObject) {
-  const map = mapFromJson(mapObject)
-  setCurrentMap(map)
-}
-
-function getCurrentMap () {
-  const map = currentMap
-  return map
-}
-
-function getCurrentMapAsJSON () {
-  const map = currentMap
-  const toJSON = JSON.stringify(map)
-  return toJSON
-}
-
-function getRenderingOptions () {
-  const renderingOptions = options
-  return renderingOptions
-}
-
-function getCurrentWad () {
-  const currentWad = wad
-  return currentWad
-}
-
-function setCurrentWad (/** @type {DFWad} */ newWad) {
-  wad = newWad
-  return true
-}
-
-function setCurrentWadFileName (/** @type {string} */ newWadName) {
-  mapName = newWadName
-  return true
-}
-
-function getCurrentWadFileName () {
-  const currentWadName = mapName
-  return currentWadName
-}
-
-function getCurrentRenderInstance () {
-  const currentRender = render
-  return currentRender
-}
-
-function getCurrentDatabaseInstance () {
-  const currentDb = db
-  return currentDb
-}
-
-export { getCameraWrapper, getCurrentMapAsJSON, getCurrentMap, setCurrentMap, setCurrentMapFromJSON, getRenderingOptions, getCurrentWad, getCurrentWadFileName, getCurrentRenderInstance, setCurrentWad, setCurrentWadFileName, getCurrentDatabaseInstance }
