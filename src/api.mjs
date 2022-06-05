@@ -1,5 +1,9 @@
-import { getCameraWrapper, getCurrentMapAsJSON, setCurrentMapFromJSON, getRenderingOptions, setCurrentMap, getCurrentWad, getCurrentWadFileName, getCurrentMap } from './main.mjs'
+import { DFWad, DfwadFrom } from './df-wad.mjs'
+import { getCameraWrapper, getCurrentMapAsJSON, setCurrentMapFromJSON, getRenderingOptions, setCurrentMap, getCurrentWad, getCurrentWadFileName, getCurrentMap, getCurrentRenderInstance, setCurrentWad, setCurrentWadFileName, getCurrentDatabaseInstance } from './core.mjs'
 import { DfMapFromBuffer } from './map-from-buffer.mjs'
+import { mapForRender } from './prepare-map-for-render.mjs'
+import { preloadWad } from './save-to-db.mjs'
+import { download, downloadDataURL, getFileNameWithoutExtension } from './utility.mjs'
 
 function moveCameraByDelta (/** @type {number} */ deltaX, /** @type {number} */ deltaY) {
   const cameraWrapper = getCameraWrapper()
@@ -43,6 +47,18 @@ function currentMapAsJSON () {
   return mapObject
 }
 
+function getRenderFlagsAsObject () {
+  const options = getRenderingOptions()
+  return options
+}
+
+function getRenderFlagsList () {
+  const options = getRenderingOptions()
+  if (options === null) return null
+  const all = options.all
+  return all
+}
+
 function getRenderFlags () {
   const options = getRenderingOptions()
   if (options === null) return {}
@@ -61,7 +77,7 @@ function getMapsList () {
   const wad = getCurrentWad()
   if (wad === null) return null
   let maps = wad.maps
-  maps = maps.sort((a, b) => a.path.localeCompare(b.path)) // sort lexicographically
+  maps = maps.sort((/** @type {DFMap} */ a, /** @type {DFMap} */ b) => a.path.localeCompare(b.path)) // sort lexicographically
   return maps
 }
 
@@ -75,12 +91,34 @@ function loadMap (/** @type {string} */ index) {
   return [buffer, path]
 }
 
-function loadMapAndSetAsCurrent (/** @type {string} */ index, /** @type {string} */ fileName) {
+async function loadMapAndSetAsCurrent (/** @type {string} */ index) {
+  const fileName = getCurrentWadName()
+  if (fileName === null) return
   const [buffer, path] = loadMap(index)
   if (buffer === undefined || typeof buffer === 'string' || buffer === null || path === null || path === undefined || typeof path === 'object') return false
   const loaded = DfMapFromBuffer(buffer, fileName)
   setMap(loaded)
-  return true
+  const options = getRenderFlagsAsObject()
+  if (options === null) return false
+  const render = getCurrentRenderInstance()
+  if (render === null) return false
+  const allElements = loaded.allElements
+  const db = getDatabaseObject()
+  if (db === null) return false
+  const sky = loaded.sky
+  const prefix = getCurrentWadName()
+  if (prefix === null) return false
+  await render.preload(allElements, db, sky, prefix)
+  return updateMapRender()
+}
+
+function setCurrentWadName (/** @type {string} */ newWadName) {
+  setCurrentWadFileName(newWadName)
+}
+
+function getDatabaseObject () {
+  const db = getCurrentDatabaseInstance()
+  return db
 }
 
 function getCurrentWadName () {
@@ -94,4 +132,144 @@ function getCurrentMapName () {
   return name
 }
 
-export { moveCameraByDelta, moveCamera, currentMap, currentMapAsJSON, setMap, setMapFromJSON, setZoom, changeZoom, getRenderFlags, setRenderFlag, getMapsList, loadMap, loadMapAndSetAsCurrent, getCurrentWadName, getCurrentMapName }
+function loadBufferAsWad (/** @type {ArrayBuffer} */ buffer) {
+  const promise = new Promise((resolve, reject) => {
+    const view = new Uint8Array(buffer)
+    const wadName = getCurrentWadName() ?? ''
+    DfwadFrom(view, wadName).then((wad) => {
+      resolve(wad)
+      return true
+    }).catch((error) => {
+      reject(error)
+      return false
+    })
+  })
+  return promise
+}
+
+function setWad (/** @type {DFWad} */ wad) {
+  setCurrentWad(wad)
+  return true
+}
+
+async function saveWadResources (/** @type {DFWad} */ wad, /** @type {string} */ name) {
+  const db = getCurrentDatabaseInstance()
+  if (db === null) return false
+  const promises = preloadWad(wad, name, db)
+  await Promise.allSettled(promises)
+  return true
+}
+
+async function saveCurrentWadResources () {
+  const wadName = getCurrentWadName()
+  if (wadName === null) return false
+  const wad = getCurrentWad()
+  if (wad === null) return false
+  const db = getCurrentDatabaseInstance()
+  if (db === null) return false
+  const promises = preloadWad(wad, wadName, db)
+  await Promise.allSettled(promises)
+  return true
+}
+
+function saveCurrentWad () {
+  const /** @type {DFWad} */ currentWad = getCurrentWad()
+  if (currentWad === undefined || currentWad === null) return false
+  const promise = new Promise((resolve, reject) => {
+    currentWad.saveAsZip().then((zip) => {
+      zip.generateAsync({ type: 'blob' }).then((/** @type {Blob} */ blob) => {
+        const fileName = getCurrentWadName()
+        if (fileName === null) return false
+        download(blob, getFileNameWithoutExtension(fileName) + '.dfz')
+        resolve(true)
+        return true
+      }).catch((/** @type {Error} */ error) => {
+        reject(error)
+        return false
+      })
+    }).catch((/** @type {Error} */ error) => {
+      reject(error)
+      return false
+    })
+  })
+  return promise
+}
+
+function updateMapRender () {
+  const mapCanvas = getCurrentMapOverviewCanvas()
+  const cameraWrapper = getCameraWrapper()
+  if (mapCanvas === null || cameraWrapper === null) return null
+  cameraWrapper.setCanvasToDraw(mapCanvas)
+  return mapCanvas
+}
+
+function setActiveCanvas (/** @type {HTMLCanvasElement} */ canvas) {
+  const cameraWrapper = getCameraWrapper()
+  if (cameraWrapper === null) return null
+  cameraWrapper.setActiveCanvas(canvas)
+}
+
+function getCurrentMapOverviewCanvas () {
+  const /** @type {DFMap} */ currentMap = getCurrentMap()
+  const /** @type {DFRenderOptions | null} */ currentOptions = getRenderFlagsAsObject()
+  if (currentOptions === null) return null
+  const mapView = mapForRender(currentMap, currentOptions)
+  const width = currentMap.size.x
+  const height = currentMap.size.y
+  const render = getCurrentRenderInstance()
+  if (render === null) return null
+  const savedMap = render.render1(mapView, width, height)
+  return savedMap
+}
+
+function saveCurrentMapOverview (/** @type {string | undefined} */ savePath) {
+  const overview = getCurrentMapOverviewCanvas()
+  if (overview === null) return false
+  const dataURL = overview.toDataURL()
+  if (savePath === undefined) {
+    const mapName = getCurrentMapName()
+    const wadName = getCurrentWadName()
+    if (mapName === null || wadName === null) return false
+    savePath = wadName + '-' + mapName + '.png'
+  }
+  downloadDataURL(dataURL, savePath)
+  return true
+}
+
+async function checkEssentialResources () {
+  const resources = ['game.wad', 'standart.wad', 'shrshade.wad', 'editor.wad']
+  const db = getDatabaseObject()
+  try {
+    const all = await db.getAll()
+    for (const resource of resources) {
+      if (!all.some((/** @type {string} */ element) => element.includes(resource))) return false
+    }
+    return true
+  } catch (error) {
+    return false
+  }
+}
+
+async function saveEssentialResources () {
+  const /** @type {Promise<any>[]} */ promises = []
+  const baseLink = 'https://doom2d.org/doom2d_forever/mapview/'
+  const resources = ['game.wad', 'standart.wad', 'shrshade.wad', 'editor.wad']
+  for (const resource of resources) {
+    const promise = new Promise((resolve, reject) => {
+      const link = baseLink + resource
+      fetch(link).then((response) => {
+        response.arrayBuffer().then((buffer) => {
+          loadBufferAsWad(buffer).then((wad) => {
+            saveWadResources(wad, resource).then(() => {
+              resolve(true)
+            }).catch((error) => reject(error))
+          }).catch((error) => reject(error))
+        }).catch((error) => reject(error))
+      }).catch((error) => reject(error))
+    })
+    promises.push(promise)
+  }
+  return Promise.allSettled(promises)
+}
+
+export { moveCameraByDelta, moveCamera, currentMap, currentMapAsJSON, setMap, setMapFromJSON, setZoom, changeZoom, getRenderFlags, setRenderFlag, getMapsList, loadMap, loadMapAndSetAsCurrent, getCurrentWadName, getCurrentMapName, saveCurrentWad, getRenderFlagsAsObject, saveCurrentMapOverview, getRenderFlagsList, setWad, loadBufferAsWad, setCurrentWadName, updateMapRender, saveCurrentWadResources, saveWadResources, setActiveCanvas, getDatabaseObject, checkEssentialResources, saveEssentialResources }

@@ -1,20 +1,7 @@
-import { DfwadFrom } from './df-wad.mjs'
-import { DatabaseFrom } from './db.mjs'
-import { DFRender, DFRenderOptions } from './render.mjs'
-import { mapForRender } from './prepare-map-for-render.mjs'
-import { preloadWad } from './save-to-db.mjs'
-import { CameraWrapper } from './camera-wrapper.mjs'
-import { changeZoom, getCurrentMapName, getCurrentWadName, getMapsList, loadMapAndSetAsCurrent, moveCamera, moveCameraByDelta, setRenderFlag } from './api.mjs'
-import { mapFromJson } from './map-from-json-parse.mjs'
-import { getFileNameWithoutExtension } from './utility.mjs'
+import { changeZoom, checkEssentialResources, getDatabaseObject, getMapsList, getRenderFlagsList, loadBufferAsWad, loadMapAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, saveCurrentWadResources, saveEssentialResources, saveWadResources, setActiveCanvas, setCurrentWadName, setRenderFlag, setWad, updateMapRender } from './api.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
 const canvasDiv = document.createElement('div')
-const context = canvas.getContext('2d')
-let /** @type {CameraWrapper | null} */ camera = null
-let /** @type {DFRenderOptions | null} */ options = null
-let /** @type {DFWad | null} */ wad = null
-let /** @type {string | null} */ mapName = null
 let screenHeight = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight)
 let screenWidth = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth)
 canvasDiv.style.display = 'none'
@@ -24,14 +11,7 @@ canvasDiv.appendChild(canvas)
 document.body.style.margin = '0'
 const input = document.createElement('input')
 input.type = 'file'
-let /** @type {Database | null} */ db = null
-let /** @type {DFMap | null } */ currentMap = null
-DatabaseFrom().then((database) => {
-  db = database
-  init()
-}).catch((error) => {
-  window.alert(error)
-})
+init()
 
 input.onchange = function () {
   if (input === null || input.files === null) return false
@@ -41,7 +21,7 @@ input.onchange = function () {
   reader.readAsArrayBuffer(file)
   reader.onload = async function (event) {
     canvas.onmousedown = function () {}
-    mapName = file.name.toLowerCase() // lower case for now
+    setCurrentWadName(file.name.toLowerCase())
     const selectId = 'map-select'
     const buttonId = 'load-button'
     const cacheButtonId = 'cache-button'
@@ -55,30 +35,19 @@ input.onchange = function () {
     if (event.target === null) return false
     const content = event.target.result
     if (content === null || typeof content === 'string') return false
-    const wadName = getCurrentWadName()
-    if (wadName === null) return
-    const view = new Uint8Array(content)
-    wad = await DfwadFrom(view, wadName)
+    setWad(await loadBufferAsWad(content))
     const cacheButton = document.createElement('button')
     cacheButton.innerHTML = 'Save resources'
     cacheButton.id = 'cache-button'
     cacheButton.onclick = async function () {
-      const wadName = getCurrentWadName()
-      if (wadName === null) return
-      const promises = preloadWad(wad, wadName, db)
-      await Promise.allSettled(promises)
-      return true
+      await saveCurrentWadResources()
     }
     div.appendChild(cacheButton)
     const zipButton = document.createElement('button')
     zipButton.innerHTML = 'Convert to .dfz and .txt'
     zipButton.id = zipButtonId
     zipButton.onclick = async function () {
-      const zip = await wad.saveAsZip()
-      const blob = await zip.generateAsync({ type: 'blob' })
-      const fileName = getCurrentWadName()
-      if (fileName === null) return
-      download(blob, 'convert-' + getFileNameWithoutExtension(fileName) + '.dfz')
+      await saveCurrentWad()
     }
     div.appendChild(zipButton)
     const maps = getMapsList()
@@ -99,23 +68,13 @@ input.onchange = function () {
       deleteElementById(flagsDivId)
       deleteElementById(mapImageId)
       const value = select.value
-      const mapName = getCurrentWadName()
-      if (mapName === null) return
-      const result = loadMapAndSetAsCurrent(value, mapName)
-      if (camera === null) return
+      const result = await loadMapAndSetAsCurrent(value)
+      if (result === null) return
       canvasDiv.style.display = ''
-      if (result !== true) return
-      const map = getCurrentMap()
-      if (map === null) return
-      const render = new DFRender()
-      let /** @type {CanvasImageSource | null} */ savedMap = null
       const flagsDiv = document.createElement('div')
       flagsDiv.id = flagsDivId
-      const options = getRenderingOptions()
-      if (options === null) return
-      const allOptions = options.all
-      const width = map.size.x
-      const height = map.size.y
+      const allOptions = getRenderFlagsList()
+      if (allOptions === null) return
       for (const renderOption of allOptions) {
         const object = renderOption[0]
         const set = renderOption[1]
@@ -130,29 +89,19 @@ input.onchange = function () {
         label.appendChild(document.createTextNode(object.full))
         input.onchange = async () => {
           setRenderFlag(input.id, input.checked)
-          if (camera === null) return
-          const options = getRenderingOptions()
-          if (options === null) return
-          const mapView = mapForRender(map, options)
-          savedMap = render.render1(mapView, width, height)
-          camera.setCanvasToDraw(savedMap)
+          updateMapRender()
         }
         flagsDiv.appendChild(input)
         flagsDiv.appendChild(label)
       }
       div.appendChild(flagsDiv)
-      await prepareForMap(map, options, render)
       canvas.height = screenHeight
       canvas.width = screenWidth
-      camera.boundX = width
-      camera.boundY = height
-      const mapView = mapForRender(map, options)
-      savedMap = await render.render1(mapView, width, height)
+      setActiveCanvas(canvas)
+      updateMapRender()
       moveCamera(0, 0)
-      camera.setCanvasToDraw(savedMap)
       canvas.onmousedown = function () {
         canvas.onmousemove = (event) => {
-          if (savedMap === null || camera === null) return
           moveCameraByDelta(-event.movementX, -event.movementY)
         }
       }
@@ -160,7 +109,6 @@ input.onchange = function () {
         canvas.onmousemove = null
       }
       document.onkeydown = function (event) {
-        if (savedMap === null || camera === null) return
         /*
         if (event.code === 'KeyT') {
           const wasmtest = async () => {
@@ -194,12 +142,7 @@ input.onchange = function () {
       button.innerHTML = 'Save map as an image'
       button.id = mapImageId
       button.onclick = () => {
-        const mapView = mapForRender(map, options)
-        const savedMap = render.render1(mapView, width, height)
-        const mapName = getCurrentMapName()
-        const wadName = getCurrentWadName()
-        if (mapName === null || wadName === null) return
-        downloadDataURL(savedMap.toDataURL(), wadName + '-' + mapName + '.png')
+        saveCurrentMapOverview()
       }
       div.appendChild(button)
       return true
@@ -219,49 +162,12 @@ function deleteElementById (/** @type {string} */ elementid) {
   return true
 }
 
-function downloadDataURL (/** @type {string} */ dataURL, /** @type {string} */ name) {
-  const a = document.createElement('a')
-  a.href = dataURL
-  a.download = name
-  a.click()
-}
-
-function download (/** @type {Blob} */ blob, /** @type {string} */ name) {
-  const a = document.createElement('a')
-  a.href = URL.createObjectURL(blob)
-  a.download = name
-  a.click()
-}
-
-async function prepareForMap (/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ options, /** @type {DFRender} */ render) {
-  const allElements = map.allElements
-  const sky = map.sky
-  const prefix = map.fileName
-  await render.preload(allElements, db, sky, prefix)
-}
-
-const resources = ['game.wad', 'standart.wad', 'shrshade.wad', 'editor.wad']
-
-async function checkEssentialResources () {
-  try {
-    const all = await db.getAll()
-    for (const resource of resources) {
-      if (!all.some((/** @type {string} */ element) => element.includes(resource))) return false
-    }
-    return true
-  } catch (e) {
-    return false
-  }
-}
-
 async function init () {
-  if (window.indexedDB === null || db === null || canvas === null || context === null || input === null || div === null) {
+  if (window.indexedDB === null || getDatabaseObject() === null || canvas === null || div === null) {
     window.alert('Your browser lacks the required features.')
     return false
   }
   const check = await checkEssentialResources()
-  camera = new CameraWrapper(context, screenWidth, screenHeight, canvas, null)
-  options = new DFRenderOptions()
   if (check) {
     document.body.appendChild(canvasDiv)
     div.appendChild(input)
@@ -273,21 +179,7 @@ async function init () {
     button.innerHTML = 'Download game resources from doom2d.org'
     button.id = 'download-button'
     button.onclick = async () => {
-      const baseLink = 'https://doom2d.org/doom2d_forever/mapview/'
-      // const baseLink = './assets/'
-      for (const resource of resources) {
-        const link = baseLink + resource
-        try {
-          const response = await fetch(link)
-          const buffer = await response.arrayBuffer()
-          const view = new Uint8Array(buffer)
-          const wad = await DfwadFrom(view)
-          await Promise.all(preloadWad(wad, resource, db))
-        } catch (error) {
-          window.alert(error)
-          return false
-        }
-      }
+      await saveEssentialResources()
       document.body.removeChild(text)
       document.body.removeChild(br)
       document.body.removeChild(button)
@@ -302,47 +194,3 @@ async function init () {
   }
   return true
 }
-
-// exported
-
-function getCameraWrapper () {
-  return camera
-}
-
-function setCurrentMap (/** @type {DFMap} */ map) {
-  currentMap = map
-  return currentMap
-}
-
-function setCurrentMapFromJSON (/** @type {any} */ mapObject) {
-  const map = mapFromJson(mapObject)
-  setCurrentMap(map)
-}
-
-function getCurrentMap () {
-  const map = currentMap
-  return map
-}
-
-function getCurrentMapAsJSON () {
-  const map = currentMap
-  const toJSON = JSON.stringify(map)
-  return toJSON
-}
-
-function getRenderingOptions () {
-  const renderingOptions = options
-  return renderingOptions
-}
-
-function getCurrentWad () {
-  const currentWad = wad
-  return currentWad
-}
-
-function getCurrentWadFileName () {
-  const currentWadName = mapName
-  return currentWadName
-}
-
-export { getCameraWrapper, getCurrentMapAsJSON, getCurrentMap, setCurrentMap, setCurrentMapFromJSON, getRenderingOptions, getCurrentWad, getCurrentWadFileName }

@@ -14,10 +14,16 @@ class CameraWrapper {
     this.boundX = boundX
     this.boundY = boundY
     this.camera.fieldOfView = Math.PI / 4
-    this.camera.zoomTo(this.zoom)
+    this.context = context
     this.canvas = canvas
     this.canvasToDraw = canvasToDraw
     this.fillColor = '#182430'
+    this.initCamera()
+  }
+
+  initCamera () {
+    this.camera.zoomTo(this.zoom)
+    this.update()
   }
 
   changeZoom (/** @type {number} */ number) {
@@ -59,15 +65,32 @@ class CameraWrapper {
     this.update()
   }
 
+  setActiveCanvas (/** @type {HTMLCanvasElement} */ canvas) {
+    this.canvas = canvas
+    const context = canvas.getContext('2d')
+    if (context === null) return
+    this.setContext(context)
+  }
+
   setCanvasToDraw (/** @type {HTMLCanvasElement} */ canvas) {
     this.canvasToDraw = canvas
+    this.boundX = this.canvasToDraw.width
+    this.boundY = this.canvasToDraw.height
+    this.update()
+  }
+
+  setContext (/** @type {CanvasRenderingContext2D} */ context) {
+    this.context = context
+    this.camera = new Camera(context)
     this.update()
   }
 
   update () {
-    if (this.canvasToDraw === null) return
     this.camera.zoomTo(this.zoom)
     this.camera.moveTo(this.cameraX, this.cameraY)
+    this.camera.updateViewport()
+    this.context.imageSmoothingEnabled = false
+    if (this.canvasToDraw === null || this.canvasToDraw === undefined) return
     this.drawImage(this.canvasToDraw, 0, 0)
   }
 }
