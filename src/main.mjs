@@ -39,7 +39,7 @@ input.onchange = function () {
 }
 
 async function onWadLoad () {
-  // canvas.onmousedown = function () {}
+  document.body.style.overflow = 'hidden'
   const deleteArray = [selectId, buttonId, cacheButtonId, zipButtonId, mapImageId]
   for (const elementid of deleteArray) {
     deleteElementById(elementid)
@@ -92,6 +92,23 @@ async function onMapLoad () {
   canvas.onmouseup = function () {
     canvas.onmousemove = null
   }
+
+  canvas.onwheel = function (event) {
+    if (document.body.style.overflow !== 'hidden') return true
+    const sensitivity = 0.65
+    const invert = 1
+    const value = event.deltaY * invert * sensitivity
+    changeZoom(value)
+    return true
+  }
+
+  canvas.oncontextmenu = async function (event) {
+    if (document.body.style.overflow === 'hidden') document.body.style.overflow = ''
+    else document.body.style.overflow = 'hidden'
+    event.preventDefault()
+    return true
+  }
+
   document.onkeydown = function (event) {
     /*
     if (event.code === 'KeyT') {
