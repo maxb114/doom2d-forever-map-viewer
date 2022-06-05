@@ -26,7 +26,7 @@ class Resource {
 }
 
 function isMap (/** @type {Uint8Array} */ buffer) {
-  const parser = new DFParser(buffer)
+  const parser = new DFParser(buffer, true)
   return parser.valid
 }
 
@@ -207,7 +207,13 @@ class DFWad {
               if (images.includes(type)) {
                 db.loadByPath(':' + 'info' + ':' + path).then((/** @type {string | null | undefined} */ anim) => {
                   if (anim === null || anim === undefined) { // just an image
-                    this.saveToZip(zip, getFileNameWithoutExtension(withoutSource), view).then(() => {
+                    this.saveToZip(zip, getFileNameWithoutExtension(withoutSource) + '.' + 'png', view).then(() => {
+                      const converted = convertedResourcePathToGame(':' + getFileNameWithoutExtension(withoutSource) + '.' + 'png')
+                      if (converted === null) {
+                        reject(Error('Error loading image from external WAD!'))
+                        return false
+                      }
+                      dfmap.changeTexturePath(texturePath, converted)
                       resolve(true)
                     }).catch((/** @type {Error} */ error) => reject(error))
                   } else {
