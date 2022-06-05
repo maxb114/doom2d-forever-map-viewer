@@ -4,7 +4,7 @@ import { DFRender, DFRenderOptions } from './render.mjs'
 import { mapForRender } from './prepare-map-for-render.mjs'
 import { preloadWad } from './save-to-db.mjs'
 import { CameraWrapper } from './camera-wrapper.mjs'
-import { changeZoom, getCurrentWadName, getMapsList, getRenderFlagsList, loadBufferAsWad, loadMapAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, setRenderFlag } from './api.mjs'
+import { changeZoom, getCurrentWadName, getMapsList, getRenderFlagsList, loadBufferAsWad, loadMapAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, setCurrentWadName, setRenderFlag } from './api.mjs'
 import { mapFromJson } from './map-from-json-parse.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
@@ -41,7 +41,7 @@ input.onchange = function () {
   reader.readAsArrayBuffer(file)
   reader.onload = async function (event) {
     canvas.onmousedown = function () {}
-    mapName = file.name.toLowerCase() // lower case for now
+    setCurrentWadName(file.name.toLowerCase())
     const selectId = 'map-select'
     const buttonId = 'load-button'
     const cacheButtonId = 'cache-button'
@@ -321,6 +321,11 @@ function setCurrentWad (/** @type {DFWad} */ newWad) {
   return true
 }
 
+function setCurrentWadFileName (/** @type {string} */ newWadName) {
+  mapName = newWadName
+  return true
+}
+
 function getCurrentWadFileName () {
   const currentWadName = mapName
   return currentWadName
@@ -331,4 +336,4 @@ function getCurrentRenderInstance () {
   return currentRender
 }
 
-export { getCameraWrapper, getCurrentMapAsJSON, getCurrentMap, setCurrentMap, setCurrentMapFromJSON, getRenderingOptions, getCurrentWad, getCurrentWadFileName, getCurrentRenderInstance, setCurrentWad }
+export { getCameraWrapper, getCurrentMapAsJSON, getCurrentMap, setCurrentMap, setCurrentMapFromJSON, getRenderingOptions, getCurrentWad, getCurrentWadFileName, getCurrentRenderInstance, setCurrentWad, setCurrentWadFileName }

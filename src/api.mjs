@@ -1,5 +1,5 @@
 import { DFWad, DfwadFrom } from './df-wad.mjs'
-import { getCameraWrapper, getCurrentMapAsJSON, setCurrentMapFromJSON, getRenderingOptions, setCurrentMap, getCurrentWad, getCurrentWadFileName, getCurrentMap, getCurrentRenderInstance, setCurrentWad } from './main.mjs'
+import { getCameraWrapper, getCurrentMapAsJSON, setCurrentMapFromJSON, getRenderingOptions, setCurrentMap, getCurrentWad, getCurrentWadFileName, getCurrentMap, getCurrentRenderInstance, setCurrentWad, setCurrentWadFileName } from './main.mjs'
 import { DfMapFromBuffer } from './map-from-buffer.mjs'
 import { mapForRender } from './prepare-map-for-render.mjs'
 import { download, downloadDataURL, getFileNameWithoutExtension } from './utility.mjs'
@@ -98,6 +98,10 @@ function loadMapAndSetAsCurrent (/** @type {string} */ index, /** @type {string}
   return true
 }
 
+function setCurrentWadName (/** @type {string} */ newWadName) {
+  setCurrentWadFileName(newWadName)
+}
+
 function getCurrentWadName () {
   const currentWadName = getCurrentWadFileName()
   return currentWadName
@@ -181,4 +185,4 @@ function saveCurrentMapOverview (/** @type {string | undefined} */ savePath) {
   return true
 }
 
-export { moveCameraByDelta, moveCamera, currentMap, currentMapAsJSON, setMap, setMapFromJSON, setZoom, changeZoom, getRenderFlags, setRenderFlag, getMapsList, loadMap, loadMapAndSetAsCurrent, getCurrentWadName, getCurrentMapName, saveCurrentWad, getRenderFlagsAsObject, saveCurrentMapOverview, getRenderFlagsList, setWad, loadBufferAsWad }
+export { moveCameraByDelta, moveCamera, currentMap, currentMapAsJSON, setMap, setMapFromJSON, setZoom, changeZoom, getRenderFlags, setRenderFlag, getMapsList, loadMap, loadMapAndSetAsCurrent, getCurrentWadName, getCurrentMapName, saveCurrentWad, getRenderFlagsAsObject, saveCurrentMapOverview, getRenderFlagsList, setWad, loadBufferAsWad, setCurrentWadName }
