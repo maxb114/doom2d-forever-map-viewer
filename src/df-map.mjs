@@ -41,11 +41,9 @@ class DFMap {
 
   changeTexturePath (/** @type {string} */ oldPath, /** @type {string} */ newPath) {
     const texturesToChange = this.textures.filter((element) => {
-      console.log(element.editorPath)
       if (element.editorPath === oldPath) return true
       return false
     })
-    console.log(texturesToChange, oldPath, newPath)
     for (const texture of texturesToChange) {
       texture.path = convertedResourcePathToGame(newPath)
       texture.editorPath = convertResourcePath(texture.path)
