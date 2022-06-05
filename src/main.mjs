@@ -4,7 +4,7 @@ import { DFRender, DFRenderOptions } from './render.mjs'
 import { mapForRender } from './prepare-map-for-render.mjs'
 import { preloadWad } from './save-to-db.mjs'
 import { CameraWrapper } from './camera-wrapper.mjs'
-import { changeZoom, getCurrentMapName, getCurrentWadName, getMapsList, loadMapAndSetAsCurrent, moveCamera, moveCameraByDelta, setRenderFlag } from './api.mjs'
+import { changeZoom, getCurrentMapName, getCurrentWadName, getMapsList, loadMapAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMap, setRenderFlag } from './api.mjs'
 import { mapFromJson } from './map-from-json-parse.mjs'
 import { getFileNameWithoutExtension } from './utility.mjs'
 const div = document.createElement('div')
@@ -74,11 +74,7 @@ input.onchange = function () {
     zipButton.innerHTML = 'Convert to .dfz and .txt'
     zipButton.id = zipButtonId
     zipButton.onclick = async function () {
-      const zip = await wad.saveAsZip()
-      const blob = await zip.generateAsync({ type: 'blob' })
-      const fileName = getCurrentWadName()
-      if (fileName === null) return
-      download(blob, 'convert-' + getFileNameWithoutExtension(fileName) + '.dfz')
+      saveCurrentMap()
     }
     div.appendChild(zipButton)
     const maps = getMapsList()
