@@ -23,15 +23,12 @@ class DFParser {
       if (!onlyPrintable) {
         return
       }
-      if (checkValid) {
-        this.valid = true
-        return
-      }
       const parsed = new DFTextParser(view)
       if (parsed.valid !== true) {
         return
       } else this.valid = true
       this.type = 'text'
+      if (checkValid) return
       if (parsed.mapObject.map === undefined) parsed.mapObject.map = {} // we don't know what may happen
       this.parsed = parsed.mapObject.map
     }
