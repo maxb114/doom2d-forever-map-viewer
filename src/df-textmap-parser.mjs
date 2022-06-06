@@ -36,7 +36,7 @@ class DFTextParser {
     lexer.rule(/;/, (/** @type {any} */ ctx) => {
       ctx.accept('semicolon')
     })
-    lexer.rule(/[|+]/, (/** @type {any} */ ctx) => {
+    lexer.rule(/[|+'"]/, (/** @type {any} */ ctx) => {
       ctx.accept('char')
     })
     lexer.rule(/./, (/** @type {any} */ ctx) => {

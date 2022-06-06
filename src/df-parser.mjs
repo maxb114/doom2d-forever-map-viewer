@@ -23,7 +23,10 @@ class DFParser {
       if (!onlyPrintable) {
         return
       }
-      if (checkValid) return
+      if (checkValid) {
+        this.valid = true
+        return
+      }
       const parsed = new DFTextParser(view)
       if (parsed.valid !== true) {
         return
