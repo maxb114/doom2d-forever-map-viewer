@@ -1,9 +1,12 @@
 import { addCallback, changeZoom, checkEssentialResources, exportCurrentMap, getDatabaseObject, getMapsList, getRenderFlagsList, loadBufferAsWad, loadMapFromThisWadAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, saveCurrentWadResources, saveEssentialResources, setActiveCanvas, setCurrentWadName, setRenderFlag, setWad, updateMapRender } from './api.mjs'
+import './fengari-web.js'
+console.log(fengari.load('return 1+1')())
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
 const canvasDiv = document.createElement('div')
 const screenHeight = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight)
 const screenWidth = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth)
+
 canvasDiv.style.display = 'none'
 div.style.margin = '0'
 canvasDiv.style.margin = '0'
