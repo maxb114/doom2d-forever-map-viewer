@@ -1,4 +1,4 @@
-import { addCallback, changeZoom, checkEssentialResources, getDatabaseObject, getMapsList, getRenderFlagsList, loadBufferAsWad, loadMapFromThisWadAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, saveCurrentWadResources, saveEssentialResources, setActiveCanvas, setCurrentWadName, setRenderFlag, setWad, updateMapRender } from './api.mjs'
+import { addCallback, changeZoom, checkEssentialResources, exportCurrentMap, getDatabaseObject, getMapsList, getRenderFlagsList, loadBufferAsWad, loadMapFromThisWadAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, saveCurrentWadResources, saveEssentialResources, setActiveCanvas, setCurrentWadName, setRenderFlag, setWad, updateMapRender } from './api.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
 const canvasDiv = document.createElement('div')
@@ -22,6 +22,7 @@ const cacheButtonId = 'cache-button'
 const flagsDivId = 'flags'
 const zipButtonId = 'zip-button'
 const mapImageId = 'mapimage-button'
+const exportMapId = 'exportmap-button'
 input.onchange = function () {
   if (input === null || input.files === null) return false
   const file = input.files[0]
@@ -85,6 +86,7 @@ async function onWadLoad () {
 
 async function onMapLoad () {
   deleteElementById(mapImageId)
+  deleteElementById(exportMapId)
   canvasDiv.style.display = ''
   moveCamera(666, 666)
   canvas.onmousedown = function () {
@@ -149,6 +151,14 @@ async function onMapLoad () {
     saveCurrentMapOverview()
   }
   div.appendChild(button)
+  const exportButton = document.createElement('button')
+  exportButton.innerHTML = 'Export current map'
+  exportButton.id = exportMapId
+  exportButton.onclick = () => {
+    exportCurrentMap()
+  }
+  div.appendChild(button)
+  div.appendChild(exportButton)
   return true
 }
 
