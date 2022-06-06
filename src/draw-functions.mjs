@@ -1,6 +1,7 @@
-function drawPattern2 (/** @type {HTMLImageElement} */ image, /** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasRenderingContext2D} */ context, /** @type {any} */ options) {
+function drawPattern2 (/** @type {HTMLImageElement | null} */ image, /** @type {HTMLCanvasElement | null} */ canvas, /** @type {CanvasRenderingContext2D} */ context, /** @type {any} */ options) {
   if (options.x === undefined || options.y === undefined || options.width === undefined || options.height === undefined) return false
   if (options.specialOptions === undefined) options.specialOptions = {}
+  if (image === null) image = new window.Image()
   context.save()
   context.beginPath()
   if (options.alpha !== -1) {

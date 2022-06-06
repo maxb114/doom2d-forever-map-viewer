@@ -1,4 +1,4 @@
-import { addCallback, changeZoom, checkEssentialResources, exportCurrentMap, getDatabaseObject, getMapsList, getRenderFlagsList, handleFile, loadMapFromThisWadAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, saveCurrentWadResources, saveEssentialResources, setActiveCanvas, setRenderFlag, updateMapRender, updateCurrentMap } from './api.mjs'
+import { addCallback, changeZoom, checkEssentialResources, exportCurrentMap, getDatabaseObject, getMapsList, getRenderFlagsList, handleFile, loadMapFromThisWadAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, saveCurrentWadResources, saveEssentialResources, setActiveCanvas, setRenderFlag, updateMapRender, updateCurrentMap, clickAt } from './api.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
 const canvasDiv = document.createElement('div')
@@ -88,10 +88,16 @@ async function onMapLoad () {
   deleteElementById(exportMapId)
   canvasDiv.style.display = ''
   moveCamera(666, 666)
-  canvas.onmousedown = function () {
+  canvas.onmousedown = function (event) {
+    clickAt(event.offsetX, event.offsetY)
+    // clickAt(event.clientX, event.clientY)
+    // clickAt(event.screenX, event.screenY)
+    // clickAt(event.x, event.y)
+    /*
     canvas.onmousemove = (event) => {
       moveCameraByDelta(-event.movementX, -event.movementY)
     }
+    */
   }
   canvas.onmouseup = function () {
     canvas.onmousemove = null

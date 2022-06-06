@@ -1,5 +1,6 @@
 import { CameraWrapper } from './camera-wrapper.mjs'
 import { DatabaseFrom } from './db.mjs'
+import { Editor } from './editor.mjs'
 import { DFRender, DFRenderOptions } from './render.mjs'
 
 class Core {
@@ -14,10 +15,16 @@ class Core {
     this.camera = new CameraWrapper(renderContext, 0, 0, renderCanvas)
     this.options = new DFRenderOptions()
     this.render = new DFRender()
+    this.editor = new Editor(null, this.camera)
   }
 
   setCurrentMap (/** @type {DFMap} */ map) {
     core.currentMap = map
+    this.editor.setCurrentMap(map)
+  }
+
+  handleClick (/** @type {number} */ x, /** @type {number} */ y) {
+    this.editor.click(x, y)
   }
 }
 
@@ -41,12 +48,18 @@ function getCameraWrapper () {
 
 function setCurrentMap (/** @type {DFMap} */ map) {
   core.currentMap = map
+  core.editor.setCurrentMap(map)
   return core.currentMap
 }
 
 function getCurrentMap () {
   const map = core.currentMap
   return map
+}
+
+function handleClick(/** @type {number} */ x, /** @type {number} */ y) {
+  core.editor.click(x, y)
+  return true
 }
 
 function getRenderingOptions () {
@@ -84,4 +97,4 @@ function getCurrentDatabaseInstance () {
   return currentDb
 }
 
-export { coreFrom, getCameraWrapper, getCurrentMap, setCurrentMap, getRenderingOptions, getCurrentWad, getCurrentWadFileName, getCurrentRenderInstance, setCurrentWad, setCurrentWadFileName, getCurrentDatabaseInstance }
+export { coreFrom, getCameraWrapper, getCurrentMap, setCurrentMap, getRenderingOptions, getCurrentWad, getCurrentWadFileName, getCurrentRenderInstance, setCurrentWad, setCurrentWadFileName, getCurrentDatabaseInstance, handleClick }

@@ -48,6 +48,7 @@ class CameraWrapper {
     this.context.restore()
     this.camera.begin()
     this.context.imageSmoothingEnabled = false
+    if (image !== this.canvasToDraw && this.canvasToDraw !== null) this.context.drawImage(this.canvasToDraw, 0, 0)
     this.context.drawImage(image, x, y)
     this.camera.end()
   }
