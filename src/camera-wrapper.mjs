@@ -38,7 +38,7 @@ class CameraWrapper {
     this.update()
   }
 
-  drawImage (/** @type {CanvasImageSource} */ image, /** @type {number} */ x, /** @type {number} */ y) {
+  drawImage (/** @type {CanvasImageSource} */ image, /** @type {number} */ x, /** @type {number} */ y, /** @type {number | undefined} */ width, /** @type {number | undefined} */ height) {
     this.camera.distance = this.zoom
     this.camera.moveTo(this.cameraX, this.cameraY)
     this.camera.updateViewport()
@@ -49,7 +49,8 @@ class CameraWrapper {
     this.camera.begin()
     this.context.imageSmoothingEnabled = false
     if (image !== this.canvasToDraw && this.canvasToDraw !== null) this.context.drawImage(this.canvasToDraw, 0, 0)
-    this.context.drawImage(image, x, y)
+    if (width !== undefined && height !== undefined) this.context.drawImage(image, x, y, width, height)
+    else if (width === undefined && height === undefined) this.context.drawImage(image, x, y)
     this.camera.end()
   }
 

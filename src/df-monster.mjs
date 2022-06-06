@@ -18,6 +18,7 @@ class DFMonster {
     if (this.monsterFrame === null) this.monsterFrame = ''
     this.monsterFrameObject = specialItemToJSON(this.monsterFrame)
     this.monsterSizeObj = getMonsterSize(this.type)
+    this.size = { width: this.monsterSizeObj.width, height: this.monsterSizeObj.height }
     this.monsterDelta = getMonsterDelta(this.type)
     this.id = 'default'
     this.editorPath = ''

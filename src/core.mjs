@@ -15,7 +15,7 @@ class Core {
     this.camera = new CameraWrapper(renderContext, 0, 0, renderCanvas)
     this.options = new DFRenderOptions()
     this.render = new DFRender()
-    this.editor = new Editor(null, this.camera)
+    this.editor = new Editor(null, this.camera, this.options)
   }
 
   setCurrentMap (/** @type {DFMap} */ map) {

@@ -14,6 +14,7 @@ class DFArea {
     this.type = type
     this.direction = direction
     this.areaSize = getAreaSize(this.type)
+    this.size = { width: this.areaSize.width, height: this.areaSize.height }
     this.id = 'default'
     this.editorPath = ''
     /** @type {any} */ this.specialOptions = specialOptions

@@ -126,7 +126,7 @@ function getTriggerUsedData (/** @type {String} */ trigger) {
 
 class DFTrigger {
   constructor (x = -1, y = -1, width = -1, height = -1, enabled = true, /** @type {null | String} */ texturePanel = null, type = 'TRIGGER_NONE', activateType = ['ACTIVATE_NONE'], key = ['KEY_NONE'], /** @type {any} */ triggerData) {
-    this.position = { x, y }
+    this.pos = { x, y }
     this.size = { width, height }
     this.enabled = enabled
     this.texturePanel = texturePanel
@@ -170,7 +170,7 @@ class DFTrigger {
     let msg = ''
     msg = msg + '\n'
     msg = msg + ' '.repeat(2) + 'trigger' + ' ' + this.id + ' ' + '{' + '\n'
-    msg = msg + ' '.repeat(4) + 'position' + ' ' + '(' + (this.position.x).toString(10) + ' ' + (this.position.y).toString(10) + ')' + ';' + '\n'
+    msg = msg + ' '.repeat(4) + 'position' + ' ' + '(' + (this.pos.x).toString(10) + ' ' + (this.pos.y).toString(10) + ')' + ';' + '\n'
     msg = msg + ' '.repeat(4) + 'size' + ' ' + '(' + (this.size.width).toString(10) + ' ' + (this.size.height).toString(10) + ')' + ';' + '\n'
     msg = msg + ' '.repeat(4) + 'enabled' + ' ' + (this.enabled ? 'true' : 'false') + ';' + '\n'
     if (this.texturePanel !== '') msg = msg + ' '.repeat(4) + 'texture_panel' + ' ' + this.texturePanel + ';' + '\n'

@@ -16,8 +16,10 @@ class DFItem {
     if (this.special === true && frame !== null) {
       const itemFrameObject = specialItemToJSON(frame)
       this.frameObject = itemFrameObject
+      this.size = { width: this.frameObject.width, height: this.frameObject.height }
     } else {
       this.frameObject = null
+      this.size = { width: -1, height: -1 }
     }
     this.editorPath = ''
     this.alpha = 1

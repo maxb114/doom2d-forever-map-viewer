@@ -109,7 +109,22 @@ class DFRender {
     for (const element of unique) {
       const path = element.editorPath
       if (path === null) continue
-      const promise = this.saveByPath(path, db, element)
+      const promise = new Promise((resolve, reject) => {
+        this.saveByPath(path, db, element).then(() => {
+          /*
+          const cached = getImage(path)
+          if (cached === null) {
+            resolve(true)
+          } else {
+            if (element.width === -1) element.width = cached.width
+            if (element.height === -1) element.height = cached.height
+            resolve(true)
+            //
+          }
+          */
+          resolve(true)
+        }).catch((error) => reject(error))
+      })
       promises.push(promise)
     }
     const skyPath = convertResourcePath(sky, prefix)

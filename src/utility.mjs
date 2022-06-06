@@ -236,4 +236,8 @@ function isMap (/** @type {Uint8Array} */ buffer) {
   return parser.valid
 }
 
-export { getExtensionFromBuffer, wadToJSON, numberToChar, binaryIsBitSet, parse2Ints, readSliceByte, readSliceChar, readSliceLongWord, readSliceWord, splitPath, convertResourcePath, trimStringBySize, getFileNameWithoutExtension, clamp, convertedResourcePathToGame, download, downloadDataURL, isExternalResource, isMap }
+function rectanglesOverlap (/** @type {any} */ r1, /** @type {any} */ r2) {
+  return !(r2.left > r1.right || r2.right < r1.left || r2.top > r1.bottom || r2.bottom < r1.top)
+}
+
+export { getExtensionFromBuffer, wadToJSON, numberToChar, binaryIsBitSet, parse2Ints, readSliceByte, readSliceChar, readSliceLongWord, readSliceWord, splitPath, convertResourcePath, trimStringBySize, getFileNameWithoutExtension, clamp, convertedResourcePathToGame, download, downloadDataURL, isExternalResource, isMap, rectanglesOverlap }
