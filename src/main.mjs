@@ -100,7 +100,7 @@ async function onMapLoad () {
 
   canvas.onwheel = function (event) {
     if (document.body.style.overflow !== 'hidden') return true
-    const sensitivity = 0.65
+    const sensitivity = 0.35
     const invert = 1
     const value = event.deltaY * invert * sensitivity
     changeZoom(value)
