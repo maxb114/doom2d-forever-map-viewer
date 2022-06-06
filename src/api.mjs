@@ -5,6 +5,7 @@ import { mapForRender } from './prepare-map-for-render.mjs'
 import { preloadWad } from './save-to-db.mjs'
 import { download, downloadDataURL, getFileNameWithoutExtension } from './utility.mjs'
 import { mapFromJson } from './map-from-json-parse.mjs'
+import { saveAsZip } from './export-wad.mjs'
 
 function moveCameraByDelta (/** @type {number} */ deltaX, /** @type {number} */ deltaY) {
   const cameraWrapper = getCameraWrapper()
@@ -195,7 +196,7 @@ function saveCurrentWad () {
   const db = getDatabaseObject()
   if (db === null || db === undefined) return false
   const promise = new Promise((resolve, reject) => {
-    currentWad.saveAsZip(db).then((zip) => {
+    saveAsZip(currentWad, db).then((zip) => {
       zip.generateAsync({ type: 'blob' }).then((/** @type {Blob} */ blob) => {
         const fileName = getCurrentWadName()
         if (fileName === null) return false
