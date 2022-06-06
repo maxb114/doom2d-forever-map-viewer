@@ -322,6 +322,11 @@ async function saveEssentialResources () {
   return Promise.allSettled(promises)
 }
 
+async function handleFile(/** @type {Uint8Array} */ buffer, /** @type {string} */ path ) {
+  setCurrentWadName(path)
+  setWad(await loadBufferAsWad(buffer))
+}
+
 const events = { } // 'event': handlers[]
 
 async function addEvent (/** @type {string} */ index) {
@@ -368,4 +373,4 @@ async function fireChange (/** @type {string} */ index) {
 addEvent('onmapload')
 addEvent('onwadload')
 
-export { moveCameraByDelta, moveCamera, currentMap, currentMapAsJSON, setMap, loadMapFromJSONAndSetAsCurrent, setZoom, changeZoom, getRenderFlags, setRenderFlag, getMapsList, loadMap, loadMapAndSetAsCurrent, getCurrentWadName, getCurrentMapName, saveCurrentWad, getRenderFlagsAsObject, saveCurrentMapOverview, getRenderFlagsList, setWad, loadBufferAsWad, setCurrentWadName, updateMapRender, saveCurrentWadResources, saveWadResources, setActiveCanvas, getDatabaseObject, checkEssentialResources, saveEssentialResources, addCallback, removeCallback, loadMapFromThisWadAndSetAsCurrent, exportCurrentMap, saveCurrentMap, saveCurrentMapAsNew }
+export { moveCameraByDelta, moveCamera, currentMap, currentMapAsJSON, setMap, loadMapFromJSONAndSetAsCurrent, setZoom, changeZoom, getRenderFlags, setRenderFlag, getMapsList, loadMap, loadMapAndSetAsCurrent, getCurrentWadName, getCurrentMapName, saveCurrentWad, getRenderFlagsAsObject, saveCurrentMapOverview, getRenderFlagsList, setWad, loadBufferAsWad, setCurrentWadName, updateMapRender, saveCurrentWadResources, saveWadResources, setActiveCanvas, getDatabaseObject, checkEssentialResources, saveEssentialResources, addCallback, removeCallback, loadMapFromThisWadAndSetAsCurrent, exportCurrentMap, saveCurrentMap, saveCurrentMapAsNew, handleFile }

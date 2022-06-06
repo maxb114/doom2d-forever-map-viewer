@@ -1,4 +1,4 @@
-import { addCallback, changeZoom, checkEssentialResources, exportCurrentMap, getDatabaseObject, getMapsList, getRenderFlagsList, loadBufferAsWad, loadMapFromThisWadAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, saveCurrentWadResources, saveEssentialResources, setActiveCanvas, setCurrentWadName, setRenderFlag, setWad, updateMapRender } from './api.mjs'
+import { addCallback, changeZoom, checkEssentialResources, exportCurrentMap, getDatabaseObject, getMapsList, getRenderFlagsList, handleFile, loadBufferAsWad, loadMapFromThisWadAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, saveCurrentWadResources, saveEssentialResources, setActiveCanvas, setCurrentWadName, setRenderFlag, setWad, updateMapRender } from './api.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
 const canvasDiv = document.createElement('div')
@@ -33,8 +33,7 @@ input.onchange = function () {
     if (event.target === null) return false
     const content = event.target.result
     if (content === null || typeof content === 'string') return false
-    setCurrentWadName(file.name.toLowerCase())
-    setWad(await loadBufferAsWad(content))
+    handleFile(new Uint8Array(content), file.name.toLowerCase())
     return true
   }
   return true
