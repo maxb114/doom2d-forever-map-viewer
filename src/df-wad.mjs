@@ -43,6 +43,22 @@ class DFWad {
     else this._resources.push(resource)
   }
 
+  refreshMapsAndResourcesList () {
+    for (const resource of this.files) {
+      if (isMap(resource.buffer)) this._maps.push(resource)
+      else this._resources.push(resource)
+    }
+  }
+
+  addOverwriteFile (/** @type {Uint8Array} */ buffer, /** @type {string} */ path) {
+    const resourcePath = path.toLowerCase() // to lowercase for now
+    const filtered = this.files.filter((item) => item.path.toLowerCase() !== resourcePath)
+    this.files = filtered
+    this.refreshMapsAndResourcesList()
+    const resource = new Resource(buffer, path)
+    this.addResource(resource)
+  }
+
   get maps () {
     return this._maps
   }
