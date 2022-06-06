@@ -114,26 +114,6 @@ async function onMapLoad () {
   }
 
   document.onkeydown = function (event) {
-    /*
-    if (event.code === 'KeyT') {
-      const wasmtest = async () => {
-        try {
-          const response = await fetch('./test_1.wasm')
-          const wasm = await window.WebAssembly.instantiateStreaming(response, {
-            nice: {
-              dick: moveCameraByDelta
-            }
-          })
-          for (let i = 0; i <= 10; ++i) {
-            wasm.instance.exports.main()
-          }
-        } catch (error) {
-          return false
-        }
-      }
-      wasmtest()
-    }
-    */
     if (event.code === 'KeyR') {
       changeZoom(100)
     } else if (event.code === 'KeyX') {
