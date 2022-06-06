@@ -180,6 +180,12 @@ function convertedResourcePathToGame (/** @type {string} */ path) {
   if (splitPath === undefined) return null
   splitPath = splitPath.replaceAll('/', '\\')
   splitPath = splitPath.toLowerCase() // lowercase for now
+  if (split.length > 1 && (split[0] !== 'game.wad' && split[0] !== 'standart.wad' && split[0] !== 'editor.wad' && split[0] !== 'shrshade.wad')) {
+    splitPath = ':' + splitPath
+  } else {
+    if (split.length > 1) splitPath = split[0] + ':' + splitPath
+    else splitPath = ':' + splitPath
+  }
   return splitPath
 }
 
@@ -220,7 +226,7 @@ function download (/** @type {Blob} */ blob, /** @type {string} */ name) {
 function isExternalResource (/** @type {string} */ resourcePath) {
   const path = convertResourcePath(resourcePath)
   const split = path.split(':')
-  return split.length > 1 && split[0] !== 'game.wad' && split[0] !== 'editor.wad' && split[0] !== 'standart.wad' && split[0] !== 'shrshade.wad'
+  return split.length > 1 && split[0] !== 'game.wad' && split[0] !== 'editor.wad' && split[0] !== 'standart.wad' && split[0] !== 'shrshade.wad' && split[0] !== ''
 }
 
 export { getExtensionFromBuffer, wadToJSON, numberToChar, binaryIsBitSet, parse2Ints, readSliceByte, readSliceChar, readSliceLongWord, readSliceWord, splitPath, convertResourcePath, trimStringBySize, getFileNameWithoutExtension, clamp, convertedResourcePathToGame, download, downloadDataURL, isExternalResource }
