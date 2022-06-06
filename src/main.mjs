@@ -1,4 +1,4 @@
-import { addCallback, changeZoom, checkEssentialResources, exportCurrentMap, getDatabaseObject, getMapsList, getRenderFlagsList, handleFile, loadBufferAsWad, loadMapFromThisWadAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, saveCurrentWadResources, saveEssentialResources, setActiveCanvas, setCurrentWadName, setRenderFlag, setWad, updateMapRender } from './api.mjs'
+import { addCallback, changeZoom, checkEssentialResources, exportCurrentMap, getDatabaseObject, getMapsList, getRenderFlagsList, handleFile, loadMapFromThisWadAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, saveCurrentWadResources, saveEssentialResources, setActiveCanvas, setRenderFlag, updateMapRender, updateCurrentMap } from './api.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
 const canvasDiv = document.createElement('div')
@@ -141,8 +141,20 @@ async function onMapLoad () {
   return true
 }
 
+async function onSingleMapChoose () {
+  deleteElementById('load-button')
+  const button = document.createElement('button')
+  button.innerHTML = 'Load map'
+  button.id = 'load-button'
+  button.onclick = async () => {
+    updateCurrentMap()
+  }
+  div.appendChild(button)
+}
+
 addCallback('onmapload', onMapLoad)
 addCallback('onwadload', onWadLoad)
+addCallback('onsinglemapchoose', onSingleMapChoose)
 
 window.onresize = async function () {
   const screenHeight = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight)

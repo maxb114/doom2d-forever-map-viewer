@@ -3,7 +3,7 @@ import { getCameraWrapper, getRenderingOptions, setCurrentMap, getCurrentWad, ge
 import { DfMapFromBuffer } from './map-from-buffer.mjs'
 import { mapForRender } from './prepare-map-for-render.mjs'
 import { preloadWad } from './save-to-db.mjs'
-import { download, downloadDataURL, getFileNameWithoutExtension } from './utility.mjs'
+import { download, downloadDataURL, getExtensionFromBuffer, getFileNameWithoutExtension, isMap } from './utility.mjs'
 import { mapFromJson } from './map-from-json-parse.mjs'
 import { saveAsZip } from './export-wad.mjs'
 
@@ -102,8 +102,12 @@ async function loadMap (/** @type {DFMap} */ map) {
   if (db === null) return false
   const sky = map.sky
   const prefix = getCurrentWadName()
-  if (prefix === null) return false
-  await render.preload(allElements, db, sky, prefix)
+  if (prefix !== null) { // map from a wad
+    await render.preload(allElements, db, sky, prefix)
+  } else { // individual map
+    const shim = ''
+    await render.preload(allElements, db, sky, shim)
+  }
   updateMapRender()
   fireChange('onmapload')
   return true
@@ -111,6 +115,12 @@ async function loadMap (/** @type {DFMap} */ map) {
 
 async function loadMapAndSetAsCurrent (/** @type {DFMap} */ map) {
   await loadMap(map)
+  return true
+}
+
+async function updateCurrentMap () {
+  const map = currentMap()
+  loadMap(map)
   return true
 }
 
@@ -322,9 +332,18 @@ async function saveEssentialResources () {
   return Promise.allSettled(promises)
 }
 
-async function handleFile(/** @type {Uint8Array} */ buffer, /** @type {string} */ path ) {
-  setCurrentWadName(path)
-  setWad(await loadBufferAsWad(buffer))
+async function handleFile(/** @type {Uint8Array} */ buffer, /** @type {string} */ path) {
+  const type = getExtensionFromBuffer(buffer)
+  if (type === 'dfzip' || type === 'dfwad') {
+    setCurrentWadName(path)
+    setWad(await loadBufferAsWad(buffer))
+  } else {
+    if (isMap(buffer)) {
+      const map = DfMapFromBuffer(buffer, path)
+      setCurrentMap(map)
+      fireChange('onsinglemapchoose')
+    }
+  }
 }
 
 const events = { } // 'event': handlers[]
@@ -372,5 +391,6 @@ async function fireChange (/** @type {string} */ index) {
 
 addEvent('onmapload')
 addEvent('onwadload')
+addEvent('onsinglemapchoose')
 
-export { moveCameraByDelta, moveCamera, currentMap, currentMapAsJSON, setMap, loadMapFromJSONAndSetAsCurrent, setZoom, changeZoom, getRenderFlags, setRenderFlag, getMapsList, loadMap, loadMapAndSetAsCurrent, getCurrentWadName, getCurrentMapName, saveCurrentWad, getRenderFlagsAsObject, saveCurrentMapOverview, getRenderFlagsList, setWad, loadBufferAsWad, setCurrentWadName, updateMapRender, saveCurrentWadResources, saveWadResources, setActiveCanvas, getDatabaseObject, checkEssentialResources, saveEssentialResources, addCallback, removeCallback, loadMapFromThisWadAndSetAsCurrent, exportCurrentMap, saveCurrentMap, saveCurrentMapAsNew, handleFile }
+export { moveCameraByDelta, moveCamera, currentMap, currentMapAsJSON, setMap, loadMapFromJSONAndSetAsCurrent, setZoom, changeZoom, getRenderFlags, setRenderFlag, getMapsList, loadMap, loadMapAndSetAsCurrent, getCurrentWadName, getCurrentMapName, saveCurrentWad, getRenderFlagsAsObject, saveCurrentMapOverview, getRenderFlagsList, setWad, loadBufferAsWad, setCurrentWadName, updateMapRender, saveCurrentWadResources, saveWadResources, setActiveCanvas, getDatabaseObject, checkEssentialResources, saveEssentialResources, addCallback, removeCallback, loadMapFromThisWadAndSetAsCurrent, exportCurrentMap, saveCurrentMap, saveCurrentMapAsNew, handleFile, updateCurrentMap }
