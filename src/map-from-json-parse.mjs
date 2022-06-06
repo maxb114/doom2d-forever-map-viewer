@@ -5,6 +5,7 @@ import { DFMonster } from './df-monster.mjs'
 import { DFPanel } from './df-panel.mjs'
 import { DFTexture } from './df-texture.mjs'
 import { DFTrigger } from './df-trigger.mjs'
+import { convertResourcePath } from './utility.mjs'
 
 function mapFromJson (/** @type {any} */ json) {
   const parse = JSON.parse(json)
@@ -28,10 +29,9 @@ function mapFromJson (/** @type {any} */ json) {
     const y = area.pos?.y
     const type = area.type
     const id = area.id
-    const editorPath = area.editorPath
     const parsedArea = new DFArea(x, y, type, direction)
     parsedArea.id = id
-    parsedArea.editorPath = editorPath
+    parsedArea.editorPath = convertResourcePath(parsedArea.getResourcePath() ?? '')
     areas.push(parsedArea)
   }
   for (const item of parse.items) {
@@ -40,10 +40,9 @@ function mapFromJson (/** @type {any} */ json) {
     const y = item.pos?.y
     const type = item.type
     const id = item.id
-    const editorPath = item.editorPath
     const parsedItem = new DFItem(x, y, type, options)
     item.id = id
-    item.editorPath = editorPath
+    item.editorPath = convertResourcePath(parsedItem.getResourcePath() ?? '')
     items.push(parsedItem)
   }
   for (const monster of parse.monsters) {
@@ -52,10 +51,9 @@ function mapFromJson (/** @type {any} */ json) {
     const y = monster.pos?.y
     const type = monster.type
     const id = monster.id
-    const editorPath = monster.editorPath
     const parsedMonster = new DFMonster(x, y, type, direction)
     parsedMonster.id = id
-    parsedMonster.editorPath = editorPath
+    parsedMonster.editorPath = convertResourcePath(parsedMonster.getResourcePath() ?? '')
     monsters.push(parsedMonster)
   }
   for (const panel of parse.panels) {
@@ -79,22 +77,20 @@ function mapFromJson (/** @type {any} */ json) {
     platformOptions.endPosTrigger = panel.endPosTrigger
     platformOptions.endSizeTrigger = panel.endSizeTrigger
     const texturePath = panel.texturePath
-    const editorPath = panel.editorPath
     const id = panel.id
     const parsedPanel = new DFPanel(x, y, width, height, texture, type, alpha, flags, undefined, texture, blending, undefined)
     parsedPanel.id = id
-    parsedPanel.editorPath = editorPath
     parsedPanel.texturePath = texturePath
+    parsedPanel.editorPath = convertResourcePath(parsedPanel.texturePath)
     panels.push(parsedPanel)
   }
   for (const texture of parse.textures) {
     const animated = texture.animated
-    const editorPath = texture.editorPath
     const id = texture.id
     const path = texture.path
     const parsedTexture = new DFTexture(path, animated)
     parsedTexture.id = id
-    parsedTexture.editorPath = editorPath
+    parsedTexture.editorPath = convertResourcePath(texture.path ?? '')
     textures.push(parsedTexture)
   }
   for (const trigger of parse.triggers) {
