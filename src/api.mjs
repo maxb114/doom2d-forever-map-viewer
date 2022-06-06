@@ -32,6 +32,7 @@ function changeZoom (/** @type {number} */ zoomDelta) {
 
 function setMap (/** @type {DFMap} */ map) {
   setCurrentMap(map)
+  debugger
 }
 
 function currentMap () {
@@ -104,6 +105,7 @@ async function loadMap (/** @type {DFMap} */ map) {
   if (prefix === null) return false
   await render.preload(allElements, db, sky, prefix)
   updateMapRender()
+  debugger
   fireChange('onmapload')
   return true
 }
@@ -123,8 +125,10 @@ async function loadMapFromThisWadAndSetAsCurrent (/** @type {string} */ index) {
   return true
 }
 
-function loadMapFromJSONAndSetAsCurrent (/** @type {any} */ mapObject) {
+function loadMapFromJSONAndSetAsCurrent (/** @type {string} */ mapObject) {
+  // debugger
   const map = mapFromJson(mapObject)
+  // debugger
   loadMap(map)
 }
 

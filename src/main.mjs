@@ -1,4 +1,4 @@
-import { addCallback, changeZoom, checkEssentialResources, getDatabaseObject, getMapsList, getRenderFlagsList, loadBufferAsWad, loadMapFromThisWadAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, saveCurrentWadResources, saveEssentialResources, setActiveCanvas, setCurrentWadName, setRenderFlag, setWad, updateMapRender } from './api.mjs'
+import { addCallback, changeZoom, checkEssentialResources, currentMap, getDatabaseObject, getMapsList, getRenderFlagsList, loadBufferAsWad, loadMapFromThisWadAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, saveCurrentWadResources, saveEssentialResources, setActiveCanvas, setCurrentWadName, setRenderFlag, setWad, updateMapRender } from './api.mjs'
 import * as rivium from './rivium.js'
 await rivium.default()
 rivium.set_panic_hook()
@@ -86,6 +86,8 @@ async function onWadLoad () {
 }
 
 async function onMapLoad () {
+  const map = currentMap()
+  debugger
   deleteElementById(mapImageId)
   canvasDiv.style.display = ''
   moveCamera(666, 666)
