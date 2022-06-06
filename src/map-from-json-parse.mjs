@@ -68,6 +68,16 @@ function mapFromJson (/** @type {any} */ json) {
     const height = panel.size?.height
     const texture = panel.texture
     const type = panel.type
+    const platformOptions = {}
+    platformOptions.moveSpeed = [panel.moveSpeed?.x, panel.moveSpeed?.y]
+    platformOptions.sizeSpeed = [panel.sizeSpeed?.x, panel.sizeSpeed?.y]
+    platformOptions.moveStart = [panel.moveStart?.x, panel.moveStart?.y]
+    platformOptions.moveEnd = [panel.moveEnd?.x, panel.moveEnd?.y]
+    platformOptions.sizeEnd = [panel.sizeEnd?.x, panel.sizeEnd?.y]
+    platformOptions.moveActive = panel.moveActive
+    platformOptions.moveOnce = panel.moveOnce
+    platformOptions.endPosTrigger = panel.endPosTrigger
+    platformOptions.endSizeTrigger = panel.endSizeTrigger
     const texturePath = panel.texturePath
     const editorPath = panel.editorPath
     const id = panel.id
