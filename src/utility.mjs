@@ -1,3 +1,5 @@
+import { DFParser } from './df-parser.mjs'
+
 function numberToChar (/** @type {number} */ number) {
   return String.fromCharCode(number)
 }
@@ -229,4 +231,9 @@ function isExternalResource (/** @type {string} */ resourcePath) {
   return split.length > 1 && split[0] !== 'game.wad' && split[0] !== 'editor.wad' && split[0] !== 'standart.wad' && split[0] !== 'shrshade.wad' && split[0] !== ''
 }
 
-export { getExtensionFromBuffer, wadToJSON, numberToChar, binaryIsBitSet, parse2Ints, readSliceByte, readSliceChar, readSliceLongWord, readSliceWord, splitPath, convertResourcePath, trimStringBySize, getFileNameWithoutExtension, clamp, convertedResourcePathToGame, download, downloadDataURL, isExternalResource }
+function isMap (/** @type {Uint8Array} */ buffer) {
+  const parser = new DFParser(buffer, true)
+  return parser.valid
+}
+
+export { getExtensionFromBuffer, wadToJSON, numberToChar, binaryIsBitSet, parse2Ints, readSliceByte, readSliceChar, readSliceLongWord, readSliceWord, splitPath, convertResourcePath, trimStringBySize, getFileNameWithoutExtension, clamp, convertedResourcePathToGame, download, downloadDataURL, isExternalResource, isMap }

@@ -1,7 +1,6 @@
-import { getExtensionFromBuffer, getFileNameWithoutExtension, wadToJSON } from './utility.mjs'
+import { getExtensionFromBuffer, getFileNameWithoutExtension, isMap, wadToJSON } from './utility.mjs'
 import { inflate } from './pako.esm.mjs'
 import './jszip.js'
-import { DFParser } from './df-parser.mjs'
 class WadStruct {
   constructor (/** @type {any} */ structObject) {
     if (structObject !== undefined) {
@@ -20,11 +19,6 @@ class Resource {
     this.path = path
     this.path = this.path.toLowerCase() // paths are case insensitive?
   }
-}
-
-function isMap (/** @type {Uint8Array} */ buffer) {
-  const parser = new DFParser(buffer, true)
-  return parser.valid
 }
 
 class DFWad {
