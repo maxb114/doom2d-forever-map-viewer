@@ -87,6 +87,7 @@ async function onWadLoad () {
 
 async function onMapLoad () {
   const map = currentMap()
+  console.log(map.asText())
   debugger
   deleteElementById(mapImageId)
   canvasDiv.style.display = ''
