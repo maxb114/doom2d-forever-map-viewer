@@ -70,7 +70,13 @@ function saveAnimatedTextureToZip (/** @type {Uint8Array} */ buffer, /** @type {
           const extensionless = getFileNameWithoutExtension(resourcePath)
           const newPath = extensionless + '.zip'
           const view = new Uint8Array(buffer)
-          saveToZip(zip, newPath, view).then(() => resolve(true)).catch((error) => reject(error))
+          saveToZip(zip, newPath, view).then(() => {
+            resolve(true)
+            return true
+          }).catch((error) => {
+            reject(error)
+            return false
+          })
         })
       })
     }).catch((error) => {

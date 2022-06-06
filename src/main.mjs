@@ -2,8 +2,8 @@ import { addCallback, changeZoom, checkEssentialResources, getDatabaseObject, ge
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
 const canvasDiv = document.createElement('div')
-let screenHeight = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight)
-let screenWidth = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth)
+const screenHeight = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight)
+const screenWidth = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth)
 canvasDiv.style.display = 'none'
 div.style.margin = '0'
 canvasDiv.style.margin = '0'
@@ -34,6 +34,7 @@ input.onchange = function () {
     if (content === null || typeof content === 'string') return false
     setCurrentWadName(file.name.toLowerCase())
     setWad(await loadBufferAsWad(content))
+    return true
   }
   return true
 }

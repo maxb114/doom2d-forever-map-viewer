@@ -321,6 +321,7 @@ async function removeCallback (/** @type {string} */ index, /** @type {function}
   let callbacks = event.callbacks
   if (callbacks === undefined || callbacks === null || !Array.isArray(callbacks)) return false
   callbacks = callbacks.filter(item => item !== callback)
+  return true
 }
 
 async function fireChange (/** @type {string} */ index) {
