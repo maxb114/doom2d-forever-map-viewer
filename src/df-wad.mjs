@@ -235,8 +235,7 @@ class DFWad {
                         animZip.generateAsync({ type: 'arrayBuffer' }).then((arrayBuffer) => {
                           const view = new Uint8Array(arrayBuffer)
                           this.saveToZip(zip, newFullPath, view).then(() => {
-                            // console.log(newFullPath)
-                            dfmap.changeTexturePath(texturePath, converted)
+                            dfmap.changeTexturePath(path, ':' + newFullPath)
                             resolve(true)
                           }).catch((/** @type {Error} */ error) => reject(error))
                         }).catch((/** @type {Error} */ error) => reject(error))
