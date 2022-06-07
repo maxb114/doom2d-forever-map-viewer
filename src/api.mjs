@@ -348,7 +348,7 @@ async function undoLastAction () {
   popHistory()
 }
 
-async function handleFile(/** @type {Uint8Array} */ buffer, /** @type {string} */ path) {
+async function handleFile (/** @type {Uint8Array} */ buffer, /** @type {string} */ path) {
   const type = getExtensionFromBuffer(buffer)
   if (type === 'dfzip' || type === 'dfwad') {
     setCurrentWadName(path)

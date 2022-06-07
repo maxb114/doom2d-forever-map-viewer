@@ -51,7 +51,7 @@ class DFMap {
       return false
     })
     for (const texture of texturesToChange) {
-      texture.path = convertedResourcePathToGame(newPath)
+      texture.path = convertedResourcePathToGame(newPath) ?? ''
       texture.editorPath = convertResourcePath(texture.path)
     }
     this.mapTexturePathsToPanels()

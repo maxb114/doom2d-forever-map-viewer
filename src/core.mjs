@@ -69,7 +69,7 @@ function getCurrentMap () {
   return map
 }
 
-function handleClick(/** @type {number} */ x, /** @type {number} */ y) {
+function handleClick (/** @type {number} */ x, /** @type {number} */ y) {
   core.editor.click(x, y)
   return true
 }

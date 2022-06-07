@@ -79,7 +79,7 @@ class Editor {
       let width = element.size.width
       let height = element.size.height
       if (width === -1 || height === -1) {
-        const image = getImage(element.editorPath)
+        const image = getImage(element.editorPath ?? '')
         if (image === null) return false
         width = image.width
         height = image.height
@@ -161,8 +161,8 @@ class Editor {
       }
       if (context === null) return false
       drawPattern2(null, null, context, {
-        x: x,
-        y: y,
+        x,
+        y,
         width,
         height,
         specialOptions: {
