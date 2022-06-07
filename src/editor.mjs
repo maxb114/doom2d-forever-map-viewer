@@ -46,11 +46,11 @@ class Editor {
     })
     this.highlighted = []
     for (const intersection of intersections) this.highlighted.push(intersection)
-    this.updateRender()
+    this.updateRender(this.highlighted)
     return true
   }
 
-  updateRender () {
+  updateRender (highlighted = []) {
     const mapWidth = this.map.size.x
     const mapHeight = this.map.size.y
     const canvas = document.createElement('canvas')
@@ -59,7 +59,7 @@ class Editor {
     const context = canvas.getContext('2d')
     const prefix = this.map.fileName
     const sky = convertResourcePath(this.map.sky, prefix)
-    for (const element of this.highlighted) {
+    for (const element of highlighted) {
       if (element.pos === undefined || element.size === undefined) continue
       if (element.getRenderOptions === undefined) continue
       if (element.editorPath === '' || element.editorPath === sky) {
