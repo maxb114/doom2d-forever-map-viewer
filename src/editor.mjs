@@ -1,5 +1,6 @@
 import { getImage } from './cache-images.mjs'
 import { drawPattern2 } from './draw-functions.mjs'
+import { orderDfElements } from './order-df-elements.mjs'
 import { mapForRender } from './prepare-map-for-render.mjs'
 import { convertResourcePath, rectanglesOverlap } from './utility.mjs'
 
@@ -28,16 +29,21 @@ class Editor {
     const coords = this.camera.camera.screenToWorld(x, y, undefined)
     const mouseRectangle = { top: coords.y, left: coords.x, right: coords.x + 1, bottom: coords.y + 1 }
     const all = mapForRender(this.map, this.options)
+    const prefix = this.map.fileName
+    const sky = convertResourcePath(this.map.sky, prefix)
     const intersections = all.filter((element) => {
       if (element.pos === undefined || element.size === undefined) return false
       if (element.getRenderOptions === undefined) return false
+      if (element.editorPath === '' || element.editorPath === sky) {
+        return false
+      }
       const options = element.getRenderOptions()
       if (options === undefined || options === null) return false
       let width = element.size.width
       let height = element.size.height
       if (width === -1 || height === -1) {
         const image = getImage(element.editorPath)
-        if (image === null) return null
+        if (image === null) return false
         width = image.width
         height = image.height
       }
@@ -45,7 +51,10 @@ class Editor {
       return rectanglesOverlap(mouseRectangle, elementRectangle)
     })
     this.highlighted = []
-    for (const intersection of intersections) this.highlighted.push(intersection)
+    const ordered = orderDfElements(intersections)
+    const last = ordered.pop()
+    if (last === undefined) return false
+    this.highlighted.push(last)
     this.updateRender(this.highlighted)
     return true
   }
@@ -57,14 +66,9 @@ class Editor {
     canvas.width = mapWidth
     canvas.height = mapHeight
     const context = canvas.getContext('2d')
-    const prefix = this.map.fileName
-    const sky = convertResourcePath(this.map.sky, prefix)
     for (const element of highlighted) {
       if (element.pos === undefined || element.size === undefined) continue
       if (element.getRenderOptions === undefined) continue
-      if (element.editorPath === '' || element.editorPath === sky) {
-        continue
-      }
       const options = element.getRenderOptions()
       if (options === undefined || options === null) continue
       const x = element.pos.x
