@@ -4,26 +4,13 @@ import { DFMonster } from './df-monster.mjs'
 import { DFPanel } from './df-panel.mjs'
 import { DFTexture } from './df-texture.mjs'
 import { DFTrigger } from './df-trigger.mjs'
+import { orderDfElements } from './order-df-elements.mjs'
 import { convertResourcePath } from './utility.mjs'
 
 function mapForRender (/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ options) {
   // create new panel as sky
   const elements = map.allElements
-  const /** @type {(DFArea | DFItem | DFMonster | DFPanel | DFTexture | DFTrigger)[]} */ renderElements = []
-  const orderedElements = {
-    /** @type {DFPanel[]} */ sky: [],
-    /** @type {DFPanel[]} */ background: [],
-    /** @type {DFPanel[]} */ steps: [],
-    /** @type {DFItem[]} */ items: [],
-    /** @type {DFMonster[]} */ monsters: [],
-    /** @type {DFPanel[]} */ walls: [],
-    /** @type {DFArea[]} */ areas: [],
-    /** @type {DFPanel[]} */ opendoors: [],
-    /** @type {DFPanel[]} */ liquids: [],
-    /** @type {DFPanel[]} */ foreground: [],
-    /** @type {DFTrigger[]} */ triggers: []
-  }
-  const order = {
+  const types = {
     background: ['PANEL_BACK'],
     walls: ['PANEL_WALL', 'PANEL_CLOSEDOOR'],
     steps: ['PANEL_STEP'],
@@ -31,17 +18,19 @@ function mapForRender (/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ 
     opendoors: ['PANEL_OPENDOOR'],
     liquids: ['PANEL_WATER', 'PANEL_ACID1', 'PANEL_ACID2']
   }
+  const filtered = []
+  const forRender = []
   if (options?.getFlag('rendersky')) { // mimic sky as a DFPanel
     const width = map.size.x
     const height = map.size.y
     const blackPanel = new DFPanel(0, 0, width, height, undefined, undefined, undefined, undefined, undefined, undefined, undefined, { fillColor: '#000000', tile: true }) // create map-size black panel first
-    orderedElements.sky.push(blackPanel)
+    forRender.push(blackPanel)
     const defaultSky = 'Standart.wad:D2DSKY\\RSKY1'
     const prefix = map.fileName
     const path = convertResourcePath(map.sky ?? defaultSky, prefix)
     const panel = new DFPanel(0, 0, width, height, undefined, undefined, undefined, undefined, undefined, path, undefined, { tile: false, scale: true })
     panel.editorPath = convertResourcePath(path)
-    orderedElements.sky.push(panel)
+    forRender.push(panel)
   }
   for (const element of elements) {
     if (element instanceof DFArea) {
@@ -49,14 +38,14 @@ function mapForRender (/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ 
       else if (!options?.getFlag('rendertdmplayers') && (element.type === 'AREA_REDTEAMPOINT' || element.type === 'AREA_BLUETEAMPOINT')) continue
       else if (!options?.getFlag('rendercoopplayers') && (element.type === 'AREA_PLAYERPOINT1' || element.type === 'AREA_PLAYERPOINT2')) continue
       else if (!options?.getFlag('renderflags') && (element.type === 'AREA_BLUEFLAG' || element.type === 'AREA_REDFLAG' || element.type === 'AREA_DOMFLAG')) continue
-      orderedElements.areas.push(element)
+      filtered.push(element)
     } else if (element instanceof DFItem) {
       if (!options?.getFlag('renderdmitems') && element.options.includes('ITEM_OPTION_ONLYDM')) continue
       else if (!options?.getFlag('renderitems') && !element.options.includes('ITEM_OPTION_ONLYDM')) continue
-      orderedElements.items.push(element)
+      filtered.push(element)
     } else if (element instanceof DFMonster) {
       if (!options?.getFlag('rendermonsters')) continue
-      orderedElements.monsters.push(element)
+      filtered.push(element)
     } else if (element instanceof DFPanel) {
       if (options?.getFlag('renderhide') && element.flags.includes('PANEL_FLAG_HIDE')) {
         continue
@@ -72,7 +61,7 @@ function mapForRender (/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ 
       }
       if (stop) continue
       const type = element.type.join('')
-      const isWater = order.liquids.includes(type)
+      const isWater = types.liquids.includes(type)
       if (!options?.getFlag('renderforeground') && (type === 'PANEL_FORE') && !isWater) continue
       else if (!options?.getFlag('renderwalls') && (type === 'PANEL_WALL') && !isWater) continue
       else if (!options?.getFlag('rendersteps') && (type === 'PANEL_STEP') && !isWater) continue
@@ -80,13 +69,7 @@ function mapForRender (/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ 
       else if (!options?.getFlag('renderliquids') && isWater) continue
       else if (!options?.getFlag('renderopendoors') && (type === 'PANEL_CLOSEDOOR')) continue
       else if (!options?.getFlag('rendertraps') && (type === 'PANEL_OPENDOOR')) continue
-
-      if (order.background.includes(type)) orderedElements.background.push(element)
-      else if (order.walls.includes(type)) orderedElements.walls.push(element)
-      else if (order.foreground.includes(type)) orderedElements.foreground.push(element)
-      else if (order.liquids.includes(type)) orderedElements.liquids.push(element)
-      else if (order.steps.includes(type)) orderedElements.steps.push(element)
-      else if (order.opendoors.includes(type)) orderedElements.opendoors.push(element)
+      filtered.push(element)
     } else if (element instanceof DFTexture) {
       continue
     } else if (element instanceof DFTrigger) {
@@ -95,12 +78,9 @@ function mapForRender (/** @type {DFMap} */ map, /** @type {DFRenderOptions} */ 
       continue
     }
   }
-  for (const i in orderedElements) {
-    // @ts-ignore
-    const /** @type {(DFArea | DFItem | DFMonster | DFPanel | DFTexture | DFTrigger)[]} */ array = orderedElements[i]
-    renderElements.push(...array)
-  }
-  return renderElements
+  const ordered = orderDfElements(filtered)
+  forRender.push(...ordered)
+  return forRender
 }
 
 export { mapForRender }
