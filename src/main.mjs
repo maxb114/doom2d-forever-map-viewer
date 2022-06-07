@@ -1,4 +1,4 @@
-import { addCallback, changeZoom, checkEssentialResources, exportCurrentMap, getDatabaseObject, getMapsList, getRenderFlagsList, handleFile, loadMapFromThisWadAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, saveCurrentWadResources, saveEssentialResources, setActiveCanvas, setRenderFlag, updateMapRender, updateCurrentMap, clickAt, movement, getZoom } from './api.mjs'
+import { addCallback, changeZoom, checkEssentialResources, exportCurrentMap, getDatabaseObject, getMapsList, getRenderFlagsList, handleFile, loadMapFromThisWadAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, saveCurrentWadResources, saveEssentialResources, setActiveCanvas, setRenderFlag, updateMapRender, updateCurrentMap, clickAt, movement, getZoom, undoLastAction, movementEnd } from './api.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
 const canvasDiv = document.createElement('div')
@@ -83,7 +83,7 @@ async function onWadLoad () {
   return true
 }
 
-async function onMapLoad () {
+function onMapLoad () {
   deleteElementById(mapImageId)
   deleteElementById(exportMapId)
   canvasDiv.style.display = ''
@@ -97,6 +97,12 @@ async function onMapLoad () {
       const movementY = event.offsetY
       movement(movementX, movementY)
     }
+
+    canvas.onmouseup = function () {
+      // debugger
+      movementEnd()
+      canvas.onmousemove = null
+    }
     // clickAt(event.clientX, event.clientY)
     // clickAt(event.screenX, event.screenY)
     // clickAt(event.x, event.y)
@@ -105,9 +111,6 @@ async function onMapLoad () {
       moveCameraByDelta(-event.movementX, -event.movementY)
     }
     */
-  }
-  canvas.onmouseup = function () {
-    canvas.onmousemove = null
   }
 
   canvas.onwheel = function (event) {
@@ -126,11 +129,13 @@ async function onMapLoad () {
     return true
   }
 
-  document.onkeydown = function (event) {
+  document.onkeydown = async function (event) {
     if (event.code === 'KeyR') {
       changeZoom(100)
     } else if (event.code === 'KeyX') {
       changeZoom(-100)
+    } else if (event.code === 'KeyC') {
+      undoLastAction()
     }
   }
   canvas.onmouseup = function () {

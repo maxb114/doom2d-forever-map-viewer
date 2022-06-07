@@ -1,6 +1,10 @@
-import { updateMapRender } from './api.mjs'
+import { setMap, updateMapRender } from './api.mjs'
 import { getImage } from './cache-images.mjs'
+import { cloneElement } from './clone-df-element.mjs'
+import { cloneMap } from './clone-map.mjs'
 import { drawPattern2 } from './draw-functions.mjs'
+// import { mapFromJson } from './map-from-json-parse.mjs'
+// import { mapsContentEqual } from './maps-equal.mjs'
 import { orderDfElements } from './order-df-elements.mjs'
 import { mapForRender } from './prepare-map-for-render.mjs'
 import { convertResourcePath, rectanglesOverlap } from './utility.mjs'
@@ -8,13 +12,52 @@ import { convertResourcePath, rectanglesOverlap } from './utility.mjs'
 class Editor {
   constructor (/** @type {DFMap | null} */ currentMap, /** @type {CameraWrapper | null} */ camera, /** @type {RenderOptions | null} */ options) {
     this.map = currentMap
+    /** @type {DFMap | null} */ this.mapCopy = null
+    /** @type {Diff[]} */ this.diffs = []
     this.camera = camera
     this.options = options
     this.highlighted = []
   }
 
-  setCurrentMap (/** @type {DFMap} */ newMap) {
+  addDiff (/** @type {any} */ value) {
+    console.log(this.diffs)
+    const last = this.diffs[this.diffs.length - 1]
+    if (last === undefined) this.diffs.push(value)
+    else {
+      this.diffs.push(value)
+    }
+    // debugger
+    // this.diffs.push(value)
+    this.diffs = [...new Set(this.diffs)]
+    // debugger
+  }
+
+  setCurrentMap (/** @type {DFMap} */ newMap, /** @type {boolean|undefined} */ keepCopy) {
     this.map = newMap
+    if (keepCopy === undefined || keepCopy === true) this.mapCopy = cloneMap(newMap)
+  }
+
+  updateElementHistory (/** @type {(DFArea|DFItem|DFMonster|DFPanel|DFTrigger)} */ element) {
+    const map = cloneMap(this.map)
+    this.addDiff(map)
+    return true
+  }
+
+  popHistory () {
+    const length = this.diffs.length
+    if (length <= 1) {
+      const copyClone = cloneMap(this.mapCopy)
+      setMap(copyClone, false)
+    } else {
+      const old = this.diffs[length - 1]
+      const oldClone = cloneMap(old)
+      setMap(oldClone, false)
+    }
+    console.log(this.diffs)
+    this.diffs.pop()
+    updateMapRender()
+    console.log(this.diffs)
+    return true
   }
 
   setCurrentCameraWrapper (/** @type {CameraWrapper} */ newCamera) {
@@ -60,7 +103,12 @@ class Editor {
     return true
   }
 
-  onMovement (/** @type {number} */ movementX, /** @type {number} */ movementY) {
+  moveElement (/** @type {(DFArea|DFItem|DFMonster|DFPanel|DFTrigger)[]} */ element, /** @type {number} */ x, /** @type {number} */ y) {
+    element.pos.x = x
+    element.pos.y = y
+  }
+
+  async onMovement (/** @type {number} */ movementX, /** @type {number} */ movementY) {
     const cameraWrapper = this.camera
     if (cameraWrapper === null) return
     movementX = Math.ceil(movementX)
@@ -79,11 +127,25 @@ class Editor {
         width = image.width
         height = image.height
       }
-      element.pos.x = x - (width / 2)
-      element.pos.y = y - (height / 2)
+      this.moveElement(element, x - (width / 2), y - (height / 2))
+      /*
+      const index = this.map.allElements.indexOf(element)
+      if (index === undefined) {
+        throw Error('Invalid map element!')
+      } */
+      // this.updateElementHistory(element, index)
     }
     updateMapRender()
+    // console.log(this.diffs)
     return true
+  }
+
+  movementEnd () {
+    // debugger
+    const highlighted = this.highlighted
+    for (const element of highlighted) {
+      this.updateElementHistory(element)
+    }
   }
 
   moveHighlightedToPosition (/** @type {number} */ x, /** @type {number} */ y) {

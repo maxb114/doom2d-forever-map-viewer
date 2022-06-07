@@ -240,4 +240,8 @@ function rectanglesOverlap (/** @type {any} */ r1, /** @type {any} */ r2) {
   return !(r2.left > r1.right || r2.right < r1.left || r2.top > r1.bottom || r2.bottom < r1.top)
 }
 
-export { getExtensionFromBuffer, wadToJSON, numberToChar, binaryIsBitSet, parse2Ints, readSliceByte, readSliceChar, readSliceLongWord, readSliceWord, splitPath, convertResourcePath, trimStringBySize, getFileNameWithoutExtension, clamp, convertedResourcePathToGame, download, downloadDataURL, isExternalResource, isMap, rectanglesOverlap }
+function arraysEqual (/** @type {any} */ array1, /** @type {any} */ array2) {
+  return array1.length === array2.length && array1.every((value, index) => value === array2[index])
+}
+
+export { getExtensionFromBuffer, wadToJSON, numberToChar, binaryIsBitSet, parse2Ints, readSliceByte, readSliceChar, readSliceLongWord, readSliceWord, splitPath, convertResourcePath, trimStringBySize, getFileNameWithoutExtension, clamp, convertedResourcePathToGame, download, downloadDataURL, isExternalResource, isMap, rectanglesOverlap, arraysEqual }

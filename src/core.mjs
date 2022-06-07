@@ -46,9 +46,21 @@ function getCameraWrapper () {
   return core.camera
 }
 
-function setCurrentMap (/** @type {DFMap} */ map) {
+function popHistory () {
+  if (core.editor === null) return false
+  core.editor.popHistory()
+  return true
+}
+
+function handleMovementEnd () {
+  if (core.editor === null) return false
+  core.editor.movementEnd()
+  return true
+}
+
+function setCurrentMap (/** @type {DFMap} */ map, freshStart = true) {
   core.currentMap = map
-  core.editor.setCurrentMap(map)
+  core.editor.setCurrentMap(map, freshStart)
   return core.currentMap
 }
 
@@ -103,4 +115,4 @@ function getCurrentDatabaseInstance () {
   return currentDb
 }
 
-export { coreFrom, getCameraWrapper, getCurrentMap, setCurrentMap, getRenderingOptions, getCurrentWad, getCurrentWadFileName, getCurrentRenderInstance, setCurrentWad, setCurrentWadFileName, getCurrentDatabaseInstance, handleClick, handleMovement }
+export { coreFrom, getCameraWrapper, getCurrentMap, setCurrentMap, getRenderingOptions, getCurrentWad, getCurrentWadFileName, getCurrentRenderInstance, setCurrentWad, setCurrentWadFileName, getCurrentDatabaseInstance, handleClick, handleMovement, popHistory, handleMovementEnd }
