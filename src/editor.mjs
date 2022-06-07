@@ -20,7 +20,7 @@ class Editor {
     this.camera = newCamera
   }
 
-  click (/** @type {number} */ x, /** @type {number} */ y) {
+  click (/** @type {number} */ x, /** @type {number} */ y, overwrite = true) {
     if (this.map === null || this.map === undefined) return false
     if (this.camera === null || this.camera === undefined) return false
     if (this.camera === null) return false
@@ -50,7 +50,7 @@ class Editor {
       const elementRectangle = { top: options.y, left: options.x, right: options.x + width, bottom: options.y + height }
       return rectanglesOverlap(mouseRectangle, elementRectangle)
     })
-    this.highlighted = []
+    if (overwrite) this.highlighted = []
     const ordered = orderDfElements(intersections)
     const last = ordered.pop()
     if (last === undefined) return false
