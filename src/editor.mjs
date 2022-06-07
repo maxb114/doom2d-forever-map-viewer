@@ -1,4 +1,4 @@
-import { setMap, updateMapRender } from './api.mjs'
+import { refreshElement, setMap, updateMapRender } from './api.mjs'
 import { getImage } from './cache-images.mjs'
 import { cloneMap } from './clone-map.mjs'
 import { drawPattern2 } from './draw-functions.mjs'
@@ -47,9 +47,7 @@ class Editor {
       setMap(oldClone, false)
     }
     updateMapRender()
-    console.log(this.diffs)
     this.diffs.pop()
-    console.log(this.diffs)
     return true
   }
 
@@ -121,8 +119,8 @@ class Editor {
         height = image.height
       }
       this.moveElement(element, x - (width / 2), y - (height / 2))
+      refreshElement(this.map, element.id)
     }
-    updateMapRender()
     return true
   }
 
@@ -131,6 +129,7 @@ class Editor {
     for (const element of highlighted) {
       this.updateElementHistory(element)
     }
+    updateMapRender()
   }
 
   moveHighlightedToPosition (/** @type {number} */ x, /** @type {number} */ y) {

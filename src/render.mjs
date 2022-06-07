@@ -67,6 +67,8 @@ class DFRender {
   constructor () {
     this.canvas = document.createElement('canvas')
     if (this.canvas === null) return
+    this.context = this.canvas.getContext('2d')
+    if (this.context === null) return
     /** @type {any} */ this.images = {}
   }
 
@@ -134,26 +136,34 @@ class DFRender {
   }
 
   render1 (/** @type {(DFPanel | DFArea | DFItem | DFMonster)[]} */ elements, /** @type {number} */ width, /** @type {number} */ height) {
-    const canvas = document.createElement('canvas')
-    if (canvas === null) return canvas
-    const context = canvas.getContext('2d')
-    if (context === null) return canvas
+    const canvas = this.canvas
+    const context = this.context
+    if (canvas === null || canvas === undefined || context === null || context === undefined) return false
     canvas.width = width ?? 0
     canvas.height = height ?? 0
     for (const element of elements) {
-      if (element.getRenderOptions === undefined || typeof element.getRenderOptions !== 'function') continue
-      const options = element.getRenderOptions()
-      if (options === undefined || options === null) continue
-      const path = element.editorPath
-      if (path === undefined || path === null) continue
-      const image = getImage(path) ?? new window.Image()
-      if (options.width === 0) options.width = image.width
-      if (options.height === 0) options.height = image.height
-      options.specialOptions.naturalWidth = image.naturalWidth
-      options.specialOptions.naturalHeight = image.naturalHeight
-      drawPattern2(image, canvas, context, options)
+      this.renderElement(element, canvas, context)
     }
     return canvas
+  }
+
+  renderElement (/** @type {(DFPanel | DFArea | DFItem | DFMonster | DFTrigger)} */ element, /** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasRenderingContext2D} */ context, ignorePosition = false) {
+    if (element.getRenderOptions === undefined || typeof element.getRenderOptions !== 'function') return false
+    const options = element.getRenderOptions()
+    if (options === undefined || options === null) return false
+    const path = element.editorPath
+    if (path === undefined || path === null) return false
+    const image = getImage(path) ?? new window.Image()
+    if (options.width === 0) options.width = image.width
+    if (options.height === 0) options.height = image.height
+    options.specialOptions.naturalWidth = image.naturalWidth
+    options.specialOptions.naturalHeight = image.naturalHeight
+    if (ignorePosition) {
+      options.x = 0
+      options.y = 0
+    }
+    drawPattern2(image, canvas, context, options)
+    return true
   }
 }
 

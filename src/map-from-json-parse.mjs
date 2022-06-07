@@ -31,7 +31,7 @@ function mapFromJson (/** @type {any} */ json) {
     const id = area.id
     const parsedArea = new DFArea(x, y, type, direction)
     parsedArea.id = id
-    parsedArea.editorPath = convertResourcePath(parsedArea.getResourcePath() ?? '')
+    parsedArea.editorPath = area.editorPath
     areas.push(parsedArea)
   }
   for (const item of parse.items) {
@@ -41,8 +41,8 @@ function mapFromJson (/** @type {any} */ json) {
     const type = item.type
     const id = item.id
     const parsedItem = new DFItem(x, y, type, options)
-    item.id = id
-    item.editorPath = convertResourcePath(parsedItem.getResourcePath() ?? '')
+    parsedItem.id = id
+    parsedItem.editorPath = item.editorPath
     items.push(parsedItem)
   }
   for (const monster of parse.monsters) {
@@ -53,7 +53,7 @@ function mapFromJson (/** @type {any} */ json) {
     const id = monster.id
     const parsedMonster = new DFMonster(x, y, type, direction)
     parsedMonster.id = id
-    parsedMonster.editorPath = convertResourcePath(parsedMonster.getResourcePath() ?? '')
+    parsedMonster.editorPath = monster.editorPath
     monsters.push(parsedMonster)
   }
   for (const panel of parse.panels) {
@@ -81,7 +81,7 @@ function mapFromJson (/** @type {any} */ json) {
     const parsedPanel = new DFPanel(x, y, width, height, texture, type, alpha, flags, undefined, texture, blending, undefined)
     parsedPanel.id = id
     parsedPanel.texturePath = texturePath
-    parsedPanel.editorPath = convertResourcePath(parsedPanel.texturePath)
+    parsedPanel.editorPath = panel.editorPath
     panels.push(parsedPanel)
   }
   for (const texture of parse.textures) {
@@ -90,7 +90,7 @@ function mapFromJson (/** @type {any} */ json) {
     const path = texture.path
     const parsedTexture = new DFTexture(path, animated)
     parsedTexture.id = id
-    parsedTexture.editorPath = convertResourcePath(texture.path ?? '')
+    parsedTexture.editorPath = texture.editorPath
     textures.push(parsedTexture)
   }
   for (const trigger of parse.triggers) {
