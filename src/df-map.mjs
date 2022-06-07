@@ -65,38 +65,9 @@ class DFMap {
   }
 
   changeElement (/** @type {(DFArea | DFItem | DFMonster | DFPanel | DFTexture | DFTrigger)} */ element, /** @type {number} */ index) {
-    /*
-    if (element instanceof DFArea) {
-      const index = this.areas.indexOf(element)
-      if (index === -1) return false
-      this.areas[index] = element
-    } else if (element instanceof DFItem) {
-      const index = this.items.indexOf(element)
-      if (index === -1) return false
-      this.items[index] = element
-    } else if (element instanceof DFMonster) {
-      const index = this.monsters.indexOf(element)
-      if (index === -1) return false
-      this.monsters[index] = element
-    } else if (element instanceof DFPanel) {
-      const index = this.panels.indexOf(element)
-      if (index === -1) return false
-      this.panels[index] = element
-    } else if (element instanceof DFTexture) {
-      const index = this.textures.indexOf(element)
-      if (index === -1) return false
-      this.textures[index] = element
-    } else if (element instanceof DFTrigger) {
-      const index = this.triggers.indexOf(element)
-      if (index === -1) return false
-      this.triggers[index] = element
-    }
-    */
     let oldElement = this.allElements[index]
     if (oldElement === undefined) return false
-    debugger
     oldElement = element
-    debugger
     return true
   }
 

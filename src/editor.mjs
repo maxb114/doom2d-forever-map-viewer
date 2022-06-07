@@ -1,10 +1,7 @@
 import { setMap, updateMapRender } from './api.mjs'
 import { getImage } from './cache-images.mjs'
-import { cloneElement } from './clone-df-element.mjs'
 import { cloneMap } from './clone-map.mjs'
 import { drawPattern2 } from './draw-functions.mjs'
-// import { mapFromJson } from './map-from-json-parse.mjs'
-// import { mapsContentEqual } from './maps-equal.mjs'
 import { orderDfElements } from './order-df-elements.mjs'
 import { mapForRender } from './prepare-map-for-render.mjs'
 import { convertResourcePath, rectanglesOverlap } from './utility.mjs'
@@ -20,16 +17,12 @@ class Editor {
   }
 
   addDiff (/** @type {any} */ value) {
-    console.log(this.diffs)
     const last = this.diffs[this.diffs.length - 1]
     if (last === undefined) this.diffs.push(value)
     else {
-      this.diffs.push(value)
+      if (JSON.stringify(this.map) !== JSON.stringify(value)) this.diffs.push(value)
     }
-    // debugger
-    // this.diffs.push(value)
-    this.diffs = [...new Set(this.diffs)]
-    // debugger
+    this.diffs = [...new Set(this.diffs)].filter((x, i, a) => a.indexOf(x) === i).filter((x, i, a) => a.indexOf(x) === i)
   }
 
   setCurrentMap (/** @type {DFMap} */ newMap, /** @type {boolean|undefined} */ keepCopy) {
@@ -49,13 +42,13 @@ class Editor {
       const copyClone = cloneMap(this.mapCopy)
       setMap(copyClone, false)
     } else {
-      const old = this.diffs[length - 1]
+      const old = this.diffs[length - 2]
       const oldClone = cloneMap(old)
       setMap(oldClone, false)
     }
+    updateMapRender()
     console.log(this.diffs)
     this.diffs.pop()
-    updateMapRender()
     console.log(this.diffs)
     return true
   }
@@ -128,20 +121,12 @@ class Editor {
         height = image.height
       }
       this.moveElement(element, x - (width / 2), y - (height / 2))
-      /*
-      const index = this.map.allElements.indexOf(element)
-      if (index === undefined) {
-        throw Error('Invalid map element!')
-      } */
-      // this.updateElementHistory(element, index)
     }
     updateMapRender()
-    // console.log(this.diffs)
     return true
   }
 
   movementEnd () {
-    // debugger
     const highlighted = this.highlighted
     for (const element of highlighted) {
       this.updateElementHistory(element)

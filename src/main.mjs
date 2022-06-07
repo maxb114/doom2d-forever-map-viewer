@@ -99,7 +99,6 @@ function onMapLoad () {
     }
 
     canvas.onmouseup = function () {
-      // debugger
       movementEnd()
       canvas.onmousemove = null
     }
@@ -129,7 +128,7 @@ function onMapLoad () {
     return true
   }
 
-  document.onkeydown = async function (event) {
+  document.onkeydown = function (event) {
     if (event.code === 'KeyR') {
       changeZoom(100)
     } else if (event.code === 'KeyX') {
