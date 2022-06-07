@@ -62,6 +62,12 @@ function handleClick(/** @type {number} */ x, /** @type {number} */ y) {
   return true
 }
 
+function handleMovement (/** @type {number} */ x, /** @type {number} */ y) {
+  if (core.editor === null) return false
+  core.editor.onMovement(x, y)
+  return true
+}
+
 function getRenderingOptions () {
   const renderingOptions = core.options
   return renderingOptions
@@ -97,4 +103,4 @@ function getCurrentDatabaseInstance () {
   return currentDb
 }
 
-export { coreFrom, getCameraWrapper, getCurrentMap, setCurrentMap, getRenderingOptions, getCurrentWad, getCurrentWadFileName, getCurrentRenderInstance, setCurrentWad, setCurrentWadFileName, getCurrentDatabaseInstance, handleClick }
+export { coreFrom, getCameraWrapper, getCurrentMap, setCurrentMap, getRenderingOptions, getCurrentWad, getCurrentWadFileName, getCurrentRenderInstance, setCurrentWad, setCurrentWadFileName, getCurrentDatabaseInstance, handleClick, handleMovement }

@@ -1,5 +1,5 @@
 import { DFWad, DfwadFrom } from './df-wad.mjs'
-import { getCameraWrapper, getRenderingOptions, setCurrentMap, getCurrentWad, getCurrentWadFileName, getCurrentMap, getCurrentRenderInstance, setCurrentWad, setCurrentWadFileName, getCurrentDatabaseInstance, handleClick } from './core.mjs'
+import { getCameraWrapper, getRenderingOptions, setCurrentMap, getCurrentWad, getCurrentWadFileName, getCurrentMap, getCurrentRenderInstance, setCurrentWad, setCurrentWadFileName, getCurrentDatabaseInstance, handleClick, handleMovement } from './core.mjs'
 import { DfMapFromBuffer } from './map-from-buffer.mjs'
 import { mapForRender } from './prepare-map-for-render.mjs'
 import { preloadWad } from './save-to-db.mjs'
@@ -161,6 +161,14 @@ function getCurrentMapName () {
   const /** @type {DFMap} */ currentMap = getCurrentMap()
   const name = currentMap.name
   return name
+}
+
+function getZoom () {
+  const cameraWrapper = getCameraWrapper()
+  if (cameraWrapper === null) return null
+  const zoom = cameraWrapper.zoom
+  const view = zoom * 0.001
+  return view
 }
 
 function loadBufferAsWad (/** @type {ArrayBuffer} */ buffer) {
@@ -350,6 +358,10 @@ async function handleFile(/** @type {Uint8Array} */ buffer, /** @type {string} *
   }
 }
 
+async function movement (/** @type {number} */ movementX, /** @type {number} */ movementY) {
+  handleMovement(movementX, movementY)
+}
+
 const events = { }
 
 async function addEvent (/** @type {string} */ index) {
@@ -397,4 +409,4 @@ addEvent('onmapload')
 addEvent('onwadload')
 addEvent('onsinglemapchoose')
 
-export { moveCameraByDelta, moveCamera, currentMap, currentMapAsJSON, setMap, loadMapFromJSONAndSetAsCurrent, setZoom, changeZoom, getRenderFlags, setRenderFlag, getMapsList, loadMap, loadMapAndSetAsCurrent, getCurrentWadName, getCurrentMapName, saveCurrentWad, getRenderFlagsAsObject, saveCurrentMapOverview, getRenderFlagsList, setWad, loadBufferAsWad, setCurrentWadName, updateMapRender, saveCurrentWadResources, saveWadResources, setActiveCanvas, getDatabaseObject, checkEssentialResources, saveEssentialResources, addCallback, removeCallback, loadMapFromThisWadAndSetAsCurrent, exportCurrentMap, saveCurrentMap, saveCurrentMapAsNew, handleFile, updateCurrentMap, clickAt }
+export { moveCameraByDelta, moveCamera, currentMap, currentMapAsJSON, setMap, loadMapFromJSONAndSetAsCurrent, setZoom, changeZoom, getRenderFlags, setRenderFlag, getMapsList, loadMap, loadMapAndSetAsCurrent, getCurrentWadName, getCurrentMapName, saveCurrentWad, getRenderFlagsAsObject, saveCurrentMapOverview, getRenderFlagsList, setWad, loadBufferAsWad, setCurrentWadName, updateMapRender, saveCurrentWadResources, saveWadResources, setActiveCanvas, getDatabaseObject, checkEssentialResources, saveEssentialResources, addCallback, removeCallback, loadMapFromThisWadAndSetAsCurrent, exportCurrentMap, saveCurrentMap, saveCurrentMapAsNew, handleFile, updateCurrentMap, clickAt, movement, getZoom }

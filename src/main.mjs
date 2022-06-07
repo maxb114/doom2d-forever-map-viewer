@@ -1,4 +1,4 @@
-import { addCallback, changeZoom, checkEssentialResources, exportCurrentMap, getDatabaseObject, getMapsList, getRenderFlagsList, handleFile, loadMapFromThisWadAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, saveCurrentWadResources, saveEssentialResources, setActiveCanvas, setRenderFlag, updateMapRender, updateCurrentMap, clickAt } from './api.mjs'
+import { addCallback, changeZoom, checkEssentialResources, exportCurrentMap, getDatabaseObject, getMapsList, getRenderFlagsList, handleFile, loadMapFromThisWadAndSetAsCurrent, moveCamera, moveCameraByDelta, saveCurrentMapOverview, saveCurrentWad, saveCurrentWadResources, saveEssentialResources, setActiveCanvas, setRenderFlag, updateMapRender, updateCurrentMap, clickAt, movement, getZoom } from './api.mjs'
 const div = document.createElement('div')
 const canvas = document.createElement('canvas')
 const canvasDiv = document.createElement('div')
@@ -90,6 +90,13 @@ async function onMapLoad () {
   moveCamera(666, 666)
   canvas.onmousedown = function (event) {
     clickAt(event.offsetX, event.offsetY)
+    canvas.onmousemove = (event) => {
+      const zoom = getZoom()
+      if (zoom === null) return
+      const movementX = event.offsetX
+      const movementY = event.offsetY
+      movement(movementX, movementY)
+    }
     // clickAt(event.clientX, event.clientY)
     // clickAt(event.screenX, event.screenY)
     // clickAt(event.x, event.y)

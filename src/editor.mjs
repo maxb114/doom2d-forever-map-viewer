@@ -1,3 +1,4 @@
+import { updateMapRender } from './api.mjs'
 import { getImage } from './cache-images.mjs'
 import { drawPattern2 } from './draw-functions.mjs'
 import { orderDfElements } from './order-df-elements.mjs'
@@ -57,6 +58,36 @@ class Editor {
     this.highlighted.push(last)
     this.updateRender(this.highlighted)
     return true
+  }
+
+  onMovement (/** @type {number} */ movementX, /** @type {number} */ movementY) {
+    const cameraWrapper = this.camera
+    if (cameraWrapper === null) return
+    movementX = Math.ceil(movementX)
+    movementY = Math.ceil(movementY)
+    const coords = cameraWrapper.camera.screenToWorld(movementX, movementY, undefined)
+    const x = Math.ceil(coords.x)
+    const y = Math.ceil(coords.y)
+    const highlighted = this.highlighted
+    for (const element of highlighted) {
+      if (element.pos === undefined || element.size === undefined) continue
+      let width = element.size.width
+      let height = element.size.height
+      if (width === -1 || height === -1) {
+        const image = getImage(element.editorPath)
+        if (image === null) continue
+        width = image.width
+        height = image.height
+      }
+      element.pos.x = x - (width / 2)
+      element.pos.y = y - (height / 2)
+    }
+    updateMapRender()
+    return true
+  }
+
+  moveHighlightedToPosition (/** @type {number} */ x, /** @type {number} */ y) {
+    //
   }
 
   updateRender (highlighted = []) {
