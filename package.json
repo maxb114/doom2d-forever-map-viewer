@@ -1,14 +1,16 @@
 {
-    "name": "doom2d-forever-map-viewer",
-    "license": "UNLICENSE",
-    "repository": "REPO",
-    "version": "1.0.0",
-    "devDependencies": {
-        "standard": "^17.0.0",
-        "typescript": "^4.8.0-dev.20220526"
-    },
-    "dependencies": {
-        "@types/node": "^17.0.35",
-        "jszip": "^3.10.0"
-    }
+  "name"                 : "template-typescript",
+  "license"              : "MIT-0",
+  "repository"           : "github:chykon/template-typescript",
+  "version"              : "0.1.0-prototype.1",
+
+  "scripts": {
+    "tsc"                : "tsc",
+    "tsc-watch"          : "tsc --watch"
+  },
+
+  "devDependencies": {
+    "typescript"         : "^4.7.3",
+    "ts-standard"        : "^11.0.0"
+  }
 }
