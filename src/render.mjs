@@ -113,17 +113,6 @@ class DFRender {
       if (path === null) continue
       const promise = new Promise((resolve, reject) => {
         this.saveByPath(path, db, element).then(() => {
-          /*
-          const cached = getImage(path)
-          if (cached === null) {
-            resolve(true)
-          } else {
-            if (element.width === -1) element.width = cached.width
-            if (element.height === -1) element.height = cached.height
-            resolve(true)
-            //
-          }
-          */
           resolve(true)
         }).catch((error) => reject(error))
       })
