@@ -319,15 +319,21 @@ async function refreshElement (/** @type {DFMap} */ map, /** @type {string} */ i
   if (canvas === null) return
   const context = canvas.getContext('2d')
   if (context === null) return
+  const cached = getImage(element.editorPath)
+  if (cached === null) {
+    return true
+  } else {
+    if (element.renderSize.width <= 0) element.renderSize.width = cached.width
+    if (element.renderSize.height <= 0) element.renderSize.height = cached.height
+  }
+  const width = element.renderSize.width
+  const height = element.renderSize.height
+  canvas.width = width
+  canvas.height = height
   render.renderElement(element, canvas, context, true)
   const cameraWrapper = getCameraWrapper()
   if (cameraWrapper === null) return null
-  const image = getImage(element.editorPath) ?? new window.Image()
-  let width = element.size.width
-  let height = element.size.height
-  if (width === 0) width = image.width
-  if (height === 0) height = image.height
-  cameraWrapper.drawImage(canvas, element.renderX, element.renderY, element.width, element.height)
+  cameraWrapper.drawImage(canvas, element.renderX, element.renderY)
 }
 
 async function checkEssentialResources () {
