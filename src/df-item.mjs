@@ -13,6 +13,7 @@ class DFItem {
     const frame = convertSpecialItem(this.type)
     const special = (frame !== null)
     this.special = special
+    this.renderSize = { width: 0, height: 0 }
     if (this.special === true && frame !== null) {
       const itemFrameObject = specialItemToJSON(frame)
       this.frameObject = itemFrameObject
@@ -43,8 +44,8 @@ class DFItem {
     const options = {
       x: this.renderX,
       y: this.renderY,
-      width: 0,
-      height: 0,
+      width: this.renderSize.width,
+      height: this.renderSize.height,
       alpha: this.alpha,
       stroke: 'rgba(0, 0, 0, 0)',
       operation: 'source-over',

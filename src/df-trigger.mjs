@@ -128,6 +128,7 @@ class DFTrigger {
   constructor (x = -1, y = -1, width = -1, height = -1, enabled = true, /** @type {null | String} */ texturePanel = null, type = 'TRIGGER_NONE', activateType = ['ACTIVATE_NONE'], key = ['KEY_NONE'], /** @type {any} */ triggerData) {
     this.pos = { x, y }
     this.size = { width, height }
+    this.renderSize = { width, height }
     this.enabled = enabled
     this.texturePanel = texturePanel
     this.type = type

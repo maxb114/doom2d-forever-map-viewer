@@ -7,6 +7,7 @@ class DFPanel {
     this.pos.y = y
     this.size.width = width
     this.size.height = height
+    this.renderSize = { width: this.size.width, height: this.size.height }
     this.texture = texture
     this.type = type
     this.alpha = alpha
@@ -37,8 +38,8 @@ class DFPanel {
     const options = {
       x: this.renderX,
       y: this.renderY,
-      width: this.size.width,
-      height: this.size.height,
+      width: this.renderSize.width,
+      height: this.renderSize.height,
       alpha: convertAlpha,
       stroke: 'rgba(0, 0, 0, 0)',
       blending: this.blending,

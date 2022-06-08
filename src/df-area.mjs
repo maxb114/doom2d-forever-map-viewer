@@ -15,6 +15,7 @@ class DFArea {
     this.direction = direction
     this.areaSize = getAreaSize(this.type)
     this.size = { width: this.areaSize.width, height: this.areaSize.height }
+    this.renderSize = { width: 0, height: 0 }
     this.id = 'default'
     this.editorPath = ''
     /** @type {any} */ this.specialOptions = specialOptions
@@ -33,8 +34,8 @@ class DFArea {
     const options = {
       x: this.renderX,
       y: this.renderY,
-      width: 0,
-      height: 0,
+      width: this.renderSize.width,
+      height: this.renderSize.height,
       alpha: this.alpha,
       stroke: 'rgba(0, 0, 0, 0)',
       operation: 'source-over',

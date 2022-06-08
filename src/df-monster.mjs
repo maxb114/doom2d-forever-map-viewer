@@ -19,6 +19,7 @@ class DFMonster {
     this.monsterFrameObject = specialItemToJSON(this.monsterFrame)
     this.monsterSizeObj = getMonsterSize(this.type)
     this.size = { width: this.monsterSizeObj.width, height: this.monsterSizeObj.height }
+    this.renderSize = { width: 0, height: 0 }
     this.monsterDelta = getMonsterDelta(this.type)
     this.id = 'default'
     this.editorPath = ''
@@ -40,8 +41,8 @@ class DFMonster {
     const options = {
       x: this.renderX,
       y: this.renderY,
-      width: 0,
-      height: 0,
+      width: this.renderSize.width,
+      height: this.renderSize.height,
       alpha: this.alpha,
       stroke: 'rgba(0, 0, 0, 0)',
       operation: 'source-over',
